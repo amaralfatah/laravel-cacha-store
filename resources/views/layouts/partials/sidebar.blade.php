@@ -173,36 +173,31 @@
         </li>
 
         <!-- Layouts -->
-        <li class="menu-item">
+        <li class="menu-item {{ request()->routeIs('reports.*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div data-i18n="Layouts">Layouts</div>
+                <div data-i18n="Layouts">Report</div>
             </a>
 
             <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="layouts-without-menu.html" class="menu-link">
-                        <div data-i18n="Without menu">Without menu</div>
+                <li class="menu-item {{ setActive('reports.sales') }}">
+                    <a href="{{ route('reports.sales') }}" class="menu-link">
+                        <div data-i18n="Without menu">Sales</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="layouts-without-navbar.html" class="menu-link">
-                        <div data-i18n="Without navbar">Without navbar</div>
+                <li class="menu-item {{ setActive('reports.stock') }}">
+                    <a href="{{ route('reports.stock') }}" class="menu-link">
+                        <div data-i18n="Without menu">Stock</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="layouts-container.html" class="menu-link">
-                        <div data-i18n="Container">Container</div>
+                <li class="menu-item {{ setActive('reports.bestseller') }}">
+                    <a href="{{ route('reports.bestseller') }}" class="menu-link">
+                        <div data-i18n="Without menu">Best Seller</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="layouts-fluid.html" class="menu-link">
-                        <div data-i18n="Fluid">Fluid</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="layouts-blank.html" class="menu-link">
-                        <div data-i18n="Blank">Blank</div>
+                <li class="menu-item {{ setActive('reports.profit') }}">
+                    <a href="{{ route('reports.profit') }}" class="menu-link">
+                        <div data-i18n="Without menu">Profit</div>
                     </a>
                 </li>
             </ul>

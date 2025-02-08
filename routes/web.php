@@ -9,6 +9,7 @@ use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
 use App\Http\Controllers\ProductUnitController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UnitController;
@@ -75,4 +76,14 @@ Route::middleware('auth')->group(function () {
     Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
     Route::post('pos', [POSController::class, 'store'])->name('pos.store');
     Route::get('pos/invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
+
+    Route::prefix('reports')->group(function () {
+        Route::get('/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
+        Route::get('/stock', [ReportController::class, 'stockReport'])->name('reports.stock');
+        Route::get('/bestseller', [ReportController::class, 'bestSellerReport'])->name('reports.bestseller');
+        Route::get('/profit', [ReportController::class, 'profitReport'])->name('reports.profit');
+
+        Route::get('/export/pdf/{type}', [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
+        Route::get('/export/excel/{type}', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
+    });
 });
