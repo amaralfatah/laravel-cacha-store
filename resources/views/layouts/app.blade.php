@@ -67,6 +67,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
+
+    <style>
+      .hover-bg-light:hover {
+          background-color: rgba(0,0,0,.05);
+      }
+
+      .search-results {
+          box-shadow: 0 0.25rem 1rem rgba(161, 172, 184, 0.45);
+      }
+      </style>
   </head>
 
   <body>
@@ -145,5 +155,144 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 
     @stack('scripts')
+
+    <script>
+        $(document).ready(function() {
+            let searchTimeout;
+            const searchInput = $('.search-input');
+            const searchResults = $('.search-results');
+
+            searchInput.on('keyup', function() {
+                clearTimeout(searchTimeout);
+                const query = $(this).val();
+
+                if (query.length < 2) {
+                    searchResults.hide();
+                    return;
+                }
+
+                // Loading indicator
+                searchResults.html(
+                    '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>'
+                    ).show();
+
+                searchTimeout = setTimeout(function() {
+                    $.ajax({
+                        url: '{{ route('search') }}',
+                        data: {
+                            q: query
+                        },
+                        success: function(response) {
+                            let html = '';
+
+                            // Products
+                            if (response.products.length > 0) {
+                                html += '<div class="mb-2">';
+                                html +=
+                                    '<small class="text-muted px-2">Products</small>';
+                                response.products.forEach(function(item) {
+                                    html += `
+                                      <a href="${item.url}" class="d-flex align-items-center px-2 py-1 text-dark text-decoration-none hover-bg-light">
+                                          <i class='bx bx-package me-2'></i>
+                                          <div>
+                                              <div>${item.title}</div>
+                                              <small class="text-muted">${item.subtitle}</small>
+                                          </div>
+                                      </a>
+                                  `;
+                                });
+                                html += '</div>';
+                            }
+
+                            // Customers
+                            if (response.customers.length > 0) {
+                                html += '<div class="mb-2">';
+                                html +=
+                                    '<small class="text-muted px-2">Customers</small>';
+                                response.customers.forEach(function(item) {
+                                    html += `
+                                      <a href="${item.url}" class="d-flex align-items-center px-2 py-1 text-dark text-decoration-none hover-bg-light">
+                                          <i class='bx bx-user me-2'></i>
+                                          <div>
+                                              <div>${item.title}</div>
+                                              <small class="text-muted">${item.subtitle}</small>
+                                          </div>
+                                      </a>
+                                  `;
+                                });
+                                html += '</div>';
+                            }
+
+                            // Suppliers
+                            if (response.suppliers.length > 0) {
+                                html += '<div class="mb-2">';
+                                html +=
+                                    '<small class="text-muted px-2">Suppliers</small>';
+                                response.suppliers.forEach(function(item) {
+                                    html += `
+                                      <a href="${item.url}" class="d-flex align-items-center px-2 py-1 text-dark text-decoration-none hover-bg-light">
+                                          <i class='bx bx-store me-2'></i>
+                                          <div>
+                                              <div>${item.title}</div>
+                                              <small class="text-muted">${item.subtitle}</small>
+                                          </div>
+                                      </a>
+                                  `;
+                                });
+                                html += '</div>';
+                            }
+
+                            // Transactions
+                            if (response.transactions.length > 0) {
+                                html += '<div class="mb-2">';
+                                html +=
+                                    '<small class="text-muted px-2">Transactions</small>';
+                                response.transactions.forEach(function(item) {
+                                    html += `
+                                      <a href="${item.url}" class="d-flex align-items-center px-2 py-1 text-dark text-decoration-none hover-bg-light">
+                                          <i class='bx bx-receipt me-2'></i>
+                                          <div>
+                                              <div>${item.title}</div>
+                                              <small class="text-muted">${item.subtitle}</small>
+                                          </div>
+                                      </a>
+                                  `;
+                                });
+                                html += '</div>';
+                            }
+
+                            if (html === '') {
+                                html =
+                                    '<div class="text-center py-2 text-muted">No results found</div>';
+                            }
+
+                            searchResults.html(html).show();
+                        },
+                        error: function() {
+                            searchResults.html(
+                                '<div class="text-center py-2 text-danger">Error occurred</div>'
+                                ).show();
+                        }
+                    });
+                }, 300);
+            });
+
+            // Close search results when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.nav-item').length) {
+                    searchResults.hide();
+                }
+            });
+
+            // Prevent form submission on enter
+            searchInput.on('keypress', function(e) {
+                if (e.which == 13) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+
+
   </body>
 </html>

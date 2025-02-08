@@ -11,6 +11,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UnitController;
@@ -79,4 +80,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/export/pdf/{type}', [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
         Route::get('/export/excel/{type}', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
     });
+
+    Route::get('/search', [SearchController::class, 'search'])->name('search');
 });

@@ -11,37 +11,46 @@
     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
         <!-- Search -->
         <div class="navbar-nav align-items-center">
-            <div class="nav-item d-flex align-items-center">
+            <div class="nav-item d-flex align-items-center position-relative">
                 <i class="bx bx-search fs-4 lh-0"></i>
-                <input type="text" class="form-control border-0 shadow-none" placeholder="Search..."
+                <input type="text" class="form-control border-0 shadow-none search-input" placeholder="Search..."
                     aria-label="Search..." />
+                <div class="search-results position-absolute start-0 w-100 bg-white rounded shadow-lg p-3"
+                    style="display: none; z-index: 1000; top: 100%; margin-top: 1rem; min-width: 100%;"></div>
             </div>
         </div>
         <!-- /Search -->
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
-            <!-- Place this tag where you want the button to render. -->
+            <!-- POS Button -->
             <li class="nav-item lh-1 me-3">
-                <a class="github-button" href="https://github.com/themeselection/sneat-html-admin-template-free"
-                    data-icon="octicon-star" data-size="large" data-show-count="true"
-                    aria-label="Star themeselection/sneat-html-admin-template-free on GitHub">Star</a>
+                <a href="{{ route('pos.index') }}"
+                    class="btn btn-danger position-relative hover-shadow-lg d-inline-flex align-items-center transition-all hover:scale-105">
+                    <i class="bx bx-cart-alt me-2 animate-bounce"></i>
+                    Kasir
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning animate-pulse">
+                        POS
+                    </span>
+                </a>
             </li>
 
-            <!-- User -->
+            <!-- User Dropdown -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow p-2 rounded-circle hover:bg-light transition-all"
+                    href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                     <div class="avatar avatar-online">
-                        <img src="{{ asset('sneat/assets/img/avatars/1.png') }}" alt
-                            class="w-px-40 h-auto rounded-circle" />
+                        <img src="{{ asset('sneat/assets/img/avatars/1.png') }}" alt="Profile"
+                            class="w-px-40 h-auto rounded-circle shadow-sm hover:shadow-md transition-all" />
                     </div>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end">
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg animate__animated animate__fadeIn">
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item hover:bg-light-primary" href="#">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ asset('sneat/assets/img/avatars/1.png') }}" alt
+                                        <img src="{{ asset('sneat/assets/img/avatars/1.png') }}" alt="Profile"
                                             class="w-px-40 h-auto rounded-circle" />
                                     </div>
                                 </div>
@@ -53,46 +62,38 @@
                         </a>
                     </li>
                     <li>
-                        <div class="dropdown-divider"></div>
+                        <hr class="dropdown-divider">
                     </li>
+                    @if (Auth::user()->role == 'admin')
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 hover:bg-light-primary"
+                                href="{{ route('users.edit', Auth::user()->id) }}">
+                                <i class="bx bx-user"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </li>
+                    @endif
                     <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bx bx-user me-2"></i>
-                            <span class="align-middle">My Profile</span>
+                        <a class="dropdown-item d-flex align-items-center gap-2 hover:bg-light-primary" href="#">
+                            <i class="bx bx-cog"></i>
+                            <span>Settings</span>
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bx bx-cog me-2"></i>
-                            <span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <span class="d-flex align-items-center align-middle">
-                                <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-                                <span class="flex-grow-1 align-middle">Billing</span>
-                                <span
-                                    class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <div class="dropdown-divider"></div>
+                        <hr class="dropdown-divider">
                     </li>
                     <li>
                         <form action="{{ route('logout') }}" method="POST" id="logout-form">
                             @csrf
-                            <button class="dropdown-item">
-                                <i class="bx bx-power-off me-2"></i>
-                                <span class="align-middle">Log Out</span>
+                            <button
+                                class="dropdown-item d-flex align-items-center gap-2 hover:bg-light-danger text-danger">
+                                <i class="bx bx-power-off"></i>
+                                <span>Log Out</span>
                             </button>
                         </form>
-
                     </li>
                 </ul>
             </li>
-            <!--/ User -->
         </ul>
     </div>
 </nav>

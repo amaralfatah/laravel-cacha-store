@@ -46,7 +46,7 @@
                     </g>
                 </svg>
             </span>
-            <span class="app-brand-text demo menu-text fw-bolder ms-2">Sneat</span>
+            <span class="app-brand-text demo menu-text fw-bolder ms-2">TokoCacha</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -57,24 +57,56 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-
-        <!-- Dashboard -->
+        <!-- Beranda -->
         <li class="menu-item {{ setActive('dasboard') }}">
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home"></i>
-                <div data-i18n="Analytics">Dashboard</div>
+                <div data-i18n="Analytics">Beranda</div>
             </a>
         </li>
 
-        <!-- User Management -->
+        <!-- Manajemen Pengguna -->
         <li class="menu-item {{ setActive('users.*') }}">
             <a href="{{ route('users.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-user"></i>
-                <div data-i18n="Analytics">User</div>
+                <div data-i18n="Analytics">Pengguna</div>
             </a>
         </li>
 
-        {{-- Master Data --}}
+        {{-- Manajemen Produk --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Manajemen Produk</span>
+        </li>
+
+        <li class="menu-item {{ setActive('products.*') }}">
+            <a href="{{ route('products.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-box"></i>
+                <div data-i18n="Analytics">Produk</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ setActive('inventory.*') }}">
+            <a href="{{ route('inventory.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-archive"></i>
+                <div data-i18n="Analytics">Stok Barang</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ setActive('product-price.*') }}">
+            <a href="{{ route('product-price.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-money"></i>
+                <div data-i18n="Analytics">Harga Produk</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ setActive('pos.*') }}">
+            <a href="{{ route('pos.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cart"></i>
+                <div data-i18n="Analytics">Kasir</div>
+            </a>
+        </li>
+
+        {{-- Data Master --}}
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Data Master</span>
         </li>
@@ -82,112 +114,75 @@
         <li class="menu-item {{ setActive('categories.*') }}">
             <a href="{{ route('categories.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-list-ul"></i>
-                <div data-i18n="Analytics">Category</div>
+                <div data-i18n="Analytics">Kategori</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('taxes.*') }}">
             <a href="{{ route('taxes.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calculator"></i>
-                <div data-i18n="Analytics">Tax</div>
+                <div data-i18n="Analytics">Pajak</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('discounts.*') }}">
             <a href="{{ route('discounts.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-tag"></i>
-                <div data-i18n="Analytics">Discount</div>
+                <div data-i18n="Analytics">Diskon</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('suppliers.*') }}">
             <a href="{{ route('suppliers.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-building-house"></i>
-                <div data-i18n="Analytics">Supplier</div>
+                <div data-i18n="Analytics">Pemasok</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('customers.*') }}">
             <a href="{{ route('customers.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-user-voice"></i>
-                <div data-i18n="Analytics">Customer</div>
+                <div data-i18n="Analytics">Pelanggan</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('units.*') }}">
             <a href="{{ route('units.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-ruler"></i>
-                <div data-i18n="Analytics">Unit</div>
+                <div data-i18n="Analytics">Satuan</div>
             </a>
         </li>
 
-        {{-- Product Management --}}
+        {{-- Laporan --}}
         <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Product Management</span>
-        </li>
-
-        <li class="menu-item {{ setActive('products.*') }}">
-            <a href="{{ route('products.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-box"></i>
-                <div data-i18n="Analytics">Product</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ setActive('inventory.*') }}">
-            <a href="{{ route('inventory.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-archive"></i>
-                <div data-i18n="Analytics">Inventory</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ setActive('product-price.*') }}">
-            <a href="{{ route('product-price.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-money"></i>
-                <div data-i18n="Analytics">Product Price</div>
-            </a>
-        </li>
-
-        <li class="menu-item {{ setActive('pos.*') }}">
-            <a href="{{ route('pos.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-cart"></i>
-                <div data-i18n="Analytics">POS</div>
-            </a>
-        </li>
-
-        {{-- Reports --}}
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Report</span>
+            <span class="menu-header-text">Laporan</span>
         </li>
 
         <li class="menu-item {{ request()->routeIs('reports.*') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-file"></i>
-                <div data-i18n="Layouts">Report</div>
+                <div data-i18n="Layouts">Laporan</div>
             </a>
 
             <ul class="menu-sub">
                 <li class="menu-item {{ setActive('reports.sales') }}">
                     <a href="{{ route('reports.sales') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-chart"></i>
-                        <div data-i18n="Without menu">Sales</div>
+                        <div data-i18n="Without menu">Penjualan</div>
                     </a>
                 </li>
                 <li class="menu-item {{ setActive('reports.stock') }}">
                     <a href="{{ route('reports.stock') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-cabinet"></i>
-                        <div data-i18n="Without menu">Stock</div>
+                        <div data-i18n="Without menu">Stok</div>
                     </a>
                 </li>
                 <li class="menu-item {{ setActive('reports.bestseller') }}">
                     <a href="{{ route('reports.bestseller') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-trophy"></i>
-                        <div data-i18n="Without menu">Best Seller</div>
+                        <div data-i18n="Without menu">Produk Terlaris</div>
                     </a>
                 </li>
                 <li class="menu-item {{ setActive('reports.profit') }}">
                     <a href="{{ route('reports.profit') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-line-chart"></i>
-                        <div data-i18n="Without menu">Profit</div>
+                        <div data-i18n="Without menu">Keuntungan</div>
                     </a>
                 </li>
             </ul>
