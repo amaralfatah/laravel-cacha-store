@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductPriceController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TaxController;
@@ -61,4 +62,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('inventory', InventoryController::class);
     Route::get('check-low-stock', [InventoryController::class, 'checkLowStock'])->name('inventory.check-low-stock');
+
+    Route::get('product-price', [ProductPriceController::class, 'index'])->name('product-price.index');
+    Route::get('product-price/{product}/edit', [ProductPriceController::class, 'edit'])->name('product-price.edit');
+    Route::put('product-price/{product}', [ProductPriceController::class, 'update'])->name('product-price.update');
+    Route::post('product-price/{product}/price-tier', [ProductPriceController::class, 'storePriceTier'])->name('product-price.price-tier.store');
+    Route::delete('product-price/price-tier/{priceTier}', [ProductPriceController::class, 'destroyPriceTier'])->name('product-price.price-tier.destroy');
 });

@@ -42,4 +42,9 @@ class Product extends Model
     {
         return $this->belongsTo(Unit::class, 'default_unit_id');
     }
+
+    public function priceTiers()
+    {
+        return $this->hasMany(PriceTier::class);
+    }
 }
