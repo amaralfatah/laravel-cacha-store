@@ -151,12 +151,12 @@
             </a>
         </li>
 
-        {{-- <li class="menu-item {{ setActive('products.units.*') }}">
-            <a href="{{ route('products.units.index') }}" class="menu-link">
+        <li class="menu-item {{ setActive('inventory.*') }}">
+            <a href="{{ route('inventory.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-package"></i>
-                <div data-i18n="Analytics">Product Unit</div>
+                <div data-i18n="Analytics">Inventory</div>
             </a>
-        </li> --}}
+        </li>
 
         <!-- Layouts -->
         <li class="menu-item">

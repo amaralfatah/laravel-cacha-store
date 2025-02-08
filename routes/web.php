@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\SupplierController;
@@ -57,4 +58,7 @@ Route::middleware('auth')->group(function () {
         ->name('products.update-price');
 
     Route::resource('products.units', ProductUnitController::class);
+
+    Route::resource('inventory', InventoryController::class);
+    Route::get('check-low-stock', [InventoryController::class, 'checkLowStock'])->name('inventory.check-low-stock');
 });
