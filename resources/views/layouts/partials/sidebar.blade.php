@@ -105,6 +105,14 @@
                 <div data-i18n="Analytics">Tax</div>
             </a>
         </li>
+        </li>
+
+        <li class="menu-item {{ setActive('discounts.*') }}">
+            <a href="{{ route('discounts.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div data-i18n="Analytics">Discount</div>
+            </a>
+        </li>
 
         <!-- Layouts -->
         <li class="menu-item">
