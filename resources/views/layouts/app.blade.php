@@ -66,7 +66,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    @yield('styles')
+    @stack('styles')
   </head>
 
   <body>
@@ -144,6 +144,6 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 
-    @yield('scripts')
+    @stack('scripts')
   </body>
 </html>

@@ -165,6 +165,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ setActive('pos.*') }}">
+            <a href="{{ route('pos.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-package"></i>
+                <div data-i18n="Analytics">POS</div>
+            </a>
+        </li>
+
         <!-- Layouts -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">

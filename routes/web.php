@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
 use App\Http\Controllers\ProductUnitController;
@@ -68,4 +69,10 @@ Route::middleware('auth')->group(function () {
     Route::put('product-price/{product}', [ProductPriceController::class, 'update'])->name('product-price.update');
     Route::post('product-price/{product}/price-tier', [ProductPriceController::class, 'storePriceTier'])->name('product-price.price-tier.store');
     Route::delete('product-price/price-tier/{priceTier}', [ProductPriceController::class, 'destroyPriceTier'])->name('product-price.price-tier.destroy');
+
+    Route::get('pos', [POSController::class, 'index'])->name('pos.index');
+    Route::get('pos/get-product', [POSController::class, 'getProduct'])->name('pos.get-product');
+    Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
+    Route::post('pos', [POSController::class, 'store'])->name('pos.store');
+    Route::get('pos/invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
 });
