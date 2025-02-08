@@ -27,7 +27,7 @@ class CategoryController extends Controller
 
         Category::create([
             'name' => $request->name,
-            'is_active' => $request->is_active ?? true
+            'is_active' => $request->has('is_active')
         ]);
 
         return redirect()->route('categories.index')
@@ -48,7 +48,7 @@ class CategoryController extends Controller
 
         $category->update([
             'name' => $request->name,
-            'is_active' => $request->is_active ?? true
+            'is_active' => $request->has('is_active')
         ]);
 
         return redirect()->route('categories.index')

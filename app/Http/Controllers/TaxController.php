@@ -23,13 +23,12 @@ class TaxController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'rate' => 'required|numeric|min:0|max:100',
-            'is_active' => 'boolean'
         ]);
 
         Tax::create([
             'name' => $request->name,
             'rate' => $request->rate,
-            'is_active' => $request->is_active ?? true
+            'is_active' => $request->has('is_active')
         ]);
 
         return redirect()->route('taxes.index')
@@ -46,13 +45,12 @@ class TaxController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'rate' => 'required|numeric|min:0|max:100',
-            'is_active' => 'boolean'
         ]);
 
         $tax->update([
             'name' => $request->name,
             'rate' => $request->rate,
-            'is_active' => $request->is_active ?? true
+            'is_active' => $request->has('is_active')
         ]);
 
         return redirect()->route('taxes.index')
