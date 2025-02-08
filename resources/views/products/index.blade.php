@@ -37,8 +37,10 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('products.units.index', $product) }}" class="btn btn-sm btn-info">Units</a>
+                                <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-info">View</a>
                                 <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-primary">Edit</a>
+                                <a href="{{ route('products.units.index', $product) }}"
+                                    class="btn btn-sm btn-secondary">Units</a>
                                 <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('barcode', 100);
+            $table->string('barcode_image')->nullable();
             $table->foreignId('category_id')->constrained();
             $table->decimal('base_price', 15, 2);
             $table->foreignId('tax_id')->nullable()->constrained();

@@ -23,4 +23,11 @@ class ProductUnit extends Model
     {
         return $this->belongsTo(Unit::class);
     }
+
+    public function getDiscountPercentageAttribute()
+    {
+        $basePrice = $this->product->base_price * $this->conversion_factor;
+        $actualPrice = $this->price;
+        return round((($basePrice - $actualPrice) / $basePrice) * 100, 2);
+    }
 }

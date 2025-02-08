@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Tax;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Milon\Barcode\DNS1D;
 
 class ProductController extends Controller
 {
@@ -32,10 +34,21 @@ class ProductController extends Controller
             'is_active' => 'boolean'
         ]);
 
+        // Generate barcode image
+        $barcode = new DNS1D();
+        $barcode->setStorPath(storage_path('app/public/barcodes'));
+        $barcodeImage = $barcode->getBarcodePNG($validated['barcode'], 'C128');
+        $barcodePath = 'barcodes/' . $validated['barcode'] . '.png';
+        Storage::disk('public')->put($barcodePath, base64_decode($barcodeImage));
+
+        $validated['barcode_image'] = $barcodePath;
+
         $validated['is_active'] = $request->has('is_active');
 
         Product::create($validated);
-        return redirect()->route('products.index')->with('success', 'Product created successfully');
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product created successfully');
     }
 
     // app/Http/Controllers/ProductController.php
@@ -69,9 +82,56 @@ class ProductController extends Controller
             ->with('success', 'Product updated successfully');
     }
 
+    public function show(Product $product)
+    {
+        $product->load(['category', 'productUnits.unit']);
+        return view('products.show', compact('product'));
+    }
+
+    public function updatePrice(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'base_price' => 'required|numeric|min:0',
+            'adjust_unit_prices' => 'boolean'
+        ]);
+
+        // Calculate price change percentage
+        $priceChangePercent = 0;
+        if ($request->adjust_unit_prices && $product->base_price > 0) {
+            $priceChangePercent = ($validated['base_price'] - $product->base_price) / $product->base_price;
+        }
+
+        // Update base price
+        $product->update([
+            'base_price' => $validated['base_price']
+        ]);
+
+        // Adjust unit prices if requested
+        if ($request->adjust_unit_prices) {
+            foreach ($product->productUnits as $unit) {
+                $newPrice = $unit->price * (1 + $priceChangePercent);
+                $unit->update(['price' => round($newPrice, 2)]);
+            }
+        }
+
+        return redirect()->route('products.show', $product)
+            ->with('success', 'Product price updated successfully');
+    }
+
     public function destroy(Product $product)
     {
+        // Hapus semua product units terkait terlebih dahulu
+        $product->productUnits()->delete();
+
+        // Hapus gambar barcode dari storage jika ada
+        if ($product->barcode_image) {
+            Storage::disk('public')->delete($product->barcode_image);
+        }
+
+        // Baru kemudian hapus produk
         $product->delete();
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully');
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product deleted successfully');
     }
 }

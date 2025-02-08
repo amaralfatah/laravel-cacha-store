@@ -29,19 +29,25 @@ class ProductUnitController extends Controller
             'unit_id' => 'required|exists:units,id',
             'conversion_factor' => 'required|numeric|min:0.0001',
             'price' => 'required|numeric|min:0',
-            'is_default' => 'boolean'
+            'is_default' => 'nullable|boolean', // Make it nullable, so it doesn't throw an error if not provided
         ]);
 
-        // If this is set as default, remove default from other units
+        // If 'is_default' is set in the request, make sure to set it to true
         if ($request->has('is_default') && $request->is_default) {
+            // Remove default from other product units
             $product->productUnits()->update(['is_default' => false]);
         }
 
+        // Ensure that 'is_default' is either set or defaulted to false if not provided
+        $validated['is_default'] = $validated['is_default'] ?? false;
+
+        // Insert the new product unit
         $product->productUnits()->create($validated);
 
         return redirect()->route('products.units.index', $product)
             ->with('success', 'Product unit conversion added successfully');
     }
+
 
     public function edit(Product $product, ProductUnit $unit)
     {

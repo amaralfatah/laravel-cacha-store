@@ -53,6 +53,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('units', UnitController::class);
 
     Route::resource('products', ProductController::class);
+    Route::put('products/{product}/update-price', [ProductController::class, 'updatePrice'])
+        ->name('products.update-price');
 
     Route::resource('products.units', ProductUnitController::class);
 });
