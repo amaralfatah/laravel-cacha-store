@@ -79,7 +79,7 @@
 
         <!-- Dashboard -->
         <li class="menu-item {{ setActive('dasboard') }}">
-            <a href="{{ route('home') }}" class="menu-link">
+            <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                 <div data-i18n="Analytics">Dashboard</div>
             </a>
