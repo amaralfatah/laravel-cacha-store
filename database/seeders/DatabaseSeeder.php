@@ -21,5 +21,14 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'role' => 'admin',
         ]);
+
+        $this->call([
+            CustomerSeeder::class,
+            SupplierSeeder::class,
+            CategorySeeder::class,
+            UnitSeeder::class,
+            DiscountSeeder::class,
+            TaxSeeder::class,
+        ]);
     }
 }
