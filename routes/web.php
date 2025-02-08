@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -20,6 +22,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         });
+
+        Route::resource('users', UserController::class);
     });
 
     // Cashier Routes
@@ -28,4 +32,6 @@ Route::middleware('auth')->group(function () {
             return view('cashier.dashboard');
         });
     });
+
+    Route::resource('categories', CategoryController::class);
 });

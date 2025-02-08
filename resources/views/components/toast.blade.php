@@ -1,6 +1,6 @@
 {{-- resources/views/components/toast.blade.php --}}
 @if (session()->has('success') || session()->has('error') || session()->has('warning') || session()->has('info'))
-    <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
         @if (session()->has('success'))
             <div class="bs-toast toast fade show bg-success" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header">
