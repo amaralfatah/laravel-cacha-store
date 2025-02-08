@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,4 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('taxes', TaxController::class);
 
     Route::resource('discounts', DiscountController::class);
+
+    Route::resource('suppliers', SupplierController::class);
+
+    Route::resource('customers', CustomerController::class);
+
+    Route::resource('units', UnitController::class);
 });

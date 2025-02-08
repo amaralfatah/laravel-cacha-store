@@ -114,6 +114,27 @@
             </a>
         </li>
 
+        <li class="menu-item {{ setActive('suppliers.*') }}">
+            <a href="{{ route('suppliers.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div data-i18n="Analytics">Supplier</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ setActive('customers.*') }}">
+            <a href="{{ route('customers.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div data-i18n="Analytics">Customer</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ setActive('units.*') }}">
+            <a href="{{ route('units.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div data-i18n="Analytics">Unit</div>
+            </a>
+        </li>
+
         <!-- Layouts -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
