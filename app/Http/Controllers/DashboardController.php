@@ -14,25 +14,39 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Get current date
+        // Initialize date variables
         $today = Carbon::now()->toDateString();
         $currentYear = Carbon::now()->year;
         $previousYear = $currentYear - 1;
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek();
+        $endOfLastWeek = Carbon::now()->subWeek()->endOfWeek();
 
-        // Get today's sales
-        $todaySales = Transaction::whereDate('created_at', $today)
-            ->where('status', 'success')
-            ->sum('final_amount');
+        // Base query for successful transactions
+        $successfulTransactions = Transaction::where('status', 'success');
 
-        $yesterdaySales = Transaction::whereDate('created_at', Carbon::yesterday())
-            ->where('status', 'success')
-            ->sum('final_amount');
+        // Daily sales calculations
+        $todaySales = clone $successfulTransactions;
+        $todaySales = $todaySales->whereDate('created_at', $today)->sum('final_amount');
+
+        $yesterdaySales = clone $successfulTransactions;
+        $yesterdaySales = $yesterdaySales->whereDate('created_at', Carbon::yesterday())->sum('final_amount');
 
         $salesPercentage = $yesterdaySales != 0 ?
-            round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 2) :
-            100;
+            round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 2) : 100;
 
-        // Calculate total profit
+        // Yearly calculations
+        $currentYearTransactions = clone $successfulTransactions;
+        $currentYearRevenue = $currentYearTransactions->whereYear('created_at', $currentYear)->sum('final_amount');
+
+        $previousYearTransactions = clone $successfulTransactions;
+        $previousYearRevenue = $previousYearTransactions->whereYear('created_at', $previousYear)->sum('final_amount');
+
+        $companyGrowth = $previousYearRevenue != 0 ?
+            round((($currentYearRevenue - $previousYearRevenue) / $previousYearRevenue) * 100, 2) : 100;
+
+        // Total profit calculation
         $totalProfit = DB::table('transactions as t')
             ->join('transaction_items as ti', 't.id', '=', 'ti.transaction_id')
             ->join('products as p', 'ti.product_id', '=', 'p.id')
@@ -41,9 +55,9 @@ class DashboardController extends Controller
             ->select(DB::raw('SUM(ti.subtotal - (ti.quantity * p.base_price)) as total_profit'))
             ->value('total_profit');
 
-        // Calculate monthly revenue
-        $monthlyRevenue = Transaction::where('status', 'success')
-            ->whereYear('created_at', $currentYear)
+        // Monthly revenue data
+        $monthlyRevenue = clone $successfulTransactions;
+        $monthlyRevenue = $monthlyRevenue->whereYear('created_at', $currentYear)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('SUM(final_amount) as revenue'),
@@ -53,20 +67,7 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('month');
 
-        // Calculate year-over-year growth
-        $currentYearRevenue = Transaction::where('status', 'success')
-            ->whereYear('created_at', $currentYear)
-            ->sum('final_amount');
-
-        $previousYearRevenue = Transaction::where('status', 'success')
-            ->whereYear('created_at', $previousYear)
-            ->sum('final_amount');
-
-        $companyGrowth = $previousYearRevenue != 0 ?
-            round((($currentYearRevenue - $previousYearRevenue) / $previousYearRevenue) * 100, 2) :
-            100;
-
-        // Get order statistics by category
+        // Order statistics by category
         $orderStats = DB::table('transaction_items as ti')
             ->join('products as p', 'ti.product_id', '=', 'p.id')
             ->join('categories as c', 'p.category_id', '=', 'c.id')
@@ -79,10 +80,9 @@ class DashboardController extends Controller
             )
             ->groupBy('c.id', 'c.name')
             ->orderBy('total_orders', 'desc')
-            ->limit(4)
             ->get();
 
-        // Get recent transactions with customer details
+        // Recent transactions
         $recentTransactions = Transaction::with(['customer'])
             ->where('status', 'success')
             ->orderBy('created_at', 'desc')
@@ -99,20 +99,22 @@ class DashboardController extends Controller
             });
 
         // Weekly expenses calculations
-        $currentWeekExpenses = Transaction::where('status', 'success')
-            ->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+        $currentWeekExpenses = clone $successfulTransactions;
+        $currentWeekExpenses = $currentWeekExpenses
+            ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->sum('final_amount');
 
-        $lastWeekExpenses = Transaction::where('status', 'success')
-            ->whereBetween('created_at', [
-                Carbon::now()->subWeek()->startOfWeek(),
-                Carbon::now()->subWeek()->endOfWeek()
-            ])
+        $lastWeekExpenses = clone $successfulTransactions;
+        $lastWeekExpenses = $lastWeekExpenses
+            ->whereBetween('created_at', [$startOfLastWeek, $endOfLastWeek])
             ->sum('final_amount');
 
         $expenseDifference = $currentWeekExpenses - $lastWeekExpenses;
+        $expenseComparison = $expenseDifference < 0 ? "less" : "more";
+        $expenseDifferencePercentage = $lastWeekExpenses != 0 ?
+            round(($expenseDifference / $lastWeekExpenses) * 100, 2) : 0;
 
-        // Get top selling products
+        // Top selling products
         $topProducts = DB::table('transaction_items as ti')
             ->join('products as p', 'ti.product_id', '=', 'p.id')
             ->join('transactions as t', 'ti.transaction_id', '=', 't.id')
@@ -128,89 +130,48 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Total calculations
+        $totalPayments = clone $successfulTransactions;
+        $totalPayments = $totalPayments->sum('final_amount');
 
-        // Get total payments for the current period (e.g., month or week)
-        $totalPayments = Transaction::where('status', 'success')
-            ->sum('final_amount');
+        $totalTransactions = clone $successfulTransactions;
+        $totalTransactions = $totalTransactions->count();
 
-        // Get total transactions for the current period (e.g., month or week)
-        $totalTransactions = Transaction::where('status', 'success')
-            ->count();
+        $totalOrders = $totalTransactions; // Since they represent the same thing
 
-        // Calculate the percentage change in payments compared to the previous period
-        $previousPayments = Transaction::where('status', 'success')
-            ->whereYear('created_at', $previousYear)
-            ->sum('final_amount');
-        $paymentChangePercentage = $previousPayments != 0
-            ? round((($totalPayments - $previousPayments) / $previousPayments) * 100, 2)
-            : 100;
+        // Change percentage calculations
+        $paymentChangePercentage = $previousYearRevenue != 0 ?
+            round((($totalPayments - $previousYearRevenue) / $previousYearRevenue) * 100, 2) : 100;
 
-        // Calculate the percentage change in transactions compared to the previous period
-        $previousTransactions = Transaction::where('status', 'success')
+        $previousTransactionsCount = clone $successfulTransactions;
+        $previousTransactionsCount = $previousTransactionsCount
             ->whereYear('created_at', $previousYear)
             ->count();
-        $transactionChangePercentage = $previousTransactions != 0
-            ? round((($totalTransactions - $previousTransactions) / $previousTransactions) * 100, 2)
-            : 100;
 
-        // Profile Report for Year 2021 (or any other specific year)
-        $profileReportRevenue = Transaction::whereYear('created_at', 2021)
-            ->sum('final_amount');
-        $previousProfileReportRevenue = Transaction::whereYear('created_at', 2020)
-            ->sum('final_amount');
-        $profileReportChangePercentage = $previousProfileReportRevenue != 0
-            ? round((($profileReportRevenue - $previousProfileReportRevenue) / $previousProfileReportRevenue) * 100, 2)
-            : 100;
+        $transactionChangePercentage = $previousTransactionsCount != 0 ?
+            round((($totalTransactions - $previousTransactionsCount) / $previousTransactionsCount) * 100, 2) : 100;
 
+        // Profile report calculations (2021 specific)
+        $profileReportRevenue = clone $successfulTransactions;
+        $profileReportRevenue = $profileReportRevenue->whereYear('created_at', 2021)->sum('final_amount');
 
-        $totalOrders = Transaction::where('status', 'success')->count();
+        $previousProfileRevenue = clone $successfulTransactions;
+        $previousProfileRevenue = $previousProfileRevenue->whereYear('created_at', 2020)->sum('final_amount');
 
-        // Order Statistics by Category
-        $orderStats = DB::table('transaction_items')
-            ->select(DB::raw('categories.name as category'), DB::raw('COUNT(transaction_items.id) as total_orders'), DB::raw('SUM(transaction_items.quantity) as total_quantity'))
-            ->join('products', 'transaction_items.product_id', '=', 'products.id')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->groupBy('categories.name')
-            ->get();
+        $profileReportChangePercentage = $previousProfileRevenue != 0 ?
+            round((($profileReportRevenue - $previousProfileRevenue) / $previousProfileRevenue) * 100, 2) : 100;
 
+        // Income and expense summary
+        $totalIncome = $totalPayments; // They represent the same value
+        $expensesThisWeek = $currentWeekExpenses;
+        $expensesLastWeek = $lastWeekExpenses;
 
-
-        // Total Income: Sum of all final amounts for successful transactions
-        $totalIncome = Transaction::where('status', 'success')
-            ->sum('final_amount');
-
-        // Expenses this week: Sum of all transactions in the current week
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
-
-        $expensesThisWeek = Transaction::where('status', 'success')
-            ->whereBetween('invoice_date', [$startOfWeek, $endOfWeek])
-            ->sum('final_amount');
-
-        // Expenses last week: Sum of all transactions in the previous week
-        $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek();
-        $endOfLastWeek = Carbon::now()->subWeek()->endOfWeek();
-
-        $expensesLastWeek = Transaction::where('status', 'success')
-            ->whereBetween('invoice_date', [$startOfLastWeek, $endOfLastWeek])
-            ->sum('final_amount');
-
-        // Calculate weekly difference
-        $expenseDifference = $expensesThisWeek - $expensesLastWeek;
-        $expenseComparison = $expenseDifference < 0 ? "less" : "more";
-        $expenseDifferencePercentage = $expensesLastWeek != 0 ? round(($expenseDifference / $expensesLastWeek) * 100, 2) : 0;
-
-        // Calculate total profit
-        $totalProfit = $totalIncome - $expensesThisWeek;
-
-        // Prepare data for chart (can use fake data or based on real data)
+        // Chart data
         $chartData = [
             'income' => $totalIncome,
             'expenses' => $expensesThisWeek,
             'profit' => $totalProfit
         ];
-
-
 
         return view('dashboard.index', compact(
             'todaySales',
@@ -220,26 +181,18 @@ class DashboardController extends Controller
             'currentYearRevenue',
             'previousYearRevenue',
             'companyGrowth',
-
             'totalOrders',
             'orderStats',
-
             'recentTransactions',
             'currentWeekExpenses',
             'expenseDifference',
             'topProducts',
-
-
-
-
             'totalPayments',
             'paymentChangePercentage',
             'totalTransactions',
             'transactionChangePercentage',
             'profileReportRevenue',
             'profileReportChangePercentage',
-
-
             'totalIncome',
             'expensesThisWeek',
             'expensesLastWeek',
@@ -247,7 +200,7 @@ class DashboardController extends Controller
             'expenseComparison',
             'expenseDifferencePercentage',
             'totalProfit',
-            'chartData',
+            'chartData'
         ));
     }
 }
