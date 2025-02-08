@@ -19,18 +19,21 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        // Get remember me value from the request
+        $remember = $request->has('remember') ? true : false;
+
+        if (Auth::attempt($credentials, $remember)) {  // Added remember parameter here
             $request->session()->regenerate();
 
             // Redirect based on user role with success message
             $user = Auth::user();
             switch ($user->role) {
                 case 'admin':
-                    return redirect()->intended('/')->with('success', 'Welcome back, Admin! You have successfully logged in.');
+                    return redirect()->intended('/dashboard')->with('success', 'Welcome back, Admin! You have successfully logged in.');
                 case 'cashier':
-                    return redirect()->intended('/')->with('success', 'Welcome back, Cashier! You have successfully logged in.');
+                    return redirect()->intended('/dashboard')->with('success', 'Welcome back, Cashier! You have successfully logged in.');
                 default:
-                    return redirect()->intended('/')->with('success', 'Welcome back! You have successfully logged in.');
+                    return redirect()->intended('/dashboard')->with('success', 'Welcome back! You have successfully logged in.');
             }
         }
 

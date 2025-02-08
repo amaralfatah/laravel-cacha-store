@@ -1,12 +1,13 @@
-@extends('layouts.app')
-
-@section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h1>Welcome to the Laravel 11</h1>
-                {{ Auth::user()->role }}
-            </div>
-        </div>
-    </div>
-@endsection
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen bg-neutral-900 flex items-center justify-center">
+<a href="{{route('login')}}" class="text-3xl text-white font-bold underline">
+    Login
+</a>
+</body>
+</html>
