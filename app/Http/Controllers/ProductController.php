@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Tax;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Milon\Barcode\DNS1D;
@@ -21,7 +22,8 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::where('is_active', true)->get();
-        return view('products.create', compact('categories'));
+        $units = Unit::where('is_active', true)->get();
+        return view('products.create', compact('categories', 'units'));
     }
 
     public function store(Request $request)
@@ -31,6 +33,7 @@ class ProductController extends Controller
             'barcode' => 'required|unique:products|max:100',
             'category_id' => 'required|exists:categories,id',
             'base_price' => 'required|numeric|min:0',
+            'default_unit_id' => 'required|exists:units,id',
             'is_active' => 'boolean'
         ]);
 
@@ -45,7 +48,14 @@ class ProductController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        $product->productUnits()->create([
+            'unit_id' => $validated['default_unit_id'],
+            'conversion_factor' => 1,
+            'price' => $validated['base_price'],
+            'is_default' => true
+        ]);
 
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully');

@@ -58,6 +58,16 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="default_unit_id" class="form-label">Default Unit</label>
+                                <select name="default_unit_id"
+                                    class="form-select @error('default_unit_id') is-invalid @enderror">
+                                    @foreach ($units as $unit)
+                                        <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
                                         value="1" {{ old('is_active', 1) ? 'checked' : '' }}>

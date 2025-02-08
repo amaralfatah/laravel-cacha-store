@@ -14,6 +14,7 @@ class Product extends Model
         'base_price',
         'tax_id',
         'discount_id',
+        'default_unit_id',
         'is_active'
     ];
 
@@ -35,5 +36,10 @@ class Product extends Model
     public function productUnits()
     {
         return $this->hasMany(ProductUnit::class);
+    }
+
+    public function defaultUnit()
+    {
+        return $this->belongsTo(Unit::class, 'default_unit_id');
     }
 }

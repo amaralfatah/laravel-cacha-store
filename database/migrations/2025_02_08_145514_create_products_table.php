@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('base_price', 15, 2);
             $table->foreignId('tax_id')->nullable()->constrained();
             $table->foreignId('discount_id')->nullable()->constrained();
+            $table->foreignId('default_unit_id')->nullable()->constrained('units');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
