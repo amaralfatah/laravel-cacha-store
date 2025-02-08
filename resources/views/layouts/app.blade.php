@@ -65,6 +65,8 @@
     <script src="{{ asset('sneat/assets/js/config.js') }}"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @yield('styles')
   </head>
 
   <body>
@@ -141,5 +143,7 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    @yield('scripts')
   </body>
 </html>
