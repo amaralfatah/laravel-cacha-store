@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('code', 50);
             $table->boolean('is_base_unit');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
