@@ -87,50 +87,54 @@
 
         <li class="menu-item {{ setActive('users.*') }}">
             <a href="{{ route('users.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-user-circle"></i>
                 <div data-i18n="Analytics">User</div>
             </a>
         </li>
 
+        {{-- Title --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Data Master</span>
+        </li>
+
         <li class="menu-item {{ setActive('categories.*') }}">
             <a href="{{ route('categories.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-category"></i>
                 <div data-i18n="Analytics">Category</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('taxes.*') }}">
             <a href="{{ route('taxes.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-receipt"></i>
                 <div data-i18n="Analytics">Tax</div>
             </a>
-        </li>
         </li>
 
         <li class="menu-item {{ setActive('discounts.*') }}">
             <a href="{{ route('discounts.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-tag"></i>
                 <div data-i18n="Analytics">Discount</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('suppliers.*') }}">
             <a href="{{ route('suppliers.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-store"></i>
                 <div data-i18n="Analytics">Supplier</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('customers.*') }}">
             <a href="{{ route('customers.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-group"></i>
                 <div data-i18n="Analytics">Customer</div>
             </a>
         </li>
 
         <li class="menu-item {{ setActive('units.*') }}">
             <a href="{{ route('units.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <i class="menu-icon tf-icons bx bx-package"></i>
                 <div data-i18n="Analytics">Unit</div>
             </a>
         </li>
