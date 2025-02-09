@@ -106,6 +106,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ setActive('transactions.*') }}">
+            <a href="{{ route('transactions.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cart"></i>
+                <div data-i18n="Analytics">Transaction</div>
+            </a>
+        </li>
+
         {{-- Data Master --}}
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Data Master</span>

@@ -14,6 +14,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -70,6 +71,10 @@ Route::middleware('auth')->group(function () {
     Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
     Route::post('pos', [POSController::class, 'store'])->name('pos.store');
     Route::get('pos/invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
+
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/{transaction}/continue', [TransactionController::class, 'continue'])
+        ->name('transactions.continue');
 
     Route::prefix('reports')->group(function () {
         Route::get('/sales', [ReportController::class, 'salesReport'])->name('reports.sales');

@@ -121,6 +121,7 @@
                         <input type="text" class="form-control" id="reference_number">
                     </div>
                     <div class="d-grid gap-2">
+                        <button class="btn btn-warning mb-2" id="btn-pending">Simpan Sebagai Draft</button>
                         <button class="btn btn-primary" id="btn-save">Simpan Transaksi</button>
                     </div>
                 </div>
@@ -135,6 +136,40 @@
 
         let cart = [];
         let productDetails = {};
+        let pendingTransactionId = null;
+        // Add this to the beginning of your POS page JavaScript, after cart initialization
+        // Check if there's cart data from a pending transaction
+        const cartData = @json(session('cart_data'));
+        if (cartData) {
+            pendingTransactionId = cartData.pending_transaction_id;
+
+            // Set invoice number
+            document.getElementById('invoice_number').value = cartData.invoice_number;
+
+            // Set customer
+            document.getElementById('customer_id').value = cartData.customer_id;
+
+            // Set payment type and reference number
+            document.getElementById('payment_type').value = cartData.payment_type;
+            if (cartData.payment_type === 'transfer') {
+                document.getElementById('reference_number').value = cartData.reference_number;
+                document.getElementById('reference_number_container').style.display = 'block';
+            }
+
+            // Load cart items
+            cart = cartData.items;
+            cart.forEach(item => {
+                productDetails[item.product_id] = {
+                    id: item.product_id,
+                    name: item.product_name,
+                    available_units: item.available_units
+                };
+            });
+
+            // Update display
+            updateCartTable();
+            calculateTotals();
+        }
 
         document.getElementById('barcode').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -194,7 +229,8 @@
                 );
 
                 if (existingItemWithUnit) {
-                    existingItemWithUnit.quantity += 1;
+                    // Convert quantity to number before adding
+                    existingItemWithUnit.quantity = parseFloat(existingItemWithUnit.quantity) + 1;
                     calculateItemSubtotal(existingItemWithUnit);
                 } else {
                     newItem.unit_id = parseInt(selectedUnit);
@@ -225,11 +261,11 @@
                             <label>Unit</label>
                             <select class="form-select" id="unit_selection">
                                 ${item.available_units.map(unit => `
-                                                                    <option value="${unit.unit_id}"
-                                                                        ${unit.unit_id === item.unit_id ? 'selected' : ''}>
-                                                                        ${unit.unit_name}
-                                                                    </option>
-                                                                `).join('')}
+                                                                                                                    <option value="${unit.unit_id}"
+                                                                                                                        ${unit.unit_id === item.unit_id ? 'selected' : ''}>
+                                                                                                                        ${unit.unit_name}
+                                                                                                                    </option>
+                                                                                                                `).join('')}
                             </select>
                         </div>
                     </div>
@@ -306,8 +342,6 @@
 
             cart.forEach((item, index) => {
                 const tr = document.createElement('tr');
-
-                // Hitung faktor konversi dari unit yang dipilih
                 const unit = item.available_units.find(u => u.unit_id === item.unit_id);
                 const conversionInfo = unit.conversion_factor ?
                     `(1 ${unit.unit_name} = ${unit.conversion_factor} ${item.available_units.find(u => u.conversion_factor === 1)?.unit_name})` :
@@ -323,16 +357,19 @@
                 <select class="form-select form-select-sm"
                         onchange="updateUnit(${index}, this.value)">
                     ${item.available_units.map(unit => `
-                                                    <option value="${unit.unit_id}"
-                                                        ${unit.unit_id === item.unit_id ? 'selected' : ''}>
-                                                        ${unit.unit_name}
-                                                    </option>
-                                                `).join('')}
+                            <option value="${unit.unit_id}"
+                                ${unit.unit_id === item.unit_id ? 'selected' : ''}>
+                                ${unit.unit_name}
+                            </option>
+                        `).join('')}
                 </select>
             </td>
             <td>
-                <input type="number" class="form-control form-control-sm"
-                       value="${item.quantity}"
+                <input type="number"
+                       class="form-control form-control-sm"
+                       value="${parseFloat(item.quantity)}"
+                       step="1"
+                       min="1"
                        onchange="updateQuantity(${index}, this.value)">
             </td>
             <td>${formatCurrency(item.unit_price)}</td>
@@ -352,6 +389,7 @@
             const item = cart[index];
             const product = productDetails[item.product_id];
 
+            // Ensure quantity is treated as a number
             item.quantity = parseFloat(newQuantity);
             item.unit_price = getUnitPrice(product, item.quantity, item.unit_id);
 
@@ -431,7 +469,9 @@
                 discount_amount: parseFloat(document.getElementById('discount_amount').value.replace(
                     /[^0-9.-]+/g, "")),
                 final_amount: parseFloat(document.getElementById('final_amount').value.replace(/[^0-9.-]+/g,
-                    ""))
+                    "")),
+                pending_transaction_id: pendingTransactionId,
+                status: 'success'
             };
 
             try {
@@ -486,5 +526,54 @@
             }
         });
         console.log('POS script loaded');
+    </script>
+    <script>
+        document.getElementById('btn-pending').addEventListener('click', async function() {
+            if (cart.length === 0) {
+                alert('Keranjang masih kosong!');
+                return;
+            }
+
+            const data = {
+                invoice_number: document.getElementById('invoice_number').value,
+                customer_id: document.getElementById('customer_id').value,
+                items: cart,
+                payment_type: document.getElementById('payment_type').value,
+                reference_number: document.getElementById('reference_number').value,
+                total_amount: parseFloat(document.getElementById('subtotal').value.replace(/[^0-9.-]+/g,
+                    "")),
+                tax_amount: parseFloat(document.getElementById('tax_amount').value.replace(/[^0-9.-]+/g,
+                    "")),
+                discount_amount: parseFloat(document.getElementById('discount_amount').value.replace(
+                    /[^0-9.-]+/g, "")),
+                final_amount: parseFloat(document.getElementById('final_amount').value.replace(/[^0-9.-]+/g,
+                    "")),
+                pending_transaction_id: pendingTransactionId, // Include existing pending transaction ID if any
+                status: 'pending'
+            };
+
+            try {
+                const response = await fetch('{{ route('pos.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Transaksi berhasil disimpan sebagai draft!');
+                    window.location.href = '{{ route('transactions.index') }}';
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan transaksi');
+            }
+        });
     </script>
 @endpush

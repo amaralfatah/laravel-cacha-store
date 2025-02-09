@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class POSController extends Controller
 {
@@ -18,7 +19,10 @@ class POSController extends Controller
         $latestInvoice = Transaction::latest()->first();
         $invoiceNumber = $this->generateInvoiceNumber($latestInvoice);
 
-        return view('pos.index', compact('customers', 'invoiceNumber'));
+        // Check if there's cart data from a pending transaction
+        $cartData = session('cart_data');
+
+        return view('pos.index', compact('customers', 'invoiceNumber', 'cartData'));
     }
 
     public function getProduct(Request $request)
@@ -70,16 +74,21 @@ class POSController extends Controller
         try {
             DB::beginTransaction();
 
-            // Validasi request
+            // Modifikasi validasi untuk invoice number
             $validated = $request->validate([
-                'invoice_number' => 'required|string|unique:transactions,invoice_number',
+                'invoice_number' => [
+                    'required',
+                    'string',
+                    Rule::unique('transactions')->ignore($request->pending_transaction_id)
+                ],
                 'customer_id' => 'required|exists:customers,id',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.unit_id' => 'required|exists:units,id',
                 'items.*.quantity' => 'required|numeric|min:0.01',
                 'payment_type' => 'required|in:cash,transfer',
-                'reference_number' => 'required_if:payment_type,transfer'
+                'reference_number' => 'required_if:payment_type,transfer',
+                'pending_transaction_id' => 'nullable|exists:transactions,id'
             ]);
 
             $total_amount = 0;
@@ -89,17 +98,9 @@ class POSController extends Controller
             // Hitung total
             foreach ($request->items as $item) {
                 $product = Product::find($item['product_id']);
-
-                // Get price based on quantity and unit
                 $unit_price = $product->getPrice($item['quantity'], $item['unit_id']);
-
-                // Calculate base subtotal
                 $subtotal = $unit_price * $item['quantity'];
-
-                // Calculate discount
                 $discount = $product->getDiscountAmount($unit_price) * $item['quantity'];
-
-                // Calculate tax
                 $tax = $product->getTaxAmount($subtotal - $discount);
 
                 $total_amount += $subtotal;
@@ -107,20 +108,67 @@ class POSController extends Controller
                 $total_discount += $discount;
             }
 
-            // Create transaction
-            $transaction = Transaction::create([
-                'invoice_number' => $request->invoice_number,
-                'customer_id' => $request->customer_id,
-                'cashier_id' => Auth::id(),
-                'total_amount' => $total_amount,
-                'tax_amount' => $total_tax,
-                'discount_amount' => $total_discount,
-                'final_amount' => $total_amount + $total_tax - $total_discount,
-                'payment_type' => $request->payment_type,
-                'reference_number' => $request->reference_number,
-                'status' => 'success',
-                'invoice_date' => now()
-            ]);
+            if ($request->status === 'pending') {
+                if ($request->pending_transaction_id) {
+                    // Update existing pending transaction
+                    $transaction = Transaction::findOrFail($request->pending_transaction_id);
+
+                    // Delete old items
+                    $transaction->items()->delete();
+
+                    // Update transaction details
+                    $transaction->update([
+                        'customer_id' => $request->customer_id,
+                        'total_amount' => $total_amount,
+                        'tax_amount' => $total_tax,
+                        'discount_amount' => $total_discount,
+                        'final_amount' => $total_amount + $total_tax - $total_discount,
+                        'payment_type' => $request->payment_type,
+                        'reference_number' => $request->reference_number,
+                        'invoice_date' => now()
+                        // Tidak update invoice_number dan status karena sudah ada
+                    ]);
+                } else {
+                    // Create new pending transaction
+                    $transaction = Transaction::create([
+                        'invoice_number' => $request->invoice_number,
+                        'customer_id' => $request->customer_id,
+                        'cashier_id' => Auth::id(),
+                        'total_amount' => $total_amount,
+                        'tax_amount' => $total_tax,
+                        'discount_amount' => $total_discount,
+                        'final_amount' => $total_amount + $total_tax - $total_discount,
+                        'payment_type' => $request->payment_type,
+                        'reference_number' => $request->reference_number,
+                        'status' => 'pending',
+                        'invoice_date' => now()
+                    ]);
+                }
+            } else {
+                // Create new completed transaction
+                $transaction = Transaction::create([
+                    'invoice_number' => $request->invoice_number,
+                    'customer_id' => $request->customer_id,
+                    'cashier_id' => Auth::id(),
+                    'total_amount' => $total_amount,
+                    'tax_amount' => $total_tax,
+                    'discount_amount' => $total_discount,
+                    'final_amount' => $total_amount + $total_tax - $total_discount,
+                    'payment_type' => $request->payment_type,
+                    'reference_number' => $request->reference_number,
+                    'status' => 'success',
+                    'invoice_date' => now()
+                ]);
+
+                // If this was from a pending transaction, delete it
+                if ($request->pending_transaction_id) {
+                    $pendingTransaction = Transaction::find($request->pending_transaction_id);
+                    if ($pendingTransaction) {
+                        $pendingTransaction->items()->delete();
+                        $pendingTransaction->delete();
+                    }
+                }
+            }
 
             // Create transaction items
             foreach ($request->items as $item) {
@@ -138,16 +186,18 @@ class POSController extends Controller
                     'discount' => $discount
                 ]);
 
-                // Update inventory
-                $inventory = Inventory::where('product_id', $item['product_id'])
-                    ->where('unit_id', $item['unit_id'])
-                    ->first();
+                // Update inventory only for completed transactions
+                if ($request->status !== 'pending') {
+                    $inventory = Inventory::where('product_id', $item['product_id'])
+                        ->where('unit_id', $item['unit_id'])
+                        ->first();
 
-                if ($inventory) {
-                    if ($inventory->quantity < $item['quantity']) {
-                        throw new \Exception('Stok tidak mencukupi untuk produk ' . $product->name);
+                    if ($inventory) {
+                        if ($inventory->quantity < $item['quantity']) {
+                            throw new \Exception('Stok tidak mencukupi untuk produk ' . $product->name);
+                        }
+                        $inventory->decrement('quantity', $item['quantity']);
                     }
-                    $inventory->decrement('quantity', $item['quantity']);
                 }
             }
 
@@ -156,7 +206,9 @@ class POSController extends Controller
             return response()->json([
                 'success' => true,
                 'transaction_id' => $transaction->id,
-                'message' => 'Transaksi berhasil disimpan'
+                'message' => $request->status === 'pending' ?
+                    'Transaksi berhasil disimpan sebagai draft' :
+                    'Transaksi berhasil disimpan'
             ]);
         } catch (\Exception $e) {
             DB::rollback();
