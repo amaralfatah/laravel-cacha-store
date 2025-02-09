@@ -49,7 +49,9 @@
                             <label>Customer</label>
                             <select class="form-select" id="customer_id">
                                 @foreach ($customers as $customer)
-                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                    <option value="{{ $customer->id }}" {{ $customer->id === 1 ? 'selected' : '' }}>
+                                        {{ $customer->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -261,11 +263,11 @@
                             <label>Unit</label>
                             <select class="form-select" id="unit_selection">
                                 ${item.available_units.map(unit => `
-                                                                                                                    <option value="${unit.unit_id}"
-                                                                                                                        ${unit.unit_id === item.unit_id ? 'selected' : ''}>
-                                                                                                                        ${unit.unit_name}
-                                                                                                                    </option>
-                                                                                                                `).join('')}
+                                                                                                                            <option value="${unit.unit_id}"
+                                                                                                                                ${unit.unit_id === item.unit_id ? 'selected' : ''}>
+                                                                                                                                ${unit.unit_name}
+                                                                                                                            </option>
+                                                                                                                        `).join('')}
                             </select>
                         </div>
                     </div>
@@ -357,11 +359,11 @@
                 <select class="form-select form-select-sm"
                         onchange="updateUnit(${index}, this.value)">
                     ${item.available_units.map(unit => `
-                            <option value="${unit.unit_id}"
-                                ${unit.unit_id === item.unit_id ? 'selected' : ''}>
-                                ${unit.unit_name}
-                            </option>
-                        `).join('')}
+                                    <option value="${unit.unit_id}"
+                                        ${unit.unit_id === item.unit_id ? 'selected' : ''}>
+                                        ${unit.unit_name}
+                                    </option>
+                                `).join('')}
                 </select>
             </td>
             <td>
