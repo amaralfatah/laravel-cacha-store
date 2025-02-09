@@ -16,21 +16,18 @@ class CustomerSeeder extends Seeder
             [
                 'name' => 'Umum',
                 'phone' => '-',
-                'created_at' => Carbon::now(),
             ]
         );
 
         // Tambahkan customer lainnya
         $customers = [
             [
-                'name' => 'John Doe',
-                'phone' => '081234567890',
-                'created_at' => Carbon::now(),
+                'name' => 'Amar Al Fatah',
+                'phone' => '085819450001',
             ],
             [
-                'name' => 'Jane Smith',
-                'phone' => '082345678901',
-                'created_at' => Carbon::now(),
+                'name' => 'Khansa Almi\'raj',
+                'phone' => '085322471629',
             ],
         ];
 

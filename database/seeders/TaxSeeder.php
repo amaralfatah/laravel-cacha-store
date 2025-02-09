@@ -12,16 +12,14 @@ class TaxSeeder extends Seeder
     {
         DB::table('taxes')->insert([
             [
-                'name' => 'VAT',
-                'rate' => 10.00,
+                'name' => 'PPN 11%',
+                'rate' => 11,
                 'is_active' => true,
-                'created_at' => Carbon::now(),
             ],
             [
-                'name' => 'Income Tax',
-                'rate' => 15.00,
-                'is_active' => true,
-                'created_at' => Carbon::now(),
+                'name' => 'Pajak Parkir',
+                'rate' => 1,
+                'is_active' => false,
             ],
         ]);
     }

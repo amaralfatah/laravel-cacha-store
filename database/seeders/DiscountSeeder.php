@@ -12,18 +12,22 @@ class DiscountSeeder extends Seeder
     {
         DB::table('discounts')->insert([
             [
-                'name' => '10% Off',
+                'name' => 'Promo Hari Raya 10%',
                 'type' => 'percentage',
-                'value' => 10.00,
+                'value' => 10,
                 'is_active' => true,
-                'created_at' => Carbon::now(),
             ],
             [
-                'name' => 'Fixed Discount $50',
+                'name' => 'Diskon Jum\'at Berkah',
                 'type' => 'fixed',
-                'value' => 50.00,
+                'value' => 5000,
                 'is_active' => true,
-                'created_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Potongan Tahun Baru',
+                'type' => 'fixed',
+                'value' => 2500,
+                'is_active' => false,
             ],
         ]);
     }

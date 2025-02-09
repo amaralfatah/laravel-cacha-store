@@ -12,14 +12,12 @@ class SupplierSeeder extends Seeder
     {
         DB::table('suppliers')->insert([
             [
-                'name' => 'Supplier A',
+                'name' => 'Agus Sandal Purwokerto',
                 'phone' => '083456789012',
-                'created_at' => Carbon::now(),
             ],
             [
-                'name' => 'Supplier B',
+                'name' => 'Grosir Snack Tasik',
                 'phone' => '084567890123',
-                'created_at' => Carbon::now(),
             ],
         ]);
     }

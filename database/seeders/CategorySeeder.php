@@ -12,14 +12,16 @@ class CategorySeeder extends Seeder
     {
         DB::table('categories')->insert([
             [
-                'name' => 'Electronics',
+                'name' => 'Makanan',
                 'is_active' => true,
-                'created_at' => Carbon::now(),
             ],
             [
-                'name' => 'Furniture',
+                'name' => 'Minuman',
                 'is_active' => true,
-                'created_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Mainan',
+                'is_active' => false,
             ],
         ]);
     }

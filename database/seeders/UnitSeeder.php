@@ -15,13 +15,16 @@ class UnitSeeder extends Seeder
                 'name' => 'Piece',
                 'code' => 'PCS',
                 'is_base_unit' => true,
-                'created_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Box',
+                'code' => 'BOX',
+                'is_base_unit' => true,
             ],
             [
                 'name' => 'Kilogram',
                 'code' => 'KG',
-                'is_base_unit' => true,
-                'created_at' => Carbon::now(),
+                'is_base_unit' => false,
             ],
         ]);
     }
