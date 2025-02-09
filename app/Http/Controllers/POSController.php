@@ -74,7 +74,7 @@ class POSController extends Controller
         try {
             DB::beginTransaction();
 
-            // Modifikasi validasi untuk invoice number
+            // Basic validation
             $validated = $request->validate([
                 'invoice_number' => [
                     'required',
@@ -91,11 +91,11 @@ class POSController extends Controller
                 'pending_transaction_id' => 'nullable|exists:transactions,id'
             ]);
 
+            // Calculate totals
             $total_amount = 0;
             $total_tax = 0;
             $total_discount = 0;
 
-            // Hitung total
             foreach ($request->items as $item) {
                 $product = Product::find($item['product_id']);
                 $unit_price = $product->getPrice($item['quantity'], $item['unit_id']);
@@ -108,66 +108,36 @@ class POSController extends Controller
                 $total_discount += $discount;
             }
 
-            if ($request->status === 'pending') {
-                if ($request->pending_transaction_id) {
-                    // Update existing pending transaction
-                    $transaction = Transaction::findOrFail($request->pending_transaction_id);
+            $transactionData = [
+                'customer_id' => $request->customer_id,
+                'total_amount' => $total_amount,
+                'tax_amount' => $total_tax,
+                'discount_amount' => $total_discount,
+                'final_amount' => $total_amount + $total_tax - $total_discount,
+                'payment_type' => $request->payment_type,
+                'reference_number' => $request->reference_number,
+                'invoice_date' => now()
+            ];
 
-                    // Delete old items
-                    $transaction->items()->delete();
+            if ($request->pending_transaction_id) {
+                // Update existing transaction
+                $transaction = Transaction::findOrFail($request->pending_transaction_id);
 
-                    // Update transaction details
-                    $transaction->update([
-                        'customer_id' => $request->customer_id,
-                        'total_amount' => $total_amount,
-                        'tax_amount' => $total_tax,
-                        'discount_amount' => $total_discount,
-                        'final_amount' => $total_amount + $total_tax - $total_discount,
-                        'payment_type' => $request->payment_type,
-                        'reference_number' => $request->reference_number,
-                        'invoice_date' => now()
-                        // Tidak update invoice_number dan status karena sudah ada
-                    ]);
-                } else {
-                    // Create new pending transaction
-                    $transaction = Transaction::create([
-                        'invoice_number' => $request->invoice_number,
-                        'customer_id' => $request->customer_id,
-                        'cashier_id' => Auth::id(),
-                        'total_amount' => $total_amount,
-                        'tax_amount' => $total_tax,
-                        'discount_amount' => $total_discount,
-                        'final_amount' => $total_amount + $total_tax - $total_discount,
-                        'payment_type' => $request->payment_type,
-                        'reference_number' => $request->reference_number,
-                        'status' => 'pending',
-                        'invoice_date' => now()
-                    ]);
+                // Delete existing items
+                $transaction->items()->delete();
+
+                if ($request->status === 'success') {
+                    $transactionData['status'] = 'success';
                 }
+
+                $transaction->update($transactionData);
             } else {
-                // Create new completed transaction
-                $transaction = Transaction::create([
-                    'invoice_number' => $request->invoice_number,
-                    'customer_id' => $request->customer_id,
-                    'cashier_id' => Auth::id(),
-                    'total_amount' => $total_amount,
-                    'tax_amount' => $total_tax,
-                    'discount_amount' => $total_discount,
-                    'final_amount' => $total_amount + $total_tax - $total_discount,
-                    'payment_type' => $request->payment_type,
-                    'reference_number' => $request->reference_number,
-                    'status' => 'success',
-                    'invoice_date' => now()
-                ]);
+                // Create new transaction
+                $transactionData['invoice_number'] = $request->invoice_number;
+                $transactionData['cashier_id'] = Auth::id();
+                $transactionData['status'] = $request->status;
 
-                // If this was from a pending transaction, delete it
-                if ($request->pending_transaction_id) {
-                    $pendingTransaction = Transaction::find($request->pending_transaction_id);
-                    if ($pendingTransaction) {
-                        $pendingTransaction->items()->delete();
-                        $pendingTransaction->delete();
-                    }
-                }
+                $transaction = Transaction::create($transactionData);
             }
 
             // Create transaction items
@@ -187,7 +157,7 @@ class POSController extends Controller
                 ]);
 
                 // Update inventory only for completed transactions
-                if ($request->status !== 'pending') {
+                if ($transaction->status === 'success') {
                     $inventory = Inventory::where('product_id', $item['product_id'])
                         ->where('unit_id', $item['unit_id'])
                         ->first();
@@ -202,6 +172,11 @@ class POSController extends Controller
             }
 
             DB::commit();
+
+            // Clear session data if transaction is completed
+            if ($transaction->status === 'success') {
+                session()->forget('cart_data');
+            }
 
             return response()->json([
                 'success' => true,
@@ -223,7 +198,13 @@ class POSController extends Controller
     {
         $prefix = 'INV' . date('Ymd');
 
+        // If no latest invoice exists, start with 0001
         if (!$latestInvoice) {
+            return $prefix . '0001';
+        }
+
+        // If latest invoice is from a different date, start with 0001
+        if (!str_starts_with($latestInvoice->invoice_number, $prefix)) {
             return $prefix . '0001';
         }
 
