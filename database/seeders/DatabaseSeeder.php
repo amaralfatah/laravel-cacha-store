@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             DiscountSeeder::class,
             TaxSeeder::class,
             InventorySeeder::class,
-            ProductSeeder::class,
+//            ProductSeeder::class,
         ]);
     }
 }

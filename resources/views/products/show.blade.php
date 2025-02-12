@@ -21,7 +21,7 @@
                                 <dt>Purchase Price</dt>
                                 <dd>
                                     @php
-                                        $defaultUnit = $product->productUnits->first();
+                                        $defaultUnit = $product->productUnits->where('is_default', true)->first();
                                         $purchasePrice = $defaultUnit ? $defaultUnit->purchase_price : 0;
                                     @endphp
                                     Rp {{ number_format($purchasePrice, 2) }}
@@ -33,6 +33,14 @@
                                         $sellingPrice = $defaultUnit ? $defaultUnit->selling_price : 0;
                                     @endphp
                                     Rp {{ number_format($sellingPrice, 2) }}
+                                </dd>
+
+                                <dt>Stock</dt>
+                                <dd>
+                                    @php
+                                        $stock = $defaultUnit ? $defaultUnit->stock : 0;
+                                    @endphp
+                                    {{ number_format($stock) }}
                                 </dd>
 
                                 <dt>Status</dt>

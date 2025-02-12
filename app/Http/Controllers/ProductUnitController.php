@@ -60,6 +60,7 @@ class ProductUnitController extends Controller
             'conversion_factor' => 'required|numeric|min:0.0001',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
             'is_default' => 'nullable|boolean',
         ]);
 
@@ -73,6 +74,9 @@ class ProductUnitController extends Controller
                 $product->productUnits()->update(['is_default' => false]);
                 $validated['is_default'] = true;
                 $validated['conversion_factor'] = 1;
+
+                // Update default_unit_id di tabel products
+                $product->update(['default_unit_id' => $validated['unit_id']]);
             } else {
                 $validated['is_default'] = false;
 
@@ -80,6 +84,8 @@ class ProductUnitController extends Controller
                 if ($defaultUnit) {
                     $validated['purchase_price'] = $defaultUnit->purchase_price * $validated['conversion_factor'];
                     $validated['selling_price'] = $defaultUnit->selling_price * $validated['conversion_factor'];
+                    // Konversi stock sesuai conversion factor
+                    $validated['stock'] = floor($validated['stock'] / $validated['conversion_factor']);
                 }
             }
 
@@ -109,6 +115,7 @@ class ProductUnitController extends Controller
             'conversion_factor' => 'required|numeric|min:0.0001',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
             'is_default' => 'boolean'
         ]);
 
@@ -122,6 +129,9 @@ class ProductUnitController extends Controller
 
                 $validated['conversion_factor'] = 1;
 
+                // Update default_unit_id di tabel products
+                $product->update(['default_unit_id' => $unit->unit_id]);
+
                 $otherUnits = $product->productUnits()
                     ->where('id', '!=', $unit->id)
                     ->get();
@@ -129,9 +139,12 @@ class ProductUnitController extends Controller
                 foreach ($otherUnits as $otherUnit) {
                     $newPurchasePrice = $validated['purchase_price'] * $otherUnit->conversion_factor;
                     $newSellingPrice = $validated['selling_price'] * $otherUnit->conversion_factor;
+                    $newStock = floor($validated['stock'] / $otherUnit->conversion_factor);
+
                     $otherUnit->update([
                         'purchase_price' => $newPurchasePrice,
-                        'selling_price' => $newSellingPrice
+                        'selling_price' => $newSellingPrice,
+                        'stock' => $newStock
                     ]);
                 }
             } else {
@@ -143,6 +156,7 @@ class ProductUnitController extends Controller
                 if ($defaultUnit) {
                     $validated['purchase_price'] = $defaultUnit->purchase_price * $validated['conversion_factor'];
                     $validated['selling_price'] = $defaultUnit->selling_price * $validated['conversion_factor'];
+                    $validated['stock'] = floor($validated['stock'] / $validated['conversion_factor']);
                 }
             }
 
@@ -163,7 +177,6 @@ class ProductUnitController extends Controller
 
     public function destroy(Product $product, ProductUnit $unit)
     {
-        // Cek apakah ini unit default dan masih ada unit lain
         if ($unit->is_default && $product->productUnits()->count() > 1) {
             return back()->with('error',
                 'Tidak dapat menghapus unit default selama masih ada unit lain. ' .
@@ -176,9 +189,8 @@ class ProductUnitController extends Controller
 
             $unit->delete();
 
-            // Jika ini unit terakhir, reset harga dasar produk
             if ($product->productUnits()->count() === 0) {
-                $product->update(['base_price' => 0]);
+                $product->update(['default_unit_id' => null]);
             }
 
             DB::commit();

@@ -12,6 +12,7 @@ class ProductUnit extends Model
         'conversion_factor',
         'purchase_price',
         'selling_price',
+        'stock',
         'is_default'
     ];
 

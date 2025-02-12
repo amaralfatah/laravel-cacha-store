@@ -1,4 +1,3 @@
-<!-- resources/views/products/edit.blade.php -->
 @extends('layouts.app')
 
 @section('content')
@@ -17,25 +16,25 @@
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    id="name" name="name" value="{{ old('name', $product->name) }}">
+                                       id="name" name="name" value="{{ old('name', $product->name) }}">
                                 @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="barcode" class="form-label">Barcode</label>
                                 <input type="text" class="form-control @error('barcode') is-invalid @enderror"
-                                    id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}">
+                                       id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}">
                                 @error('barcode')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="category_id" class="form-label">Category</label>
                                 <select class="form-select @error('category_id') is-invalid @enderror" id="category_id"
-                                    name="category_id">
+                                        name="category_id">
                                     <option value="">Select Category</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}"
@@ -45,22 +44,47 @@
                                     @endforeach
                                 </select>
                                 @error('category_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="mb-3">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
-                                        value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_active">Active</label>
-                                </div>
+                                <label for="purchase_price" class="form-label">Purchase Price</label>
+                                <input type="number" step="0.01"
+                                       class="form-control @error('purchase_price') is-invalid @enderror"
+                                       id="purchase_price" name="purchase_price"
+                                       value="{{ old('purchase_price', $defaultUnit ? $defaultUnit->purchase_price : 0) }}">
+                                @error('purchase_price')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="selling_price" class="form-label">Selling Price</label>
+                                <input type="number" step="0.01"
+                                       class="form-control @error('selling_price') is-invalid @enderror"
+                                       id="selling_price" name="selling_price"
+                                       value="{{ old('selling_price', $defaultUnit ? $defaultUnit->selling_price : 0) }}">
+                                @error('selling_price')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="stock" class="form-label">Stock</label>
+                                <input type="number" step="1"
+                                       class="form-control @error('stock') is-invalid @enderror"
+                                       id="stock" name="stock"
+                                       value="{{ old('stock', $defaultUnit ? $defaultUnit->stock : 0) }}">
+                                @error('stock')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="tax_id" class="form-label">Tax</label>
                                 <select class="form-select @error('tax_id') is-invalid @enderror" id="tax_id"
-                                    name="tax_id">
+                                        name="tax_id">
                                     <option value="">Select Tax</option>
                                     @foreach ($taxes as $tax)
                                         <option value="{{ $tax->id }}"
@@ -70,14 +94,14 @@
                                     @endforeach
                                 </select>
                                 @error('tax_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="mb-3">
                                 <label for="discount_id" class="form-label">Discount</label>
                                 <select class="form-select @error('discount_id') is-invalid @enderror" id="discount_id"
-                                    name="discount_id">
+                                        name="discount_id">
                                     <option value="">Select Discount</option>
                                     @foreach ($discounts as $discount)
                                         <option value="{{ $discount->id }}"
@@ -88,8 +112,16 @@
                                     @endforeach
                                 </select>
                                 @error('discount_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                                           value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_active">Active</label>
+                                </div>
                             </div>
 
                             <div class="d-grid gap-2">

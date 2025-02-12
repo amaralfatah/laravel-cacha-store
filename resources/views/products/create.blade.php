@@ -80,6 +80,17 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="stock" class="form-label">Initial Stock</label>
+                                <input type="number" step="1"
+                                       class="form-control @error('stock') is-invalid @enderror"
+                                       id="stock" name="stock"
+                                       value="{{ old('stock', 0) }}">
+                                @error('stock')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
                                         value="1" {{ old('is_active', 1) ? 'checked' : '' }}>
