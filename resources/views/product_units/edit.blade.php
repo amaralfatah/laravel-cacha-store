@@ -3,57 +3,86 @@
 
 @section('content')
     <div class="container">
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Edit Unit Conversion for {{ $product->name }}</h3>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="card-title mb-0">
+                            <i class="bi bi-pencil"></i> Edit Unit
+                            <small class="text-muted d-block mt-1">{{ $product->name }}</small>
+                        </h4>
                     </div>
                     <div class="card-body">
                         <form action="{{ route('products.units.update', [$product, $unit]) }}" method="POST">
                             @csrf
                             @method('PUT')
 
-                            <div class="mb-3">
-                                <label class="form-label">Unit</label>
-                                <input type="text" class="form-control"
-                                    value="{{ $unit->unit->name }} ({{ $unit->unit->code }})" readonly>
-                                <small class="text-muted">Unit cannot be changed. Delete this conversion and create a new
-                                    one if needed.</small>
+                            <div class="alert alert-info">
+                                <strong>{{ $unit->unit->name }} ({{ $unit->unit->code }})</strong>
+                                <p class="mb-0 small">Unit type cannot be changed. Delete this conversion and create a new one if needed.</p>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="conversion_factor" class="form-label">Conversion Factor</label>
-                                <input type="number" step="0.0001"
-                                    class="form-control @error('conversion_factor') is-invalid @enderror"
-                                    id="conversion_factor" name="conversion_factor"
-                                    value="{{ old('conversion_factor', $unit->conversion_factor) }}">
-                                @error('conversion_factor')
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="conversion_factor" class="form-label">
+                                        Conversion Factor
+                                        <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                                           title="How many base units equal one of this unit"></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.0001"
+                                               class="form-control @error('conversion_factor') is-invalid @enderror"
+                                               id="conversion_factor" name="conversion_factor"
+                                               value="{{ old('conversion_factor', $unit->conversion_factor) }}"
+                                            {{ $unit->is_default ? 'readonly' : '' }}>
+                                        <span class="input-group-text">x base unit</span>
+                                    </div>
+                                    @error('conversion_factor')
                                     <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                                    @enderror
+                                </div>
 
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Price</label>
-                                <input type="number" step="0.01"
-                                    class="form-control @error('price') is-invalid @enderror" id="price" name="price"
-                                    value="{{ old('price', $unit->price) }}">
-                                @error('price')
+                                <div class="col-md-6">
+                                    <label for="price" class="form-label">
+                                        Price
+                                        <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                                           title="Price for this unit size"></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" step="100"
+                                               class="form-control @error('price') is-invalid @enderror"
+                                               id="price" name="price"
+                                               value="{{ old('price', $unit->price) }}">
+                                    </div>
+                                    @error('price')
                                     <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="is_default" name="is_default"
-                                        value="1" {{ old('is_default', $unit->is_default) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_default">Set as Default Unit</label>
+                                    @enderror
                                 </div>
                             </div>
 
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Update Unit Conversion</button>
-                                <a href="{{ route('products.units.index', $product) }}" class="btn btn-secondary">Cancel</a>
+                            <div class="mb-4">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="is_default"
+                                           name="is_default" value="1"
+                                        {{ old('is_default', $unit->is_default) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_default">
+                                        Set as Default Unit
+                                        <small class="text-muted d-block">
+                                            Making this the default unit will update prices for all other units
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('products.units.index', $product) }}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Save Changes
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -61,4 +90,29 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize tooltips
+                let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                })
+
+                // Handle default unit checkbox
+                const defaultCheckbox = document.getElementById('is_default')
+                const conversionInput = document.getElementById('conversion_factor')
+
+                defaultCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        conversionInput.value = '1.0000'
+                        conversionInput.readOnly = true
+                    } else {
+                        conversionInput.readOnly = false
+                    }
+                })
+            })
+        </script>
+    @endpush
 @endsection

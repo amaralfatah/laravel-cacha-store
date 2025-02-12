@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained();
             $table->integer('conversion_factor');
             $table->decimal('price', 15, 2);
-            $table->boolean('is_default');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }
