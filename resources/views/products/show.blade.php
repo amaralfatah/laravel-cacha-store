@@ -71,7 +71,7 @@
                 </div>
             </div>
 
-            <!-- Unit Prices -->
+            <!-- Unit Unit -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Unit Prices</h4>
@@ -85,7 +85,7 @@
                             <th>Conversion</th>
                             <th>Purchase Price</th>
                             <th>Selling Price</th>
-                            <th>Discount</th>
+                            <th>Stock</th>
                             <th>Default</th>
                             <th>Actions</th>
                         </tr>
@@ -98,11 +98,8 @@
                                 <td>Rp {{ number_format($unit->purchase_price, 2) }}</td>
                                 <td>Rp {{ number_format($unit->selling_price, 2) }}</td>
                                 <td>
-                                    @if ($unit->conversion_factor > 1)
-                                        Diskon: {{ $unit->discount_percentage }}%
-                                        (Hemat Rp
-                                        {{ number_format($defaultUnit ? $defaultUnit->selling_price * $unit->conversion_factor - $unit->selling_price : 0) }})
-                                    @endif
+
+                                    {{ number_format($unit->stock) }}
                                 </td>
                                 <td>
                                         <span class="badge {{ $unit->is_default ? 'bg-success' : 'bg-secondary' }}">

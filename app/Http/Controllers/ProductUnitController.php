@@ -7,6 +7,7 @@ use App\Models\Unit;
 use App\Models\ProductUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ProductUnitController extends Controller
 {
@@ -23,9 +24,11 @@ class ProductUnitController extends Controller
 
 //    public function index(Product $product)
 //    {
-//        $productUnits = $product->productUnits()->with('unit')
+//        $productUnits = $product->productUnits()
+//            ->with('unit')
 //            ->orderBy('is_default', 'desc')
-//            ->get() ?? collect(); // Pastikan selalu ada collection meski kosong
+//            ->orderBy('created_at', 'asc')
+//            ->get();
 //
 //        return view('product_units.index', compact('product', 'productUnits'));
 //    }
@@ -34,15 +37,21 @@ class ProductUnitController extends Controller
     {
         // Ambil unit yang aktif dan belum digunakan oleh produk
         $availableUnits = Unit::where('is_active', true)
-            ->whereNotIn('id', $product->productUnits->pluck('unit_id'))
+            ->whereNotIn('id', function($query) use ($product) {
+                $query->select('unit_id')
+                    ->from('product_units')
+                    ->where('product_id', $product->id);
+            })
             ->get();
 
-        // Cek apakah masih ada unit yang tersedia
         if ($availableUnits->isEmpty()) {
             return back()->with('error', 'Tidak ada unit yang tersedia untuk ditambahkan.');
         }
 
-        return view('product_units.create', compact('product', 'availableUnits'));
+        // Cek apakah sudah ada unit default
+        $hasDefaultUnit = $product->productUnits()->where('is_default', true)->exists();
+
+        return view('product_units.create', compact('product', 'availableUnits', 'hasDefaultUnit'));
     }
 
     public function store(Request $request, Product $product)
@@ -51,42 +60,46 @@ class ProductUnitController extends Controller
             'unit_id' => [
                 'required',
                 'exists:units,id',
-                function ($attribute, $value, $fail) use ($product) {
-                    if ($product->productUnits()->where('unit_id', $value)->exists()) {
-                        $fail('Unit ini sudah digunakan untuk produk ini.');
-                    }
-                },
+                Rule::unique('product_units')->where(function ($query) use ($product) {
+                    return $query->where('product_id', $product->id);
+                }),
             ],
-            'conversion_factor' => 'required|numeric|min:0.0001',
-            'purchase_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
-            'stock' => 'required|numeric|min:0',
-            'is_default' => 'nullable|boolean',
+            'conversion_factor' => 'required|numeric|min:0.0001|max:999999.9999',
+            'purchase_price' => 'required|numeric|min:0|max:999999999.99',
+            'selling_price' => 'required|numeric|min:0|max:999999999.99',
+            'stock' => 'required|numeric|min:0|max:999999999.99',
+            'is_default' => 'sometimes|boolean',
         ]);
 
         try {
             DB::beginTransaction();
 
             $isFirstUnit = $product->productUnits()->count() === 0;
-            $shouldBeDefault = $isFirstUnit || ($request->has('is_default') && $request->is_default);
+            $shouldBeDefault = $isFirstUnit || ($request->boolean('is_default'));
 
+            // Jika ini unit pertama atau diminta sebagai default
             if ($shouldBeDefault) {
+                // Set semua unit lain menjadi non-default
                 $product->productUnits()->update(['is_default' => false]);
-                $validated['is_default'] = true;
-                $validated['conversion_factor'] = 1;
 
-                // Update default_unit_id di tabel products
+                $validated['is_default'] = true;
+                $validated['conversion_factor'] = 1.0000; // Unit default selalu 1
+
                 $product->update(['default_unit_id' => $validated['unit_id']]);
             } else {
                 $validated['is_default'] = false;
 
+                // Ambil unit default untuk konversi
                 $defaultUnit = $product->productUnits()->where('is_default', true)->first();
-                if ($defaultUnit) {
-                    $validated['purchase_price'] = $defaultUnit->purchase_price * $validated['conversion_factor'];
-                    $validated['selling_price'] = $defaultUnit->selling_price * $validated['conversion_factor'];
-                    // Konversi stock sesuai conversion factor
-                    $validated['stock'] = floor($validated['stock'] / $validated['conversion_factor']);
+                if (!$defaultUnit) {
+                    throw new \Exception('Tidak ada unit default yang ditemukan.');
                 }
+
+                // Konversi stok ke unit terkecil (unit default)
+                $validated['stock'] = $this->convertToDefaultUnit(
+                    $validated['stock'],
+                    $validated['conversion_factor']
+                );
             }
 
             $product->productUnits()->create($validated);
@@ -106,58 +119,55 @@ class ProductUnitController extends Controller
 
     public function edit(Product $product, ProductUnit $unit)
     {
-        return view('product_units.edit', compact('product', 'unit'));
+        // Hitung total stok dalam unit default
+        $totalStockInDefaultUnit = $this->calculateTotalStockInDefaultUnit($product);
+
+        return view('product_units.edit', compact('product', 'unit', 'totalStockInDefaultUnit'));
     }
 
     public function update(Request $request, Product $product, ProductUnit $unit)
     {
         $validated = $request->validate([
-            'conversion_factor' => 'required|numeric|min:0.0001',
-            'purchase_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
-            'stock' => 'required|numeric|min:0',
-            'is_default' => 'boolean'
+            'conversion_factor' => [
+                'required',
+                'numeric',
+                'min:0.0001',
+                'max:999999.9999',
+                function ($attribute, $value, $fail) use ($unit) {
+                    if ($unit->is_default && $value !== 1.0000) {
+                        $fail('Conversion factor untuk unit default harus 1.');
+                    }
+                },
+            ],
+            'purchase_price' => 'required|numeric|min:0|max:999999999.99',
+            'selling_price' => 'required|numeric|min:0|max:999999999.99',
+            'stock' => 'required|numeric|min:0|max:999999999.99',
+            'is_default' => 'sometimes|boolean',
         ]);
 
         try {
             DB::beginTransaction();
 
-            if ($request->has('is_default') && $request->is_default) {
-                $product->productUnits()
-                    ->where('id', '!=', $unit->id)
-                    ->update(['is_default' => false]);
+            $oldConversionFactor = $unit->conversion_factor;
+            $newConversionFactor = $validated['conversion_factor'];
 
-                $validated['conversion_factor'] = 1;
-
-                // Update default_unit_id di tabel products
-                $product->update(['default_unit_id' => $unit->unit_id]);
-
-                $otherUnits = $product->productUnits()
-                    ->where('id', '!=', $unit->id)
-                    ->get();
-
-                foreach ($otherUnits as $otherUnit) {
-                    $newPurchasePrice = $validated['purchase_price'] * $otherUnit->conversion_factor;
-                    $newSellingPrice = $validated['selling_price'] * $otherUnit->conversion_factor;
-                    $newStock = floor($validated['stock'] / $otherUnit->conversion_factor);
-
-                    $otherUnit->update([
-                        'purchase_price' => $newPurchasePrice,
-                        'selling_price' => $newSellingPrice,
-                        'stock' => $newStock
-                    ]);
+            if ($request->boolean('is_default')) {
+                // Jika mengubah menjadi unit default
+                $this->handleMakeDefault($product, $unit, $validated);
+            } else if ($unit->is_default && !$request->boolean('is_default')) {
+                // Mencegah unit default diubah menjadi non-default jika hanya ada satu unit
+                if ($product->productUnits()->count() === 1) {
+                    throw new \Exception('Tidak dapat mengubah satu-satunya unit menjadi non-default.');
                 }
-            } else {
-                $defaultUnit = $product->productUnits()
-                    ->where('is_default', true)
-                    ->where('id', '!=', $unit->id)
-                    ->first();
+            }
 
-                if ($defaultUnit) {
-                    $validated['purchase_price'] = $defaultUnit->purchase_price * $validated['conversion_factor'];
-                    $validated['selling_price'] = $defaultUnit->selling_price * $validated['conversion_factor'];
-                    $validated['stock'] = floor($validated['stock'] / $validated['conversion_factor']);
-                }
+            // Konversi stok jika conversion factor berubah
+            if ($oldConversionFactor !== $newConversionFactor) {
+                $validated['stock'] = $this->convertStock(
+                    $validated['stock'],
+                    $oldConversionFactor,
+                    $newConversionFactor
+                );
             }
 
             $unit->update($validated);
@@ -177,21 +187,23 @@ class ProductUnitController extends Controller
 
     public function destroy(Product $product, ProductUnit $unit)
     {
-        if ($unit->is_default && $product->productUnits()->count() > 1) {
-            return back()->with('error',
-                'Tidak dapat menghapus unit default selama masih ada unit lain. ' .
-                'Silakan set unit lain sebagai default terlebih dahulu.'
-            );
-        }
-
         try {
             DB::beginTransaction();
 
-            $unit->delete();
-
-            if ($product->productUnits()->count() === 0) {
-                $product->update(['default_unit_id' => null]);
+            // Cek apakah ini unit default
+            if ($unit->is_default) {
+                // Jika ini satu-satunya unit, boleh dihapus
+                if ($product->productUnits()->count() === 1) {
+                    $product->update(['default_unit_id' => null]);
+                } else {
+                    throw new \Exception(
+                        'Tidak dapat menghapus unit default selama masih ada unit lain. ' .
+                        'Silakan set unit lain sebagai default terlebih dahulu.'
+                    );
+                }
             }
+
+            $unit->delete();
 
             DB::commit();
             return redirect()
@@ -201,6 +213,76 @@ class ProductUnitController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menghapus unit: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Convert quantity from one unit to another
+     */
+    protected function convertStock($quantity, $fromFactor, $toFactor)
+    {
+        if ($fromFactor === $toFactor) {
+            return $quantity;
+        }
+
+        // Konversi ke unit default terlebih dahulu
+        $inDefaultUnit = $quantity * $fromFactor;
+
+        // Kemudian konversi ke unit tujuan
+        return $inDefaultUnit / $toFactor;
+    }
+
+    /**
+     * Convert quantity to default unit
+     */
+    protected function convertToDefaultUnit($quantity, $conversionFactor)
+    {
+        return $quantity * $conversionFactor;
+    }
+
+    /**
+     * Calculate total stock in default unit
+     */
+    protected function calculateTotalStockInDefaultUnit(Product $product)
+    {
+        return $product->productUnits()
+            ->get()
+            ->sum(function ($unit) {
+                return $unit->stock * $unit->conversion_factor;
+            });
+    }
+
+    /**
+     * Handle making a unit the default unit
+     */
+    protected function handleMakeDefault(Product $product, ProductUnit $unit, array &$validated)
+    {
+        // Set semua unit lain menjadi non-default
+        $product->productUnits()
+            ->where('id', '!=', $unit->id)
+            ->update(['is_default' => false]);
+
+        $validated['is_default'] = true;
+        $validated['conversion_factor'] = 1.0000;
+
+        // Update default unit di products
+        $product->update(['default_unit_id' => $unit->unit_id]);
+
+        // Update harga dan stok unit lain berdasarkan unit default baru
+        $otherUnits = $product->productUnits()
+            ->where('id', '!=', $unit->id)
+            ->get();
+
+        foreach ($otherUnits as $otherUnit) {
+            $otherUnit->update([
+                'purchase_price' => $validated['purchase_price'] * $otherUnit->conversion_factor,
+                'selling_price' => $validated['selling_price'] * $otherUnit->conversion_factor,
+                'stock' => $this->convertStock(
+                    $validated['stock'],
+                    1, // from default unit
+                    $otherUnit->conversion_factor
+                )
+            ]);
         }
     }
 }

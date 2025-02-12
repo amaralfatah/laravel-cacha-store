@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('unit_id')->constrained()->onDelete('cascade');
-            $table->integer('conversion_factor');
+            $table->decimal('conversion_factor', 15, 2);
             $table->decimal('purchase_price', 15, 2);
             $table->decimal('selling_price', 15, 2);
             $table->integer('stock')->default(0);
