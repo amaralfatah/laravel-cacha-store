@@ -15,11 +15,15 @@ class TaxSeeder extends Seeder
                 'name' => 'PPN 11%',
                 'rate' => 11,
                 'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Pajak Parkir',
                 'rate' => 1,
                 'is_active' => false,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
         ]);
     }

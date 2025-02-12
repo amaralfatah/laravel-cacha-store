@@ -28,7 +28,7 @@
                                     {{ $category->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
-                            <td>{{ $category->created_at->format('Y-m-d H:i') }}</td>
+                            <td>{{ optional($category->created_at)->format('Y-m-d H:i') ?? '-' }}</td>
                             <td>
                                 <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-info">Edit</a>
                                 <form action="{{ route('categories.destroy', $category) }}" method="POST" class="d-inline">

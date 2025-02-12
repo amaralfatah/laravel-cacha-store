@@ -14,14 +14,20 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Makanan',
                 'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Minuman',
                 'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Mainan',
                 'is_active' => false,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
         ]);
     }

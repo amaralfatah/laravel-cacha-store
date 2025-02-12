@@ -16,18 +16,24 @@ class DiscountSeeder extends Seeder
                 'type' => 'percentage',
                 'value' => 10,
                 'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Diskon Jum\'at Berkah',
                 'type' => 'fixed',
                 'value' => 5000,
                 'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Potongan Tahun Baru',
                 'type' => 'fixed',
                 'value' => 2500,
                 'is_active' => false,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
         ]);
     }

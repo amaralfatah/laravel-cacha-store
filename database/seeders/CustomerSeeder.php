@@ -16,6 +16,8 @@ class CustomerSeeder extends Seeder
             [
                 'name' => 'Umum',
                 'phone' => '-',
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         );
 
@@ -24,10 +26,14 @@ class CustomerSeeder extends Seeder
             [
                 'name' => 'Amar Al Fatah',
                 'phone' => '085819450001',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Khansa Almi\'raj',
                 'phone' => '085322471629',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
         ];
 

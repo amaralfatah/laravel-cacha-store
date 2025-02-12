@@ -14,10 +14,14 @@ class SupplierSeeder extends Seeder
             [
                 'name' => 'Agus Sandal Purwokerto',
                 'phone' => '083456789012',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'name' => 'Grosir Snack Tasik',
                 'phone' => '084567890123',
+                'created_at' => now(),
+                'updated_at' => now()
             ],
         ]);
     }
