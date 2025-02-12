@@ -1,4 +1,3 @@
-<!-- resources/views/product_units/create.blade.php -->
 @extends('layouts.app')
 
 @section('content')
@@ -92,20 +91,35 @@
                             </div>
 
                             <div class="mb-4">
+                                <label for="stock" class="form-label">
+                                    Stock
+                                    <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                                       title="Initial stock for this unit"></i>
+                                </label>
+                                <input type="number" step="1"
+                                       class="form-control @error('stock') is-invalid @enderror"
+                                       id="stock" name="stock"
+                                       value="{{ old('stock', 0) }}">
+                                @error('stock')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-4">
                                 <div class="form-check form-switch">
                                     <input type="checkbox" class="form-check-input" id="is_default"
                                            name="is_default" value="1" {{ old('is_default') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_default">
                                         Set as Default Unit
                                         <small class="text-muted d-block">
-                                            The default unit's price will be used as the base price for all conversions
+                                            The default unit will be used as the base for all conversions
                                         </small>
                                     </label>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('products.units.index', $product) }}"
+                                <a href="{{ route('products.show', $product) }}"
                                    class="btn btn-outline-secondary">
                                     <i class="bi bi-x-circle"></i> Cancel
                                 </a>
@@ -127,6 +141,19 @@
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
                 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                     return new bootstrap.Tooltip(tooltipTriggerEl)
+                })
+
+                // Handle default unit checkbox
+                const defaultCheckbox = document.getElementById('is_default')
+                const conversionInput = document.getElementById('conversion_factor')
+
+                defaultCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        conversionInput.value = '1.0000'
+                        conversionInput.readOnly = true
+                    } else {
+                        conversionInput.readOnly = false
+                    }
                 })
             })
         </script>

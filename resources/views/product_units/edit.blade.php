@@ -1,4 +1,3 @@
-<!-- resources/views/product_units/edit.blade.php -->
 @extends('layouts.app')
 
 @section('content')
@@ -41,44 +40,59 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                            </div>
 
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <label for="purchase_price" class="form-label">
-                                            Purchase Price
-                                            <i class="bi bi-info-circle" data-bs-toggle="tooltip"
-                                               title="Purchase price for this unit size"></i>
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">Rp</span>
-                                            <input type="number" step="100"
-                                                   class="form-control @error('purchase_price') is-invalid @enderror"
-                                                   id="purchase_price" name="purchase_price"
-                                                   value="{{ old('purchase_price', $unit->purchase_price) }}">
-                                        </div>
-                                        @error('purchase_price')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="purchase_price" class="form-label">
+                                        Purchase Price
+                                        <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                                           title="Purchase price for this unit size"></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" step="100"
+                                               class="form-control @error('purchase_price') is-invalid @enderror"
+                                               id="purchase_price" name="purchase_price"
+                                               value="{{ old('purchase_price', $unit->purchase_price) }}">
                                     </div>
-
-                                    <div class="col-md-6">
-                                        <label for="selling_price" class="form-label">
-                                            Selling Price
-                                            <i class="bi bi-info-circle" data-bs-toggle="tooltip"
-                                               title="Selling price for this unit size"></i>
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">Rp</span>
-                                            <input type="number" step="100"
-                                                   class="form-control @error('selling_price') is-invalid @enderror"
-                                                   id="selling_price" name="selling_price"
-                                                   value="{{ old('selling_price', $unit->selling_price) }}">
-                                        </div>
-                                        @error('selling_price')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                    @error('purchase_price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
+
+                                <div class="col-md-6">
+                                    <label for="selling_price" class="form-label">
+                                        Selling Price
+                                        <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                                           title="Selling price for this unit size"></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" step="100"
+                                               class="form-control @error('selling_price') is-invalid @enderror"
+                                               id="selling_price" name="selling_price"
+                                               value="{{ old('selling_price', $unit->selling_price) }}">
+                                    </div>
+                                    @error('selling_price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="stock" class="form-label">
+                                    Stock
+                                    <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                                       title="Current stock for this unit"></i>
+                                </label>
+                                <input type="number" step="1"
+                                       class="form-control @error('stock') is-invalid @enderror"
+                                       id="stock" name="stock"
+                                       value="{{ old('stock', $unit->stock) }}">
+                                @error('stock')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
@@ -96,7 +110,7 @@
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('products.units.index', $product) }}"
+                                <a href="{{ route('products.show', $product) }}"
                                    class="btn btn-outline-secondary">
                                     <i class="bi bi-x-circle"></i> Cancel
                                 </a>
