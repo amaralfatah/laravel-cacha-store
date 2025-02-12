@@ -17,6 +17,7 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\StockTakeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -87,4 +88,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/search', [SearchController::class, 'search'])->name('search');
+
+    Route::resource('stock-takes', StockTakeController::class);
+    Route::patch('stock-takes/{stock_take}/complete', [StockTakeController::class, 'complete'])
+        ->name('stock-takes.complete');
 });

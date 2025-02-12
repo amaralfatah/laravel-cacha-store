@@ -48,6 +48,11 @@ class Product extends Model
         return $this->hasMany(PriceTier::class);
     }
 
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class);
+    }
+
 
 
     public function getPrice($quantity, $unitId)
@@ -88,5 +93,12 @@ class Product extends Model
         return $this->discount->type === 'percentage'
             ? ($price * $this->discount->value / 100)
             : $this->discount->value;
+    }
+
+    public function getCurrentStock()
+    {
+        return $this->inventories()
+            ->where('unit_id', $this->default_unit_id)
+            ->value('quantity') ?? 0;
     }
 }

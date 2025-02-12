@@ -75,7 +75,7 @@
 
         {{-- Manajemen Produk --}}
         <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Manajemen Produk</span>
+            <span class="menu-header-text">Produk</span>
         </li>
 
         <li class="menu-item {{ setActive('products.*') }}">
@@ -99,6 +99,11 @@
             </a>
         </li>
 
+        {{-- Manajemen Transaksi --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Transaksi</span>
+        </li>
+
         <li class="menu-item {{ setActive('pos.*') }}">
             <a href="{{ route('pos.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cart"></i>
@@ -109,7 +114,7 @@
         <li class="menu-item {{ setActive('transactions.*') }}">
             <a href="{{ route('transactions.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cart"></i>
-                <div data-i18n="Analytics">Transaction</div>
+                <div data-i18n="Analytics">Transaksi</div>
             </a>
         </li>
 
@@ -157,6 +162,18 @@
             <a href="{{ route('units.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-ruler"></i>
                 <div data-i18n="Analytics">Satuan</div>
+            </a>
+        </li>
+
+        {{-- Manajemen Stok --}}
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Stok</span>
+        </li>
+
+        <li class="menu-item {{ setActive('stock-takes.*') }}">
+            <a href="{{ route('stock-takes.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-ruler"></i>
+                <div data-i18n="Analytics">Stock Opname</div>
             </a>
         </li>
 

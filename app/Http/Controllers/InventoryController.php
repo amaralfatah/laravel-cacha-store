@@ -6,6 +6,7 @@ use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class InventoryController extends Controller
 {
@@ -26,7 +27,13 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'unit_id' => 'required|exists:units,id',
+            'unit_id' => [
+                'required',
+                'exists:units,id',
+                Rule::unique('inventories')
+                    ->where('product_id', $request->product_id)
+                    ->where('unit_id', $request->unit_id)
+            ],
             'quantity' => 'required|numeric|min:0',
             'min_stock' => 'required|numeric|min:0'
         ]);

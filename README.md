@@ -1,241 +1,171 @@
-# Toko Cacha POS System Documentation
+# Rangkuman Fitur dan Alur Toko Cacha POS
 
-A comprehensive Point of Sale (POS) system for minimarket management built with Laravel 11.
+## 1. Manajemen Pengguna
+Fitur:
+- Multi-role (Admin dan Kasir)
+- Login dengan "remember me"
+- Kontrol akses berbasis peran
+- Manajemen sesi pengguna
 
-## Table of Contents
-- [Features](#features)
-- [System Requirements](#system-requirements)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
-- [Core Modules](#core-modules)
-- [Database Structure](#database-structure)
-- [Usage Guide](#usage-guide)
+Alur:
+1. Login ke sistem dengan kredensial
+2. Sistem mengarahkan ke dashboard sesuai peran
+3. Akses fitur berdasarkan hak akses yang diberikan
 
-## Features
+## 2. Manajemen Produk
+Fitur:
+- Operasi CRUD untuk produk
+- Generasi dan scanning barcode (Code128)
+- Konversi multi-unit
+- Manajemen kategori
+- Pengaturan harga dasar
 
-### 1. User Management
-- Multi-role authentication (Admin, Cashier)
-- Login with remember me functionality
-- Role-based access control
-- User session management
+Alur Input Produk:
+1. Masuk ke menu produk
+2. Pilih "Tambah Produk Baru"
+3. Isi informasi produk:
+    - Data dasar (nama, kategori)
+    - Generate/upload barcode
+    - Set unit dasar dan konversi
+    - Tentukan harga per unit
+4. Simpan data produk
 
-### 2. Product Management
-- CRUD operations for products
-- Barcode generation and scanning
-  - Supports Code128 format
-  - Auto-generate or upload barcodes
-  - Barcode image storage
-- Multiple unit conversion
-  - Base unit and conversion units
-  - Price calculation per unit
-- Category management
-- Base price settings
+## 3. Manajemen Inventori
+Fitur:
+- Tracking stok realtime
+- Inventori multi-unit
+- Peringatan stok menipis
+- Pengaturan stok minimum
+- Riwayat pergerakan stok
+- Indikator status stok
 
-### 3. Inventory Management
-- Real-time stock tracking
-- Multi-unit inventory
-- Low stock alerts
-- Minimum stock settings
-- Stock movement history
-- Stock status indicators (Safe/Low)
+Alur Manajemen Stok:
+1. Monitor level stok dari dashboard
+2. Terima notifikasi untuk stok menipis
+3. Periksa riwayat pergerakan
+4. Lakukan penyesuaian stok
+5. Catat perubahan di sistem
 
-### 4. Price Management
-- Base price configuration
-- Tiered pricing system
-  - Quantity-based pricing
-  - Unit-based pricing
-- Tax integration
-- Discount management
-  - Percentage-based discounts
-  - Fixed amount discounts
+## 4. Manajemen Harga
+Fitur:
+- Konfigurasi harga dasar
+- Sistem harga bertingkat
+- Integrasi pajak
+- Manajemen diskon
 
-### 5. Point of Sale (POS)
-- Intuitive POS interface
-- Barcode scanning
-- Manual product search
-- Multi-unit selection
-- Real-time calculations
-- Multiple payment methods
-  - Cash
-  - Transfer
-- Automatic invoice generation
-- Receipt printing
+Alur Pengaturan Harga:
+1. Pilih produk
+2. Set harga dasar
+3. Konfigurasi:
+    - Harga per unit
+    - Harga berdasarkan kuantitas
+    - Diskon (persentase/nominal)
+4. Terapkan pengaturan
 
-### 6. Reporting System
-- Sales reports
-  - Daily
-  - Monthly
-- Inventory reports
-- Best-seller analysis
-- Profit calculations
-- Export functionality
-  - PDF format
-  - Excel format
+## 5. Point of Sale (POS)
+Fitur:
+- Interface POS intuitif
+- Scanning barcode
+- Pencarian produk manual
+- Pilihan multi-unit
+- Kalkulasi realtime
+- Multiple metode pembayaran
+- Generasi invoice otomatis
+- Cetak struk
 
-## System Requirements
-- PHP >= 8.1
-- Laravel 11
-- MySQL/PostgreSQL
-- Modern web browser
-- Composer
-- Node.js & NPM
-- Web server (Apache/Nginx)
+Alur Transaksi POS:
+1. Buka antarmuka POS
+2. Input produk:
+    - Scan barcode, atau
+    - Cari manual
+3. Pilih unit dan jumlah
+4. Sistem kalkulasi otomatis
+5. Proses pembayaran
+6. Cetak struk
 
-## Tech Stack
-- **Backend:** Laravel 11
-- **Frontend:**
-  - Bootstrap 5
-  - JavaScript
-  - jQuery
-- **Database:** MySQL/PostgreSQL
-- **Additional Libraries:**
-  - DNS1D (Barcode generation)
-  - DomPDF (PDF generation)
-  - Laravel Excel
+## 6. Manajemen Transaksi
+Fitur:
+- Daftar semua transaksi dengan pagination
+- Manajemen transaksi tertunda
+- Detail history transaksi
+- Status tracking transaksi
+- Fitur lanjutkan transaksi
 
-## Installation
+Alur Manajemen Transaksi:
+1. Akses menu transaksi
+2. Lihat daftar transaksi
+3. Pilih transaksi untuk:
+    - Lihat detail
+    - Lanjutkan transaksi tertunda
+    - Cetak ulang struk
+4. Untuk lanjutkan transaksi:
+    - Pilih transaksi tertunda
+    - Muat ulang data transaksi
+    - Konversi ke format POS
+    - Lanjutkan proses pembayaran
 
-1. Clone the repository
-```bash
-git clone [repository-url]
-```
+## 7. Stock Opname
+Fitur:
+- Input stok fisik per unit
+- Komparasi stok sistem vs fisik
+- Penyesuaian stok otomatis
+- Riwayat stock opname
+- Pencarian & filter produk
+- Dukungan scanner barcode
 
-2. Install dependencies
-```bash
-composer install
-npm install
-```
+Alur Stock Opname:
+1. Mulai sesi stock opname
+2. Scan/input produk
+3. Catat stok fisik
+4. Sistem membandingkan dengan data
+5. Review perbedaan
+6. Lakukan penyesuaian
+7. Simpan riwayat
 
-3. Configure environment
-```bash
-cp .env.example .env
-php artisan key:generate
-```
+## 8. Sistem Pelaporan
+Fitur:
+- Laporan penjualan (harian/bulanan)
+- Laporan inventori
+- Analisis produk terlaris
+- Kalkulasi profit
+- Ekspor ke PDF/Excel
 
-4. Setup database
-```bash
-php artisan migrate
-php artisan db:seed
-```
+Alur Pelaporan:
+1. Pilih jenis laporan
+2. Set periode
+3. Generate laporan
+4. Review data
+5. Ekspor sesuai kebutuhan
 
-5. Start the application
-```bash
-php artisan serve
-npm run dev
-```
+## 9. Pencarian Global
+Fitur:
+- Pencarian multi-entitas (produk, pelanggan, supplier, transaksi)
+- Pencarian berdasarkan kata kunci
+- Hasil real-time
+- Batasan minimal 2 karakter
+- Tampilan hasil terorganisir
 
-## Core Modules
+Alur Pencarian:
+1. Input kata kunci (min. 2 karakter)
+2. Sistem mencari di semua entitas:
+    - Produk (nama/barcode)
+    - Pelanggan (nama/telepon)
+    - Supplier (nama/telepon)
+    - Transaksi (nomor invoice)
+3. Tampilkan hasil dengan kategori
+4. Klik hasil untuk navigasi ke detail
 
-### 1. Authentication Module
-- Login/Logout functionality
-- Remember me feature
-- Password management
-- Session handling
+## Keamanan dan Pemeliharaan
+Fitur Keamanan:
+- Proteksi CSRF
+- Validasi input
+- Autentikasi user
+- Penanganan password aman
+- Keamanan sesi
 
-### 2. Product Module
-- Product information management
-- Barcode handling
-- Unit conversion system
-- Price management
-- Category organization
-
-### 3. Inventory Module
-- Stock management
-- Alert system
-- Stock movement tracking
-- Multi-unit inventory handling
-
-### 4. Transaction Module
-- POS interface
-- Payment processing
-- Invoice generation
-- Transaction history
-
-### 5. Reporting Module
-- Sales analysis
-- Stock reports
-- Revenue tracking
-- Export functionality
-
-## Database Structure
-
-### Key Tables
-1. **users**
-   - id, name, email, password, role
-   - Remember token for persistent login
-
-2. **products**
-   - Basic product information
-   - Barcode data
-   - Base price
-   - Category reference
-
-3. **product_units**
-   - Unit conversion settings
-   - Price per unit
-   - Default unit flags
-
-4. **inventories**
-   - Current stock levels
-   - Minimum stock settings
-   - Unit references
-
-5. **transactions**
-   - Sales records
-   - Payment information
-   - Customer references
-   - Total calculations
-
-6. **price_tiers**
-   - Quantity-based pricing
-   - Unit-specific pricing
-   - Minimum quantity thresholds
-
-## Usage Guide
-
-### POS Operation
-1. Login to the system
-2. Access POS interface
-3. Add products via:
-   - Barcode scanning
-   - Manual search
-4. Select appropriate units
-5. Adjust quantities
-6. Process payment
-7. Print receipt
-
-### Inventory Management
-1. Regular stock monitoring
-2. Set minimum stock levels
-3. Respond to low stock alerts
-4. Update stock quantities
-5. Track stock movements
-
-### Reporting
-1. Generate daily/monthly reports
-2. Export in desired format
-3. Analyze sales patterns
-4. Monitor profit margins
-5. Track best-selling items
-
-## Security Considerations
-- CSRF protection
-- Input validation
-- User authentication
-- Role-based access
-- Secure password handling
-- Session security
-
-## Maintenance
-- Regular database backups
-- Log monitoring
-- Security updates
-- Performance optimization
-- Stock level reviews
-
-## Support
-For technical support or questions, please contact the system administrator.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Alur Pemeliharaan:
+1. Backup database rutin
+2. Monitor log sistem
+3. Update keamanan
+4. Optimasi performa
+5. Review level stok

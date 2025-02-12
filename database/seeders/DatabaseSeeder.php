@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,
             DiscountSeeder::class,
             TaxSeeder::class,
+            InventorySeeder::class
         ]);
     }
 }
