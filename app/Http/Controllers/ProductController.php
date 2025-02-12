@@ -15,7 +15,10 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')->paginate(10);
+        $products = Product::with(['category', 'productUnits' => function($query) {
+            $query->where('is_default', true);
+        }])->paginate(10);
+
         return view('products.index', compact('products'));
     }
 
@@ -32,12 +35,12 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'barcode' => 'required|unique:products|max:100',
             'category_id' => 'required|exists:categories,id',
-            'base_price' => 'required|numeric|min:0',
+            'purchase_price' => 'required|numeric|min:0',
+            'selling_price' => 'required|numeric|min:0',
             'default_unit_id' => 'required|exists:units,id',
             'is_active' => 'boolean'
         ]);
 
-        // Generate barcode image
         $barcode = new DNS1D();
         $barcode->setStorPath(storage_path('app/public/barcodes'));
         $barcodeImage = $barcode->getBarcodePNG($validated['barcode'], 'C128');
@@ -53,15 +56,14 @@ class ProductController extends Controller
         $product->productUnits()->create([
             'unit_id' => $validated['default_unit_id'],
             'conversion_factor' => 1,
-            'price' => $validated['base_price'],
+            'purchase_price' => $validated['purchase_price'],
+            'selling_price' => $validated['selling_price'],
             'is_default' => true
         ]);
 
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully');
     }
-
-    // app/Http/Controllers/ProductController.php
 
     public function edit(Product $product)
     {
@@ -78,7 +80,6 @@ class ProductController extends Controller
             'name' => 'required|max:255',
             'barcode' => 'required|max:100|unique:products,barcode,' . $product->id,
             'category_id' => 'required|exists:categories,id',
-            'base_price' => 'required|numeric|min:0',
             'tax_id' => 'nullable|exists:taxes,id',
             'discount_id' => 'nullable|exists:discounts,id',
             'is_active' => 'boolean'
@@ -98,47 +99,15 @@ class ProductController extends Controller
         return view('products.show', compact('product'));
     }
 
-    public function updatePrice(Request $request, Product $product)
-    {
-        $validated = $request->validate([
-            'base_price' => 'required|numeric|min:0',
-            'adjust_unit_prices' => 'boolean'
-        ]);
-
-        // Calculate price change percentage
-        $priceChangePercent = 0;
-        if ($request->adjust_unit_prices && $product->base_price > 0) {
-            $priceChangePercent = ($validated['base_price'] - $product->base_price) / $product->base_price;
-        }
-
-        // Update base price
-        $product->update([
-            'base_price' => $validated['base_price']
-        ]);
-
-        // Adjust unit prices if requested
-        if ($request->adjust_unit_prices) {
-            foreach ($product->productUnits as $unit) {
-                $newPrice = $unit->price * (1 + $priceChangePercent);
-                $unit->update(['price' => round($newPrice, 2)]);
-            }
-        }
-
-        return redirect()->route('products.show', $product)
-            ->with('success', 'Product price updated successfully');
-    }
 
     public function destroy(Product $product)
     {
-        // Hapus semua product units terkait terlebih dahulu
         $product->productUnits()->delete();
 
-        // Hapus gambar barcode dari storage jika ada
         if ($product->barcode_image) {
             Storage::disk('public')->delete($product->barcode_image);
         }
 
-        // Baru kemudian hapus produk
         $product->delete();
 
         return redirect()->route('products.index')

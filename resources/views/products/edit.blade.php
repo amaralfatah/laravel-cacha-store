@@ -50,16 +50,6 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="base_price" class="form-label">Base Price</label>
-                                <input type="number" step="0.01"
-                                    class="form-control @error('base_price') is-invalid @enderror" id="base_price"
-                                    name="base_price" value="{{ old('base_price', $product->base_price) }}">
-                                @error('base_price')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
                                         value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>

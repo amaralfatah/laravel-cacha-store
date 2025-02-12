@@ -10,7 +10,8 @@ class ProductUnit extends Model
         'product_id',
         'unit_id',
         'conversion_factor',
-        'price',
+        'purchase_price',
+        'selling_price',
         'is_default'
     ];
 
@@ -24,10 +25,15 @@ class ProductUnit extends Model
         return $this->belongsTo(Unit::class);
     }
 
+
     public function getDiscountPercentageAttribute()
     {
-        $basePrice = $this->product->base_price * $this->conversion_factor;
-        $actualPrice = $this->price;
+        $defaultUnitPrice = $this->product->productUnits()
+            ->where('is_default', true)
+            ->value('selling_price') ?? 0;
+
+        $basePrice = $defaultUnitPrice * $this->conversion_factor;
+        $actualPrice = $this->selling_price;
         return round((($basePrice - $actualPrice) / $basePrice) * 100, 2);
     }
 }

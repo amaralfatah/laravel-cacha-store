@@ -48,23 +48,35 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="base_price" class="form-label">Base Price</label>
-                                <input type="number" step="0.01"
-                                    class="form-control @error('base_price') is-invalid @enderror" id="base_price"
-                                    name="base_price" value="{{ old('base_price') }}">
-                                @error('base_price')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
                                 <label for="default_unit_id" class="form-label">Default Unit</label>
                                 <select name="default_unit_id"
-                                    class="form-select @error('default_unit_id') is-invalid @enderror">
+                                        class="form-select @error('default_unit_id') is-invalid @enderror">
                                     @foreach ($units as $unit)
                                         <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="purchase_price" class="form-label">Purchase Price</label>
+                                <input type="number" step="0.01"
+                                       class="form-control @error('purchase_price') is-invalid @enderror"
+                                       id="purchase_price" name="purchase_price"
+                                       value="{{ old('purchase_price') }}">
+                                @error('purchase_price')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="selling_price" class="form-label">Selling Price</label>
+                                <input type="number" step="0.01"
+                                       class="form-control @error('selling_price') is-invalid @enderror"
+                                       id="selling_price" name="selling_price"
+                                       value="{{ old('selling_price') }}">
+                                @error('selling_price')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-3">

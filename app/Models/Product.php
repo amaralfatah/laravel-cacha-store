@@ -11,7 +11,6 @@ class Product extends Model
         'barcode',
         'barcode_image',
         'category_id',
-        'base_price',
         'tax_id',
         'discount_id',
         'default_unit_id',

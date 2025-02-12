@@ -19,7 +19,8 @@
                         <th>Name</th>
                         <th>Barcode</th>
                         <th>Category</th>
-                        <th>Base Price</th>
+                        <th>Purchase Price</th>
+                        <th>Selling Price</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -30,7 +31,19 @@
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->barcode }}</td>
                             <td>{{ $product->category->name }}</td>
-                            <td>{{ number_format($product->base_price, 2) }}</td>
+                            <td>
+                                @php
+                                    $defaultUnit = $product->productUnits->first();
+                                    $purchasePrice = $defaultUnit ? $defaultUnit->purchase_price : 0;
+                                @endphp
+                                {{ number_format($purchasePrice, 2) }}
+                            </td>
+                            <td>
+                                @php
+                                    $sellingPrice = $defaultUnit ? $defaultUnit->selling_price : 0;
+                                @endphp
+                                {{ number_format($sellingPrice, 2) }}
+                            </td>
                             <td>
                                 <span class="badge {{ $product->is_active ? 'bg-success' : 'bg-danger' }}">
                                     {{ $product->is_active ? 'Active' : 'Inactive' }}
