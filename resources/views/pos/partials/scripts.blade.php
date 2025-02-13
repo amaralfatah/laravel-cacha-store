@@ -70,40 +70,42 @@
     }
 
     function addToCart(product) {
-        const existingItem = cart.find(item =>
-            item.product_id === product.id &&
-            item.unit_id === product.default_unit_id
+        const defaultUnit = product.available_units.find(unit =>
+            unit.unit_id === product.default_unit_id
         );
 
-        // Ubah menjadi:
+        if (!defaultUnit) {
+            alert('Produk tidak memiliki unit default!');
+            return;
+        }
+
         const newItem = {
             product_id: product.id,
             product_name: product.name,
             unit_id: product.default_unit_id,
-            unit_name: product.default_unit.name,
+            unit_name: defaultUnit.unit_name,
             available_units: product.available_units,
             quantity: 1,
-            unit_price: getUnitPrice(product, 1, product.default_unit_id),
-            tax_rate: product.tax ? product.tax.rate : 0,
+            unit_price: parseFloat(defaultUnit.selling_price),
+            tax_rate: product.tax ? parseFloat(product.tax.rate) : 0,
             discount: product.discount ? calculateDiscount(product) : 0
         };
 
-        // Tampilkan modal untuk memilih unit
         showUnitSelectionModal(newItem, (selectedUnit) => {
+            const selectedUnitId = parseInt(selectedUnit);
             const existingItemWithUnit = cart.find(item =>
                 item.product_id === product.id &&
-                item.unit_id === parseInt(selectedUnit)
+                item.unit_id === selectedUnitId
             );
 
             if (existingItemWithUnit) {
-                // Convert quantity to number before adding
                 existingItemWithUnit.quantity = parseFloat(existingItemWithUnit.quantity) + 1;
                 calculateItemSubtotal(existingItemWithUnit);
             } else {
-                newItem.unit_id = parseInt(selectedUnit);
-                const unit = product.available_units.find(u => u.unit_id === parseInt(selectedUnit));
+                newItem.unit_id = selectedUnitId;
+                const unit = product.available_units.find(u => u.unit_id === selectedUnitId);
                 newItem.unit_name = unit.unit_name;
-                newItem.unit_price = getUnitPrice(product, 1, newItem.unit_id);
+                newItem.unit_price = parseFloat(unit.selling_price);
                 calculateItemSubtotal(newItem);
                 cart.push(newItem);
             }
@@ -169,35 +171,47 @@
     }
 
     function getUnitPrice(product, quantity, unitId) {
-        // 1. Cek price tiers
-        const priceTier = product.price_tiers?.find(tier =>
-            tier.unit_id === unitId &&
-            quantity >= tier.min_quantity
-        );
-        if (priceTier) return priceTier.price;
+        // 1. Temukan unit yang sesuai
+        const productUnit = product.available_units.find(unit => unit.unit_id === unitId);
+        if (!productUnit) return 0;
 
-        // 2. Cek product unit price
-        const productUnit = product.available_units?.find(unit =>
-            unit.unit_id === unitId
-        );
-        if (productUnit) return productUnit.price;
+        // 2. Cek price tiers jika ada
+        if (productUnit.prices && productUnit.prices.length > 0) {
+            const applicableTier = productUnit.prices.find(price =>
+                quantity >= parseFloat(price.min_quantity)
+            );
+            if (applicableTier) {
+                return parseFloat(applicableTier.price);
+            }
+        }
 
-        // 3. Default ke base price
-        return product.base_price;
+        // 3. Gunakan selling_price dari unit
+        return parseFloat(productUnit.selling_price);
     }
-
 
     function calculateDiscount(product) {
         if (!product.discount) return 0;
 
-        return product.discount.type === 'percentage' ?
-            (product.base_price * product.discount.value / 100) :
-            product.discount.value;
+        const defaultUnit = product.available_units.find(unit =>
+            unit.unit_id === product.default_unit_id
+        );
+        const basePrice = defaultUnit ? parseFloat(defaultUnit.selling_price) : 0;
+
+        if (product.discount.type === 'percentage') {
+            return basePrice * parseFloat(product.discount.value) / 100;
+        }
+        return parseFloat(product.discount.value);
     }
 
+
     function calculateItemSubtotal(item) {
-        const baseSubtotal = item.quantity * item.unit_price;
-        item.subtotal = baseSubtotal - (item.discount * item.quantity);
+        const quantity = parseFloat(item.quantity) || 0;
+        const unitPrice = parseFloat(item.unit_price) || 0;
+        const discount = parseFloat(item.discount) || 0;
+
+        const baseSubtotal = quantity * unitPrice;
+        item.subtotal = baseSubtotal - (discount * quantity);
+        return item.subtotal;
     }
 
     function updateCartTable() {
@@ -207,44 +221,46 @@
         cart.forEach((item, index) => {
             const tr = document.createElement('tr');
             const unit = item.available_units.find(u => u.unit_id === item.unit_id);
-            const conversionInfo = unit.conversion_factor ?
-                `(1 ${unit.unit_name} = ${unit.conversion_factor} ${item.available_units.find(u => u.conversion_factor === 1)?.unit_name})` :
-                '';
+
+            // Hanya tampilkan conversion info jika conversion factor > 1
+            const conversionInfo = parseFloat(unit.conversion_factor) > 1
+                ? `(1 ${unit.unit_name} = ${unit.conversion_factor} ${unit.unit_name})`
+                : '';
 
             tr.innerHTML = `
-        <td>
-            ${item.product_name}
-            <br>
-            <small class="text-muted">${conversionInfo}</small>
-        </td>
-        <td>
-            <select class="form-select form-select-sm"
-                    onchange="updateUnit(${index}, this.value)">
-                ${item.available_units.map(unit => `
-                                                                                                                <option value="${unit.unit_id}"
-                                                                                                                    ${unit.unit_id === item.unit_id ? 'selected' : ''}>
-                                                                                                                    ${unit.unit_name}
-                                                                                                                </option>
-                                                                                                            `).join('')}
-            </select>
-        </td>
-        <td>
-            <input type="number"
-                   class="form-control form-control-sm"
-                   value="${parseFloat(item.quantity)}"
-                   step="1"
-                   min="1"
-                   onchange="updateQuantity(${index}, this.value)">
-        </td>
-        <td>${formatCurrency(item.unit_price)}</td>
-        <td>${formatCurrency(item.discount)}</td>
-        <td>${formatCurrency(item.subtotal)}</td>
-        <td>
-            <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">
-                Hapus
-            </button>
-        </td>
-    `;
+            <td>
+                ${item.product_name}
+                <br>
+                <small class="text-muted">${conversionInfo}</small>
+            </td>
+            <td>
+                <select class="form-select form-select-sm"
+                        onchange="updateUnit(${index}, this.value)">
+                    ${item.available_units.map(unit => `
+                        <option value="${unit.unit_id}"
+                            ${unit.unit_id === item.unit_id ? 'selected' : ''}>
+                            ${unit.unit_name}
+                        </option>
+                    `).join('')}
+                </select>
+            </td>
+            <td>
+                <input type="number"
+                       class="form-control form-control-sm"
+                       value="${parseFloat(item.quantity)}"
+                       step="1"
+                       min="1"
+                       onchange="updateQuantity(${index}, this.value)">
+            </td>
+            <td>${formatCurrency(item.unit_price)}</td>
+            <td>${formatCurrency(item.discount)}</td>
+            <td>${formatCurrency(item.subtotal)}</td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">
+                    Hapus
+                </button>
+            </td>
+        `;
             tbody.appendChild(tr);
         });
     }
@@ -284,13 +300,19 @@
     }
 
     function calculateTotals() {
-        const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+        const subtotal = cart.reduce((sum, item) => {
+            return sum + (parseFloat(item.subtotal) || 0);
+        }, 0);
+
         const taxAmount = cart.reduce((sum, item) => {
-            return sum + (item.subtotal * item.tax_rate / 100);
+            const itemTax = (parseFloat(item.subtotal) || 0) * (parseFloat(item.tax_rate) || 0) / 100;
+            return sum + itemTax;
         }, 0);
+
         const discountAmount = cart.reduce((sum, item) => {
-            return sum + (item.discount * item.quantity);
+            return sum + ((parseFloat(item.discount) || 0) * (parseFloat(item.quantity) || 0));
         }, 0);
+
         const finalAmount = subtotal + taxAmount;
 
         document.getElementById('subtotal').value = formatCurrency(subtotal);
