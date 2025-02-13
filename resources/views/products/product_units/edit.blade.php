@@ -12,7 +12,7 @@
                                 <small class="text-muted d-block mt-1">{{ $product->name }}</small>
                             </h4>
                             <span class="badge {{ $unit->is_default ? 'bg-primary' : 'bg-secondary' }}">
-                                {{ $unit->is_default ? 'Default Unit' : 'Additional Unit' }}
+                                {{ $unit->is_default ? 'Unit Default' : 'Unit Tambahan' }}
                             </span>
                         </div>
                     </div>
@@ -20,9 +20,9 @@
                     <div class="card-body">
                         <div class="alert alert-info mb-4">
                             <div class="fw-bold">{{ $unit->unit->name }} ({{ $unit->unit->code }})</div>
-                            <p class="mb-2 small">Unit type cannot be changed. Delete this conversion and create a new one if needed.</p>
+                            <p class="mb-2 small">Jenis unit tidak dapat diubah. Hapus konversi ini dan buat yang baru jika diperlukan.</p>
                             <div class="small">
-                                <strong>Total Stock in Default Unit:</strong>
+                                <strong>Total Stok dalam Unit Default:</strong>
                                 {{ number_format($totalStockInDefaultUnit, 2) }}
                             </div>
                         </div>
@@ -36,9 +36,9 @@
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label for="conversion_factor" class="form-label required">
-                                        Conversion Factor
+                                        Faktor Konversi
                                         <i class="bi bi-info-circle" data-bs-toggle="tooltip"
-                                           title="How many base units equal one of this unit"></i>
+                                           title="Berapa banyak unit dasar yang setara dengan satu unit ini"></i>
                                     </label>
                                     <div class="input-group">
                                         <input type="number"
@@ -57,14 +57,14 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <small class="text-muted conversion-example">
-                                        1 {{ $unit->unit->code }} = {{ $unit->conversion_factor }} base unit(s)
+                                        1 {{ $unit->unit->code }} = {{ $unit->conversion_factor }} unit dasar
                                     </small>
                                 </div>
                             </div>
 
                             <div class="row mb-4">
                                 <div class="col-md-6">
-                                    <label for="purchase_price" class="form-label required">Purchase Price</label>
+                                    <label for="purchase_price" class="form-label required">Harga Beli</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="number"
@@ -83,7 +83,7 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="selling_price" class="form-label required">Selling Price</label>
+                                    <label for="selling_price" class="form-label required">Harga Jual</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="number"
@@ -103,7 +103,7 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="stock" class="form-label required">Stock</label>
+                                <label for="stock" class="form-label required">Stok</label>
                                 <div class="input-group">
                                     <input type="number"
                                            step="0.01"
@@ -130,9 +130,9 @@
                                            value="1"
                                         {{ old('is_default', $unit->is_default) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_default">
-                                        Set as Default Unit
+                                        Jadikan Unit Default
                                         <small class="text-muted d-block">
-                                            Making this the default unit will update prices and stock for all other units
+                                            Menjadikan ini unit default akan memperbarui harga dan stok untuk semua unit lainnya
                                         </small>
                                     </label>
                                 </div>
@@ -140,27 +140,25 @@
 
                             <div class="d-flex justify-content-between gap-2">
                                 <div>
-                                    <!-- Form delete dikeluarkan dari form utama -->
                                     <button type="button"
                                             class="btn btn-outline-danger"
                                             onclick="confirmDelete()">
-                                        <i class="bi bi-trash"></i> Delete Unit
+                                        <i class="bi bi-trash"></i> Hapus Unit
                                     </button>
                                 </div>
 
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('products.show', $product) }}"
                                        class="btn btn-outline-secondary">
-                                        <i class="bi bi-x-circle"></i> Cancel
+                                        <i class="bi bi-x-circle"></i> Batal
                                     </a>
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-check-circle"></i> Save Changes
+                                        <i class="bi bi-check-circle"></i> Simpan Perubahan
                                     </button>
                                 </div>
                             </div>
                         </form>
 
-                        <!-- Form delete dipindah ke luar form utama -->
                         <form id="deleteForm"
                               action="{{ route('products.units.destroy', [$product, $unit]) }}"
                               method="POST"
@@ -201,7 +199,7 @@
                 function updateConversionExample() {
                     const factor = parseFloat(conversionInput.value) || 0
                     if (factor > 0) {
-                        conversionExample.textContent = `1 ${unitCode} = ${factor} base unit(s)`
+                        conversionExample.textContent = `1 ${unitCode} = ${factor} unit dasar`
                     }
                 }
 
@@ -228,13 +226,13 @@
                     }
                     form.classList.add('was-validated')
                 })
-
-                function confirmDelete() {
-                    if (confirm('Are you sure you want to delete this unit?')) {
-                        document.getElementById('deleteForm').submit();
-                    }
-                }
             })
+
+            function confirmDelete() {
+                if (confirm('Apakah Anda yakin ingin menghapus unit ini?')) {
+                    document.getElementById('deleteForm').submit();
+                }
+            }
         </script>
     @endpush
 @endsection

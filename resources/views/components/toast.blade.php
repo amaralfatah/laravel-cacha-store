@@ -5,9 +5,9 @@
             <div class="bs-toast toast fade show bg-success" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header">
                     <i class="bx bx-check me-2"></i>
-                    <div class="me-auto fw-semibold">Success</div>
-                    <small>Just now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <div class="me-auto fw-semibold">Berhasil</div>
+                    <small>Baru saja</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
                 </div>
                 <div class="toast-body text-white">
                     {{ session('success') }}
@@ -19,9 +19,9 @@
             <div class="bs-toast toast fade show bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header">
                     <i class="bx bx-error me-2"></i>
-                    <div class="me-auto fw-semibold">Error</div>
-                    <small>Just now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <div class="me-auto fw-semibold">Gagal</div>
+                    <small>Baru saja</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
                 </div>
                 <div class="toast-body text-white">
                     {{ session('error') }}
@@ -33,9 +33,9 @@
             <div class="bs-toast toast fade show bg-warning" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header">
                     <i class="bx bx-warning me-2"></i>
-                    <div class="me-auto fw-semibold">Warning</div>
-                    <small>Just now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <div class="me-auto fw-semibold">Peringatan</div>
+                    <small>Baru saja</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
                 </div>
                 <div class="toast-body text-white">
                     {{ session('warning') }}
@@ -47,9 +47,9 @@
             <div class="bs-toast toast fade show bg-info" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header">
                     <i class="bx bx-info-circle me-2"></i>
-                    <div class="me-auto fw-semibold">Information</div>
-                    <small>Just now</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <div class="me-auto fw-semibold">Informasi</div>
+                    <small>Baru saja</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
                 </div>
                 <div class="toast-body text-white">
                     {{ session('info') }}
@@ -59,15 +59,14 @@
     </div>
 @endif
 
-
-
-{{-- return redirect()->route('home')->with('success', 'Operation completed successfully!');
-return redirect()->back()->with('error', 'Something went wrong!');
-return redirect()->route('dashboard')->with('warning', 'Please complete your profile.');
-return redirect()->route('settings')->with('info', 'New features available!'); --}}
+{{-- Contoh penggunaan:
+return redirect()->route('home')->with('success', 'Operasi berhasil dilakukan!');
+return redirect()->back()->with('error', 'Terjadi kesalahan!');
+return redirect()->route('dashboard')->with('warning', 'Silakan lengkapi profil Anda.');
+return redirect()->route('settings')->with('info', 'Fitur baru tersedia!'); --}}
 
 <script>
-    // Toast initialization
+    // Inisialisasi Toast
     document.addEventListener('DOMContentLoaded', function () {
         const toasts = document.querySelectorAll('.bs-toast');
         toasts.forEach(toastEl => {

@@ -47,6 +47,23 @@ class ProductUnitController extends Controller
             'selling_price' => 'required|numeric|min:0|max:999999999.99',
             'stock' => 'required|numeric|min:0|max:999999999.99',
             'is_default' => 'sometimes|boolean',
+        ], [
+            'unit_id.required' => 'Unit harus dipilih',
+            'unit_id.exists' => 'Unit yang dipilih tidak valid',
+            'unit_id.unique' => 'Unit ini sudah digunakan untuk produk ini',
+            'conversion_factor.required' => 'Faktor konversi harus diisi',
+            'conversion_factor.numeric' => 'Faktor konversi harus berupa angka',
+            'conversion_factor.min' => 'Faktor konversi minimal 0.0001',
+            'conversion_factor.max' => 'Faktor konversi maksimal 999999.9999',
+            'purchase_price.required' => 'Harga beli harus diisi',
+            'purchase_price.numeric' => 'Harga beli harus berupa angka',
+            'purchase_price.min' => 'Harga beli tidak boleh negatif',
+            'selling_price.required' => 'Harga jual harus diisi',
+            'selling_price.numeric' => 'Harga jual harus berupa angka',
+            'selling_price.min' => 'Harga jual tidak boleh negatif',
+            'stock.required' => 'Stok harus diisi',
+            'stock.numeric' => 'Stok harus berupa angka',
+            'stock.min' => 'Stok tidak boleh negatif',
         ]);
 
         try {
@@ -113,7 +130,7 @@ class ProductUnitController extends Controller
                 'max:999999.9999',
                 function ($attribute, $value, $fail) use ($unit) {
                     if ($unit->is_default && $value !== 1.0000) {
-                        $fail('Conversion factor untuk unit default harus 1.');
+                        $fail('Faktor konversi untuk unit default harus 1.');
                     }
                 },
             ],
@@ -121,6 +138,20 @@ class ProductUnitController extends Controller
             'selling_price' => 'required|numeric|min:0|max:999999999.99',
             'stock' => 'required|numeric|min:0|max:999999999.99',
             'is_default' => 'sometimes|boolean',
+        ], [
+            'conversion_factor.required' => 'Faktor konversi harus diisi',
+            'conversion_factor.numeric' => 'Faktor konversi harus berupa angka',
+            'conversion_factor.min' => 'Faktor konversi minimal 0.0001',
+            'conversion_factor.max' => 'Faktor konversi maksimal 999999.9999',
+            'purchase_price.required' => 'Harga beli harus diisi',
+            'purchase_price.numeric' => 'Harga beli harus berupa angka',
+            'purchase_price.min' => 'Harga beli tidak boleh negatif',
+            'selling_price.required' => 'Harga jual harus diisi',
+            'selling_price.numeric' => 'Harga jual harus berupa angka',
+            'selling_price.min' => 'Harga jual tidak boleh negatif',
+            'stock.required' => 'Stok harus diisi',
+            'stock.numeric' => 'Stok harus berupa angka',
+            'stock.min' => 'Stok tidak boleh negatif',
         ]);
 
         try {
@@ -176,7 +207,7 @@ class ProductUnitController extends Controller
                 } else {
                     throw new \Exception(
                         'Tidak dapat menghapus unit default selama masih ada unit lain. ' .
-                        'Silakan set unit lain sebagai default terlebih dahulu.'
+                        'Silakan atur unit lain sebagai default terlebih dahulu.'
                     );
                 }
             }
@@ -195,7 +226,7 @@ class ProductUnitController extends Controller
     }
 
     /**
-     * Convert quantity from one unit to another
+     * Konversi jumlah dari satu unit ke unit lain
      */
     protected function convertStock($quantity, $fromFactor, $toFactor)
     {
@@ -211,7 +242,7 @@ class ProductUnitController extends Controller
     }
 
     /**
-     * Convert quantity to default unit
+     * Konversi jumlah ke unit default
      */
     protected function convertToDefaultUnit($quantity, $conversionFactor)
     {
@@ -219,7 +250,7 @@ class ProductUnitController extends Controller
     }
 
     /**
-     * Calculate total stock in default unit
+     * Hitung total stok dalam unit default
      */
     protected function calculateTotalStockInDefaultUnit(Product $product)
     {
@@ -231,7 +262,7 @@ class ProductUnitController extends Controller
     }
 
     /**
-     * Handle making a unit the default unit
+     * Menangani pengaturan unit menjadi default
      */
     protected function handleMakeDefault(Product $product, ProductUnit $unit, array &$validated)
     {

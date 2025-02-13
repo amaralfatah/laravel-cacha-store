@@ -76,12 +76,12 @@ class ProductController extends Controller
 
             DB::commit();
             return redirect()->route('products.index')
-                ->with('success', 'Product created successfully');
+                ->with('success', 'Produk Berhasil Dibuat');
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
-                ->with('error', 'Failed to create product: ' . $e->getMessage())
+                ->with('error', 'Gagal membuat produk: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -142,12 +142,12 @@ class ProductController extends Controller
 
             DB::commit();
             return redirect()->route('products.index')
-                ->with('success', 'Product updated successfully');
+                ->with('success', 'Produk Berhasil Diperbarui');
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
-                ->with('error', 'Failed to update product: ' . $e->getMessage())
+                ->with('error', 'Gagal memperbarui produk: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -198,6 +198,6 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully');
+            ->with('success', 'Produk berhasil dihapus');
     }
 }

@@ -4,10 +4,10 @@
 @section('content')
     <div class="row mb-3">
         <div class="col">
-            <h2>Products</h2>
+            <h2>Produk</h2>
         </div>
         <div class="col text-end">
-            <a href="{{ route('products.create') }}" class="btn btn-primary">Add New Product</a>
+            <a href="{{ route('products.create') }}" class="btn btn-primary">Tambah Produk Baru</a>
         </div>
     </div>
 
@@ -16,14 +16,14 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Nama</th>
                     <th>Barcode</th>
-                    <th>Category</th>
-                    <th>Purchase Price</th>
-                    <th>Selling Price</th>
-                    <th>Stock</th>
+                    <th>Kategori</th>
+                    <th>Harga Beli</th>
+                    <th>Harga Jual</th>
+                    <th>Stok</th>
                     <th>Status</th>
-                    <th class="w-100">Actions</th>
+                    <th class="w-100">Aksi</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -52,18 +52,18 @@
                             {{ number_format($stock) }}
                         </td>
                         <td>
-                            <span class="badge {{ $product->is_active ? 'bg-success' : 'bg-danger' }}">
-                                {{ $product->is_active ? 'Active' : 'Inactive' }}
-                            </span>
+                           <span class="badge {{ $product->is_active ? 'bg-success' : 'bg-danger' }}">
+                               {{ $product->is_active ? 'Aktif' : 'Tidak Aktif' }}
+                           </span>
                         </td>
                         <td >
-                            <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-info">View</a>
-                            <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-info">Lihat</a>
+                            <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-warning">Ubah</a>
                             <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure?')">Delete
+                                        onclick="return confirm('Apakah anda yakin?')">Hapus
                                 </button>
                             </form>
                         </td>

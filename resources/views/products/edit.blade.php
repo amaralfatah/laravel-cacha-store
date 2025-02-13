@@ -6,7 +6,7 @@
             <div class="col-md-8 offset-md-2">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Edit Product: {{ $product->name }}</h3>
+                        <h3>Edit Produk: {{ $product->name }}</h3>
                     </div>
                     <div class="card-body">
                         <form action="{{ route('products.update', $product) }}" method="POST">
@@ -14,7 +14,7 @@
                             @method('PUT')
 
                             <div class="mb-3">
-                                <label for="name" class="form-label">Name</label>
+                                <label for="name" class="form-label">Nama</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
                                        id="name" name="name" value="{{ old('name', $product->name) }}">
                                 @error('name')
@@ -23,7 +23,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="barcode" class="form-label">Barcode</label>
+                                <label for="barcode" class="form-label">Kode Barcode</label>
                                 <input type="text" class="form-control @error('barcode') is-invalid @enderror"
                                        id="barcode" name="barcode" value="{{ old('barcode', $product->barcode) }}">
                                 @error('barcode')
@@ -32,10 +32,10 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="category_id" class="form-label">Category</label>
+                                <label for="category_id" class="form-label">Kategori</label>
                                 <select class="form-select @error('category_id') is-invalid @enderror" id="category_id"
                                         name="category_id">
-                                    <option value="">Select Category</option>
+                                    <option value="">Pilih Kategori</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}"
                                             {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
@@ -49,7 +49,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="purchase_price" class="form-label">Purchase Price</label>
+                                <label for="purchase_price" class="form-label">Harga Beli</label>
                                 <input type="number" step="0.01"
                                        class="form-control @error('purchase_price') is-invalid @enderror"
                                        id="purchase_price" name="purchase_price"
@@ -60,7 +60,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="selling_price" class="form-label">Selling Price</label>
+                                <label for="selling_price" class="form-label">Harga Jual</label>
                                 <input type="number" step="0.01"
                                        class="form-control @error('selling_price') is-invalid @enderror"
                                        id="selling_price" name="selling_price"
@@ -71,7 +71,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="stock" class="form-label">Stock</label>
+                                <label for="stock" class="form-label">Stok</label>
                                 <input type="number" step="1"
                                        class="form-control @error('stock') is-invalid @enderror"
                                        id="stock" name="stock"
@@ -82,10 +82,10 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="tax_id" class="form-label">Tax</label>
+                                <label for="tax_id" class="form-label">Pajak</label>
                                 <select class="form-select @error('tax_id') is-invalid @enderror" id="tax_id"
                                         name="tax_id">
-                                    <option value="">Select Tax</option>
+                                    <option value="">Pilih Pajak</option>
                                     @foreach ($taxes as $tax)
                                         <option value="{{ $tax->id }}"
                                             {{ old('tax_id', $product->tax_id) == $tax->id ? 'selected' : '' }}>
@@ -99,10 +99,10 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="discount_id" class="form-label">Discount</label>
+                                <label for="discount_id" class="form-label">Diskon</label>
                                 <select class="form-select @error('discount_id') is-invalid @enderror" id="discount_id"
                                         name="discount_id">
-                                    <option value="">Select Discount</option>
+                                    <option value="">Pilih Diskon</option>
                                     @foreach ($discounts as $discount)
                                         <option value="{{ $discount->id }}"
                                             {{ old('discount_id', $product->discount_id) == $discount->id ? 'selected' : '' }}>
@@ -120,13 +120,13 @@
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
                                            value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_active">Active</label>
+                                    <label class="form-check-label" for="is_active">Aktif</label>
                                 </div>
                             </div>
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Update Product</button>
-                                <a href="{{ route('products.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Perbarui Produk</button>
+                                <a href="{{ route('products.index') }}" class="btn btn-secondary">Batal</a>
                             </div>
                         </form>
                     </div>

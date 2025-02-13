@@ -59,7 +59,7 @@ class ProductPriceController extends Controller
 
                 if ($conflictingTier) {
                     throw ValidationException::withMessages([
-                        'min_quantity' => 'Price tier for this quantity already exists'
+                        'min_quantity' => 'Tingkat harga untuk jumlah ini sudah ada'
                     ]);
                 }
 
@@ -71,7 +71,7 @@ class ProductPriceController extends Controller
 
                 if ($lowerTier && $validated['price'] >= $lowerTier->price) {
                     throw ValidationException::withMessages([
-                        'price' => 'Price must be lower than tiers with smaller quantities'
+                        'price' => 'Harga harus lebih rendah dari tingkat dengan jumlah yang lebih kecil'
                     ]);
                 }
 
@@ -80,13 +80,12 @@ class ProductPriceController extends Controller
 
             return redirect()
                 ->route('products.show', $product)
-                ->with('success', 'Price tier added successfully');
+                ->with('success', 'Tingkat harga berhasil ditambahkan');
 
         } catch (ValidationException $e) {
             return back()
                 ->withErrors($e->errors())
                 ->withInput();
-
         }
     }
 
@@ -161,7 +160,7 @@ class ProductPriceController extends Controller
 
                     // Price cannot be higher than the unit's base price
                     if ($value >= $productUnit->selling_price) {
-                        $fail('Price must be lower than the unit\'s base price.');
+                        $fail('Harga harus lebih rendah dari harga dasar unit.');
                     }
                 },
             ]
@@ -187,14 +186,14 @@ class ProductPriceController extends Controller
                 // Validate price against lower tier
                 if ($lowerTier && $validated['price'] >= $lowerTier->price) {
                     throw ValidationException::withMessages([
-                        'price' => "Price must be lower than {$lowerTier->price} (tier for quantity {$lowerTier->min_quantity})"
+                        'price' => "Harga harus lebih rendah dari {$lowerTier->price} (tingkat untuk jumlah {$lowerTier->min_quantity})"
                     ]);
                 }
 
                 // Validate price against higher tier
                 if ($higherTier && $validated['price'] <= $higherTier->price) {
                     throw ValidationException::withMessages([
-                        'price' => "Price must be higher than {$higherTier->price} (tier for quantity {$higherTier->min_quantity})"
+                        'price' => "Harga harus lebih tinggi dari {$higherTier->price} (tingkat untuk jumlah {$higherTier->min_quantity})"
                     ]);
                 }
 
@@ -203,7 +202,7 @@ class ProductPriceController extends Controller
 
             return redirect()
                 ->route('products.show', $product)
-                ->with('success', 'Price tier updated successfully');
+                ->with('success', 'Tingkat harga berhasil diperbarui');
 
         } catch (ValidationException $e) {
             return back()
@@ -226,7 +225,7 @@ class ProductPriceController extends Controller
 
         return redirect()
             ->route('products.show', $product)
-            ->with('success', 'Harga bertingkat berhasil dihapus');
+            ->with('success', 'Tingkat harga berhasil dihapus');
     }
 
     /**
@@ -244,7 +243,7 @@ class ProductPriceController extends Controller
 
         if ($conflictingTier) {
             throw ValidationException::withMessages([
-                'min_quantity' => 'Sudah ada harga untuk quantity ini!'
+                'min_quantity' => 'Sudah ada tingkat harga untuk jumlah ini!'
             ]);
         }
 
@@ -257,7 +256,7 @@ class ProductPriceController extends Controller
 
         if ($lowerTier && $data['price'] >= $lowerTier->price) {
             throw ValidationException::withMessages([
-                'price' => 'Harga harus lebih murah dari tier quantity lebih kecil!'
+                'price' => 'Harga harus lebih rendah dari tingkat dengan jumlah yang lebih kecil!'
             ]);
         }
     }

@@ -1,4 +1,3 @@
-<!-- resources/views/products/product-price/edit.blade.php -->
 @extends('layouts.app')
 
 @section('content')
@@ -6,7 +5,7 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="mb-1">Edit Tiered Price</h2>
+                <h2 class="mb-1">Edit Harga Bertingkat</h2>
                 <p class="text-muted mb-0">
                     <i class="bi bi-box me-2"></i>{{ $product->name }}
                     <span class="ms-3">
@@ -17,44 +16,44 @@
             <div class="d-flex gap-2">
                 <form action="{{ route('products.prices.destroy', [$product, $price]) }}"
                       method="POST"
-                      onsubmit="return confirm('Are you sure you want to delete this price tier?');">
+                      onsubmit="return confirm('Anda yakin ingin menghapus tingkat harga ini?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-outline-danger">
-                        <i class="bi bi-trash me-1"></i>Delete
+                        <i class="bi bi-trash me-1"></i>Hapus
                     </button>
                 </form>
                 <a href="{{ route('products.show', $product) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Product
+                    <i class="bi bi-arrow-left me-1"></i>Kembali ke Produk
                 </a>
             </div>
         </div>
 
         <div class="row">
-            <!-- Current Price Information -->
+            <!-- Informasi Harga Saat Ini -->
             <div class="col-md-4">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0">Current Price Information</h5>
+                        <h5 class="mb-0">Informasi Harga Saat Ini</h5>
                     </div>
                     <div class="card-body">
                         @php
                             $defaultUnit = $product->productUnits->where('is_default', true)->first();
                         @endphp
                         <dl>
-                            <dt>Default Unit</dt>
+                            <dt>Unit Default</dt>
                             <dd>{{ $defaultUnit?->unit->name ?? 'N/A' }}</dd>
 
-                            <dt>Base Price</dt>
+                            <dt>Harga Dasar</dt>
                             <dd>Rp {{ number_format($defaultUnit?->selling_price ?? 0, 2) }}</dd>
 
                             @if($product->tax)
-                                <dt>Tax</dt>
+                                <dt>Pajak</dt>
                                 <dd>{{ $product->tax->name }} ({{ $product->tax->rate }}%)</dd>
                             @endif
 
                             @if($product->discount)
-                                <dt>Active Discount</dt>
+                                <dt>Diskon Aktif</dt>
                                 <dd>{{ $product->discount->name }}
                                     ({{ $product->discount->value }}{{ $product->discount->type === 'percentage' ? '%' : ' Rp' }}
                                     )
@@ -64,10 +63,10 @@
                     </div>
                 </div>
 
-                <!-- Current Tiers -->
+                <!-- Tingkat Harga Saat Ini -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0">Price Tiers Overview</h5>
+                        <h5 class="mb-0">Ringkasan Tingkat Harga</h5>
                     </div>
                     <div class="card-body">
                         @foreach($product->productUnits as $productUnit)
@@ -75,16 +74,16 @@
                                 <div class="mb-4">
                                     <h6 class="border-bottom pb-2">
                                         {{ $productUnit->unit->name }}
-                                        <small class="text-muted">(Base:
+                                        <small class="text-muted">(Dasar:
                                             Rp {{ number_format($productUnit->selling_price, 2) }})</small>
                                     </h6>
                                     <div class="table-responsive">
                                         <table class="table table-sm">
                                             <thead class="table-light">
                                             <tr>
-                                                <th>Min. Qty</th>
-                                                <th class="text-end">Price</th>
-                                                <th class="text-end">Discount</th>
+                                                <th>Min. Jumlah</th>
+                                                <th class="text-end">Harga</th>
+                                                <th class="text-end">Diskon</th>
                                                 <th class="text-center">Status</th>
                                             </tr>
                                             </thead>
@@ -101,7 +100,7 @@
                                                     </td>
                                                     <td class="text-center">
                                                         @if($tier->id === $price->id)
-                                                            <span class="badge bg-warning text-dark">Editing</span>
+                                                            <span class="badge bg-warning text-dark">Sedang Diedit</span>
                                                         @endif
                                                     </td>
                                                 </tr>
@@ -116,11 +115,11 @@
                 </div>
             </div>
 
-            <!-- Edit Tier Form -->
+            <!-- Form Edit Tingkat Harga -->
             <div class="col-md-8">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0">Edit Price Tier</h5>
+                        <h5 class="mb-0">Edit Tingkat Harga</h5>
                     </div>
                     <div class="card-body">
                         <form action="{{ route('products.prices.update', [$product, $price]) }}"
@@ -130,7 +129,7 @@
                             @method('PUT')
 
                             <div class="mb-4">
-                                <label for="product_unit_id" class="form-label">Product Unit</label>
+                                <label for="product_unit_id" class="form-label">Unit Produk</label>
                                 <select name="product_unit_id"
                                         id="product_unit_id"
                                         class="form-select @error('product_unit_id') is-invalid @enderror"
@@ -142,7 +141,7 @@
                                             {{ old('product_unit_id', $price->product_unit_id) == $unit->id ? 'selected' : '' }}>
                                             {{ $unit->unit->name }}
                                             ({{ $unit->unit->code }}) -
-                                            Base Price: Rp {{ number_format($unit->selling_price, 2) }}
+                                            Harga Dasar: Rp {{ number_format($unit->selling_price, 2) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -153,7 +152,7 @@
 
                             <div class="row mb-4">
                                 <div class="col-md-6">
-                                    <label for="min_quantity" class="form-label">Minimum Quantity</label>
+                                    <label for="min_quantity" class="form-label">Jumlah Minimum</label>
                                     <div class="input-group">
                                         <input type="number"
                                                class="form-control @error('min_quantity') is-invalid @enderror"
@@ -170,18 +169,18 @@
                                     @enderror
                                     @if(isset($previousTier))
                                         <small class="text-muted d-block">
-                                            Previous tier: {{ number_format($previousTier->min_quantity) }}
+                                            Tingkat sebelumnya: {{ number_format($previousTier->min_quantity) }}
                                         </small>
                                     @endif
                                     @if(isset($nextTier))
                                         <small class="text-muted d-block">
-                                            Next tier: {{ number_format($nextTier->min_quantity) }}
+                                            Tingkat selanjutnya: {{ number_format($nextTier->min_quantity) }}
                                         </small>
                                     @endif
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="price" class="form-label">Price</label>
+                                    <label for="price" class="form-label">Harga</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="number"
@@ -198,15 +197,15 @@
                                     @enderror
                                     <div id="priceDetails" class="mt-2">
                                         <small class="text-muted">
-                                            Discount: <span id="discountPercentage">0</span>%</small>
+                                            Diskon: <span id="discountPercentage">0</span>%</small>
                                         @if(isset($previousTier))
                                             <small class="text-muted d-block">
-                                                Previous tier price: Rp {{ number_format($previousTier->price, 2) }}
+                                                Harga tingkat sebelumnya: Rp {{ number_format($previousTier->price, 2) }}
                                             </small>
                                         @endif
                                         @if(isset($nextTier))
                                             <small class="text-muted d-block">
-                                                Next tier price: Rp {{ number_format($nextTier->price, 2) }}
+                                                Harga tingkat selanjutnya: Rp {{ number_format($nextTier->price, 2) }}
                                             </small>
                                         @endif
                                     </div>
@@ -215,22 +214,22 @@
 
                             <div class="alert alert-info" role="alert">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <strong>Pricing Rules:</strong>
+                                <strong>Aturan Penetapan Harga:</strong>
                                 <ul class="mb-0 mt-2">
-                                    <li>Price must be lower than the unit's base price</li>
-                                    <li>Price must be lower than tiers with smaller quantities</li>
-                                    <li>Price must be higher than tiers with larger quantities</li>
-                                    <li>Each quantity threshold must be unique per unit</li>
+                                    <li>Harga harus lebih rendah dari harga dasar unit</li>
+                                    <li>Harga harus lebih rendah dari tingkat dengan jumlah yang lebih kecil</li>
+                                    <li>Harga harus lebih tinggi dari tingkat dengan jumlah yang lebih besar</li>
+                                    <li>Setiap batas jumlah harus unik per unit</li>
                                 </ul>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="{{ route('products.show', $product) }}"
                                    class="btn btn-outline-secondary">
-                                    Cancel
+                                    Batal
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    Update Price Tier
+                                    Perbarui Tingkat Harga
                                 </button>
                             </div>
                         </form>
@@ -299,14 +298,14 @@
                 const quantity = parseFloat(elements.minQuantity.value);
 
                 if (isNaN(quantity) || quantity <= 0) {
-                    showError(elements.minQuantity, 'Quantity must be greater than 0');
+                    showError(elements.minQuantity, 'Jumlah harus lebih besar dari 0');
                     return false;
                 }
 
                 // Check if quantity already exists in other tiers
                 const existingQuantity = state.currentUnit.tiers.find(t => t.min_quantity === quantity);
                 if (existingQuantity) {
-                    showError(elements.minQuantity, 'This quantity already has a price tier');
+                    showError(elements.minQuantity, 'Jumlah ini sudah memiliki tingkat harga');
                     return false;
                 }
 
@@ -320,13 +319,13 @@
                 const quantity = parseFloat(elements.minQuantity.value);
 
                 if (isNaN(price) || price <= 0) {
-                    showError(elements.price, 'Price must be greater than 0');
+                    showError(elements.price, 'Harga harus lebih besar dari 0');
                     return false;
                 }
 
                 // Must be lower than base price
                 if (price >= state.currentUnit.basePrice) {
-                    showError(elements.price, `Price must be lower than base price ${formatRupiah(state.currentUnit.basePrice)}`);
+                    showError(elements.price, `Harga harus lebih rendah dari harga dasar ${formatRupiah(state.currentUnit.basePrice)}`);
                     return false;
                 }
 
@@ -340,7 +339,7 @@
                 // Validate against lower tier
                 if (lowerTier && price >= lowerTier.price) {
                     showError(elements.price,
-                        `Price must be lower than ${formatRupiah(lowerTier.price)} (tier for quantity ${lowerTier.min_quantity})`
+                        `Harga harus lebih rendah dari ${formatRupiah(lowerTier.price)} (tingkat untuk jumlah ${lowerTier.min_quantity})`
                     );
                     return false;
                 }
@@ -348,7 +347,7 @@
                 // Validate against higher tier
                 if (higherTier && price <= higherTier.price) {
                     showError(elements.price,
-                        `Price must be higher than ${formatRupiah(higherTier.price)} (tier for quantity ${higherTier.min_quantity})`
+                        `Harga harus lebih tinggi dari ${formatRupiah(higherTier.price)} (tingkat untuk jumlah ${higherTier.min_quantity})`
                     );
                     return false;
                 }

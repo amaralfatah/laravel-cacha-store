@@ -8,13 +8,13 @@
                     <div class="card-header bg-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="card-title mb-0">
-                                <i class="bi bi-plus-circle"></i> Add New Unit
+                                <i class="bi bi-plus-circle"></i> Tambah Unit Baru
                                 <small class="text-muted d-block mt-1">{{ $product->name }}</small>
                             </h4>
                             @if($hasDefaultUnit)
-                                <span class="badge bg-info">Default unit exists</span>
+                                <span class="badge bg-info">Unit default sudah ada</span>
                             @else
-                                <span class="badge bg-warning">No default unit</span>
+                                <span class="badge bg-warning">Belum ada unit default</span>
                             @endif
                         </div>
                     </div>
@@ -24,10 +24,10 @@
                             @csrf
 
                             <div class="mb-4">
-                                <label for="unit_id" class="form-label">Select Unit</label>
+                                <label for="unit_id" class="form-label">Pilih Unit</label>
                                 <select class="form-select form-select-lg @error('unit_id') is-invalid @enderror"
                                         id="unit_id" name="unit_id" required>
-                                    <option value="">Choose a unit...</option>
+                                    <option value="">Pilih unit...</option>
                                     @foreach($availableUnits as $unit)
                                         <option value="{{ $unit->id }}"
                                                 data-code="{{ $unit->code }}"
@@ -44,9 +44,9 @@
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label for="conversion_factor" class="form-label required">
-                                        Conversion Factor
+                                        Faktor Konversi
                                         <i class="bi bi-info-circle" data-bs-toggle="tooltip"
-                                           title="How many base units equal one of this unit"></i>
+                                           title="Berapa banyak unit dasar yang setara dengan satu unit ini"></i>
                                     </label>
                                     <div class="input-group">
                                         <input type="number"
@@ -69,7 +69,7 @@
 
                             <div class="row mb-4">
                                 <div class="col-md-6">
-                                    <label for="purchase_price" class="form-label required">Purchase Price</label>
+                                    <label for="purchase_price" class="form-label required">Harga Beli</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="number"
@@ -88,7 +88,7 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="selling_price" class="form-label required">Selling Price</label>
+                                    <label for="selling_price" class="form-label required">Harga Jual</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="number"
@@ -108,7 +108,7 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="stock" class="form-label required">Initial Stock</label>
+                                <label for="stock" class="form-label required">Stok Awal</label>
                                 <div class="input-group">
                                     <input type="number"
                                            step="0.01"
@@ -136,12 +136,12 @@
                                         {{ !$hasDefaultUnit ? 'checked disabled' : '' }}
                                         {{ old('is_default') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_default">
-                                        Set as Default Unit
+                                        Jadikan Unit Default
                                         <small class="text-muted d-block">
                                             @if(!$hasDefaultUnit)
-                                                This will be the first unit and automatically set as default
+                                                Ini akan menjadi unit pertama dan otomatis diatur sebagai default
                                             @else
-                                                The default unit will be used as the base for all conversions
+                                                Unit default akan digunakan sebagai dasar untuk semua konversi
                                             @endif
                                         </small>
                                     </label>
@@ -151,10 +151,10 @@
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="{{ route('products.show', $product) }}"
                                    class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancel
+                                    <i class="bi bi-x-circle"></i> Batal
                                 </a>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-circle"></i> Save Unit
+                                    <i class="bi bi-check-circle"></i> Simpan Unit
                                 </button>
                             </div>
                         </form>
@@ -207,7 +207,7 @@
                     const factor = parseFloat(conversionInput.value) || 0
 
                     if (factor > 0) {
-                        conversionExample.textContent = `1 ${unitCode} = ${factor} base unit(s)`
+                        conversionExample.textContent = `1 ${unitCode} = ${factor} unit dasar`
                     }
                 }
 
