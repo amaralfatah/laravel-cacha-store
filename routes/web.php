@@ -18,6 +18,9 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StockTakeController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\StockAdjustmentController;
+use App\Http\Controllers\StockHistoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -86,4 +89,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('stock-takes', StockTakeController::class);
     Route::patch('stock-takes/{stock_take}/complete', [StockTakeController::class, 'complete'])
         ->name('stock-takes.complete');
+
+    Route::prefix('stock')->name('stock.')->group(function () {
+        Route::resource('adjustments', StockAdjustmentController::class)->except(['edit', 'update', 'delete']);
+        Route::resource('histories', StockHistoryController::class)->only(['index', 'show']);
+    });
 });
