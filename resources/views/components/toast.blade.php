@@ -65,3 +65,17 @@
 return redirect()->back()->with('error', 'Something went wrong!');
 return redirect()->route('dashboard')->with('warning', 'Please complete your profile.');
 return redirect()->route('settings')->with('info', 'New features available!'); --}}
+
+<script>
+    // Toast initialization
+    document.addEventListener('DOMContentLoaded', function () {
+        const toasts = document.querySelectorAll('.bs-toast');
+        toasts.forEach(toastEl => {
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 5000,
+                animation: true
+            });
+            toast.show();
+        });
+    });
+</script>
