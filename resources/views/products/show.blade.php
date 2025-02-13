@@ -26,7 +26,7 @@
 
         <div class="row g-4">
             <!-- Product Info Card -->
-            <div class="col-md-8">
+            <div class="col-md-12">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white">
                         <h5 class="mb-0">Product Information</h5>
@@ -104,35 +104,35 @@
             </div>
 
             <!-- Quick Actions Card -->
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-3">
-                            <button type="button"
-                                    class="btn btn-primary"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#addStockModal">
-                                <i class="bi bi-plus-circle me-2"></i>Add Stock
-                            </button>
-                            <button type="button"
-                                    class="btn btn-outline-warning"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#adjustStockModal">
-                                <i class="bi bi-arrow-left-right me-2"></i>Adjust Stock
-                            </button>
-                            <button type="button"
-                                    class="btn btn-outline-info"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#priceHistoryModal">
-                                <i class="bi bi-graph-up me-2"></i>Price History
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+{{--            <div class="col-md-4">--}}
+{{--                <div class="card shadow-sm">--}}
+{{--                    <div class="card-header bg-white">--}}
+{{--                        <h5 class="mb-0">Quick Actions</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="card-body">--}}
+{{--                        <div class="d-grid gap-3">--}}
+{{--                            <button type="button"--}}
+{{--                                    class="btn btn-primary"--}}
+{{--                                    data-bs-toggle="modal"--}}
+{{--                                    data-bs-target="#addStockModal">--}}
+{{--                                <i class="bi bi-plus-circle me-2"></i>Add Stock--}}
+{{--                            </button>--}}
+{{--                            <button type="button"--}}
+{{--                                    class="btn btn-outline-warning"--}}
+{{--                                    data-bs-toggle="modal"--}}
+{{--                                    data-bs-target="#adjustStockModal">--}}
+{{--                                <i class="bi bi-arrow-left-right me-2"></i>Adjust Stock--}}
+{{--                            </button>--}}
+{{--                            <button type="button"--}}
+{{--                                    class="btn btn-outline-info"--}}
+{{--                                    data-bs-toggle="modal"--}}
+{{--                                    data-bs-target="#priceHistoryModal">--}}
+{{--                                <i class="bi bi-graph-up me-2"></i>Price History--}}
+{{--                            </button>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
 
             <!-- Unit Prices Table -->
             <div class="col-12">
