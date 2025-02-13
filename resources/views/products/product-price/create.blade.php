@@ -59,7 +59,7 @@
                     </div>
                     <div class="card-body">
                         @forelse($product->productUnits as $productUnit)
-                            @if($productUnit->priceTiers->isNotEmpty())
+                            @if($productUnit->prices->isNotEmpty())
                                 <h6 class="mb-2">{{ $productUnit->unit->name }}</h6>
                                 <div class="table-responsive mb-3">
                                     <table class="table table-sm">
@@ -70,7 +70,7 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        @foreach($productUnit->priceTiers->sortBy('min_quantity') as $tier)
+                                        @foreach($productUnit->prices->sortBy('min_quantity') as $tier)
                                             <tr>
                                                 <td>{{ number_format($tier->min_quantity) }}</td>
                                                 <td class="text-end">Rp {{ number_format($tier->price, 2) }}</td>

@@ -26,9 +26,9 @@ class ProductUnit extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    public function priceTiers()
+    public function prices()
     {
-        return $this->hasMany(PriceTier::class);
+        return $this->hasMany(Price::class);
     }
 
 

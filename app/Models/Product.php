@@ -42,9 +42,9 @@ class Product extends Model
         return $this->belongsTo(Unit::class, 'default_unit_id');
     }
 
-    public function priceTiers()
+    public function prices()
     {
-        return $this->hasMany(PriceTier::class);
+        return $this->hasMany(Price::class);
     }
 
     public function inventories()

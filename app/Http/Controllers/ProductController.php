@@ -164,7 +164,7 @@ class ProductController extends Controller
                     ->orderBy('created_at', 'asc');
             },
             'productUnits.unit',
-            'productUnits.priceTiers' => function ($query) {
+            'productUnits.prices' => function ($query) {
                 $query->orderBy('min_quantity', 'asc');
             }
         ]);

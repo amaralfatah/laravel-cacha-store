@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\PriceTier;
+use App\Models\Price;
 use App\Models\ProductUnit;
 use App\Models\Tax;
 use App\Models\Discount;
@@ -21,7 +21,7 @@ class ProductPriceController extends Controller
         // Load necessary relationships
         $product->load([
             'productUnits.unit',
-            'productUnits.priceTiers',
+            'productUnits.prices',
             'tax',
             'discount'
         ]);
@@ -49,11 +49,11 @@ class ProductPriceController extends Controller
         try {
             DB::transaction(function () use ($validated) {
                 // Validate tier pricing
-                $productUnit = ProductUnit::with('priceTiers')
+                $productUnit = ProductUnit::with('prices')
                     ->findOrFail($validated['product_unit_id']);
 
                 // Check for conflicts with existing tiers
-                $conflictingTier = $productUnit->priceTiers()
+                $conflictingTier = $productUnit->prices()
                     ->where('min_quantity', $validated['min_quantity'])
                     ->first();
 
@@ -64,7 +64,7 @@ class ProductPriceController extends Controller
                 }
 
                 // Check price is lower than tiers with smaller quantities
-                $lowerTier = $productUnit->priceTiers()
+                $lowerTier = $productUnit->prices()
                     ->where('min_quantity', '<', $validated['min_quantity'])
                     ->orderBy('min_quantity', 'desc')
                     ->first();
@@ -75,7 +75,7 @@ class ProductPriceController extends Controller
                     ]);
                 }
 
-                PriceTier::create($validated);
+                Price::create($validated);
             });
 
             return redirect()
@@ -91,7 +91,7 @@ class ProductPriceController extends Controller
     }
 
 
-    public function edit(Product $product, PriceTier $price)
+    public function edit(Product $product, Price $price)
     {
         // Verify price tier belongs to product
         if ($price->productUnit->product_id !== $product->id) {
@@ -101,7 +101,7 @@ class ProductPriceController extends Controller
         // Load necessary relationships with specific ordering
         $product->load([
             'productUnits.unit',
-            'productUnits.priceTiers' => function ($query) {
+            'productUnits.prices' => function ($query) {
                 $query->orderBy('min_quantity', 'asc');
             },
             'tax',
@@ -110,7 +110,7 @@ class ProductPriceController extends Controller
 
         // Get adjacent tiers for the current unit
         $currentUnit = $price->productUnit;
-        $adjacentTiers = $currentUnit->priceTiers()
+        $adjacentTiers = $currentUnit->prices()
             ->where('id', '!=', $price->id)
             ->orderBy('min_quantity', 'asc')
             ->get();
@@ -127,7 +127,7 @@ class ProductPriceController extends Controller
         ));
     }
 
-    public function update(Request $request, Product $product, PriceTier $price)
+    public function update(Request $request, Product $product, Price $price)
     {
         // Verify price tier belongs to product
         if ($price->productUnit->product_id !== $product->id) {
@@ -146,7 +146,7 @@ class ProductPriceController extends Controller
                 'numeric',
                 'min:0.01',
                 // Unique validation excluding current record
-                Rule::unique('price_tiers')
+                Rule::unique('prices')
                     ->where(function ($query) use ($request) {
                         return $query->where('product_unit_id', $request->product_unit_id);
                     })
@@ -169,17 +169,17 @@ class ProductPriceController extends Controller
 
         try {
             DB::transaction(function () use ($validated, $price) {
-                $productUnit = ProductUnit::with(['priceTiers' => function ($query) use ($price) {
+                $productUnit = ProductUnit::with(['prices' => function ($query) use ($price) {
                     $query->where('id', '!=', $price->id);
                 }])->findOrFail($validated['product_unit_id']);
 
                 // Get adjacent tiers
-                $lowerTier = $productUnit->priceTiers
+                $lowerTier = $productUnit->prices
                     ->where('min_quantity', '<', $validated['min_quantity'])
                     ->sortByDesc('min_quantity')
                     ->first();
 
-                $higherTier = $productUnit->priceTiers
+                $higherTier = $productUnit->prices
                     ->where('min_quantity', '>', $validated['min_quantity'])
                     ->sortBy('min_quantity')
                     ->first();
@@ -215,7 +215,7 @@ class ProductPriceController extends Controller
     /**
      * Remove a price tier.
      */
-    public function destroy(Product $product, PriceTier $price)
+    public function destroy(Product $product, Price $price)
     {
         // Verify price tier belongs to product
         if ($price->productUnit->product_id !== $product->id) {
@@ -234,10 +234,10 @@ class ProductPriceController extends Controller
      *
      * @throws ValidationException
      */
-    private function validatePriceTier(Product $product, array $data): void
+    private function validatePrice(Product $product, array $data): void
     {
         // Check for conflicting tiers
-        $conflictingTier = $product->priceTiers()
+        $conflictingTier = $product->prices()
             ->where('unit_id', $data['unit_id'])
             ->where('min_quantity', $data['min_quantity'])
             ->first();
@@ -249,7 +249,7 @@ class ProductPriceController extends Controller
         }
 
         // Check price is not higher than lower quantity tiers
-        $lowerTier = $product->priceTiers()
+        $lowerTier = $product->prices()
             ->where('unit_id', $data['unit_id'])
             ->where('min_quantity', '<', $data['min_quantity'])
             ->orderBy('min_quantity', 'desc')

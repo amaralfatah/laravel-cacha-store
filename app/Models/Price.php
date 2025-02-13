@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PriceTier extends Model
+class Price extends Model
 {
     protected $fillable = ['product_unit_id', 'min_quantity', 'price'];
 

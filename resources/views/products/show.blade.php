@@ -222,7 +222,7 @@
                                 </thead>
                                 <tbody>
                                 @foreach ($product->productUnits as $productUnit)
-                                    @foreach ($productUnit->priceTiers as $price)
+                                    @foreach ($productUnit->prices as $price)
                                         <tr>
                                             <td>
                                                 <strong>{{ $productUnit->unit->name }}</strong>

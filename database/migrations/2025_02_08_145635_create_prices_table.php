@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('price_tiers', function (Blueprint $table) {
+        Schema::create('prices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_unit_id')->constrained();
             $table->decimal('min_quantity', 15, 2);

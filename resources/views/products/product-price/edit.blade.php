@@ -71,7 +71,7 @@
                     </div>
                     <div class="card-body">
                         @foreach($product->productUnits as $productUnit)
-                            @if($productUnit->priceTiers->isNotEmpty())
+                            @if($productUnit->prices->isNotEmpty())
                                 <div class="mb-4">
                                     <h6 class="border-bottom pb-2">
                                         {{ $productUnit->unit->name }}
@@ -89,7 +89,7 @@
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            @foreach($productUnit->priceTiers->sortBy('min_quantity') as $tier)
+                                            @foreach($productUnit->prices->sortBy('min_quantity') as $tier)
                                                 <tr @if($tier->id === $price->id) class="table-warning" @endif>
                                                     <td>{{ number_format($tier->min_quantity, 2) }}</td>
                                                     <td class="text-end">Rp {{ number_format($tier->price, 2) }}</td>
@@ -274,7 +274,7 @@
             'id' => $unit->id,
             'basePrice' => floatval($unit->selling_price),
             'code' => $unit->unit->code,
-            'tiers' => $unit->priceTiers
+            'tiers' => $unit->prices
                 ->where('id', '!=', $price->id)
                 ->map(function($tier) {
                     return [

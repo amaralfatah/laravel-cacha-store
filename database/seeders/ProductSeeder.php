@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\ProductUnit;
 use App\Models\Inventory;
-use App\Models\PriceTier;
+use App\Models\Price;
 use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
@@ -128,7 +128,7 @@ class ProductSeeder extends Seeder
 
                 // Create price tiers
                 foreach ($unitData['price_tiers'] as $tierData) {
-                    PriceTier::create([
+                    Price::create([
                         'product_id' => $product->id,
                         'unit_id' => $unitData['unit_id'],
                         'min_quantity' => $tierData['min_quantity'],
