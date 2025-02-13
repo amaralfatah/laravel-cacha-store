@@ -28,9 +28,6 @@ class POSController extends Controller
 
     public function getProduct(Request $request)
     {
-        \Log::info('Step 1: Mencari produk dengan barcode: ' . $request->barcode);
-
-        // Load product dengan relasi yang benar
         $product = Product::with([
             'defaultUnit',
             'tax',
@@ -43,30 +40,6 @@ class POSController extends Controller
             ->where('barcode', $request->barcode)
             ->where('is_active', true)
             ->firstOrFail();
-
-        \Log::info('Step 2: Produk ditemukan', [
-            'product_id' => $product->id,
-            'name' => $product->name,
-            'barcode' => $product->barcode
-        ]);
-
-        \Log::info('Step 3: Data Default Unit', [
-            'default_unit_id' => $product->defaultUnit?->id,
-            'default_unit_name' => $product->defaultUnit?->name
-        ]);
-
-        \Log::info('Step 4: Data Pajak', [
-            'tax_id' => $product->tax?->id,
-            'tax_name' => $product->tax?->name,
-            'tax_rate' => $product->tax?->rate
-        ]);
-
-        \Log::info('Step 5: Data Diskon', [
-            'discount_id' => $product->discount?->id,
-            'discount_name' => $product->discount?->name,
-            'discount_type' => $product->discount?->type,
-            'discount_value' => $product->discount?->value
-        ]);
 
         // Mapping available units dengan prices
         $response = $product->toArray();
@@ -87,8 +60,6 @@ class POSController extends Controller
                 'prices' => $prices
             ];
         });
-
-        \Log::info('Step 6: Data Unit dan Harga', $response['available_units']->toArray());
 
         return response()->json($response);
     }
@@ -114,13 +85,6 @@ class POSController extends Controller
         try {
             DB::beginTransaction();
 
-            \Log::info('Starting transaction creation/update', [
-                'invoice_number' => $request->invoice_number,
-                'customer_id' => $request->customer_id,
-                'item_count' => count($request->items),
-                'is_pending_update' => $request->pending_transaction_id ? true : false
-            ]);
-
             // Basic validation
             $validated = $request->validate([
                 'invoice_number' => [
@@ -138,51 +102,23 @@ class POSController extends Controller
                 'pending_transaction_id' => 'nullable|exists:transactions,id'
             ]);
 
-            \Log::info('Validation passed, calculating totals');
-
             // Calculate totals
             $total_amount = 0;
             $total_tax = 0;
             $total_discount = 0;
 
             foreach ($request->items as $index => $item) {
-                \Log::info("Processing item #{$index}", [
-                    'product_id' => $item['product_id'],
-                    'unit_id' => $item['unit_id'],
-                    'quantity' => $item['quantity']
-                ]);
-
                 $product = Product::with(['productUnits', 'tax', 'discount'])->find($item['product_id']);
-
-                \Log::info('Product loaded', [
-                    'product_name' => $product->name,
-                    'has_tax' => $product->tax ? true : false,
-                    'has_discount' => $product->discount ? true : false
-                ]);
 
                 $unit_price = $product->getPrice($item['quantity'], $item['unit_id']);
                 $subtotal = $unit_price * $item['quantity'];
                 $discount = $product->getDiscountAmount($unit_price) * $item['quantity'];
                 $tax = $product->getTaxAmount($subtotal - $discount);
 
-                \Log::info('Item calculations', [
-                    'unit_price' => $unit_price,
-                    'subtotal' => $subtotal,
-                    'discount' => $discount,
-                    'tax' => $tax
-                ]);
-
                 $total_amount += $subtotal;
                 $total_tax += $tax;
                 $total_discount += $discount;
             }
-
-            \Log::info('Final totals calculated', [
-                'total_amount' => $total_amount,
-                'total_tax' => $total_tax,
-                'total_discount' => $total_discount,
-                'final_amount' => $total_amount + $total_tax - $total_discount
-            ]);
 
             // Prepare transaction data
             $transactionData = [
@@ -199,13 +135,7 @@ class POSController extends Controller
 
             // Create or update transaction
             if ($request->pending_transaction_id) {
-                \Log::info('Updating existing transaction', [
-                    'transaction_id' => $request->pending_transaction_id
-                ]);
-
                 $transaction = Transaction::findOrFail($request->pending_transaction_id);
-
-                // Delete existing items
                 $transaction->items()->delete();
 
                 if ($request->status === 'success') {
@@ -214,8 +144,6 @@ class POSController extends Controller
 
                 $transaction->update($transactionData);
             } else {
-                \Log::info('Creating new transaction');
-
                 $transactionData['invoice_number'] = $request->invoice_number;
                 $transactionData['status'] = $request->status;
 
@@ -228,14 +156,6 @@ class POSController extends Controller
                 $unit_price = $product->getPrice($item['quantity'], $item['unit_id']);
                 $discount = $product->getDiscountAmount($unit_price);
                 $subtotal = $unit_price * $item['quantity'];
-
-                \Log::info('Creating transaction item', [
-                    'transaction_id' => $transaction->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $unit_price,
-                    'subtotal' => $subtotal
-                ]);
 
                 $transaction->items()->create([
                     'product_id' => $item['product_id'],
@@ -257,25 +177,12 @@ class POSController extends Controller
                             throw new \Exception('Stok tidak mencukupi untuk produk ' . $product->name);
                         }
 
-                        \Log::info('Updating product stock', [
-                            'product_id' => $item['product_id'],
-                            'unit_id' => $item['unit_id'],
-                            'old_stock' => $productUnit->stock,
-                            'quantity_deducted' => $item['quantity'],
-                            'new_stock' => $productUnit->stock - $item['quantity']
-                        ]);
-
                         $productUnit->decrement('stock', $item['quantity']);
                     }
                 }
             }
 
             DB::commit();
-
-            \Log::info('Transaction successfully saved', [
-                'transaction_id' => $transaction->id,
-                'status' => $transaction->status
-            ]);
 
             // Clear session data if transaction is completed
             if ($transaction->status === 'success') {
@@ -291,10 +198,6 @@ class POSController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Transaction failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return response()->json([
                 'success' => false,
