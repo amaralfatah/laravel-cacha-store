@@ -154,8 +154,36 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['category', 'productUnits.unit']);
-        return view('products.show', compact('product'));
+        // Load relasi yang dibutuhkan dengan eager loading
+        $product->load([
+            'category',
+            'tax',
+            'discount',
+            'productUnits' => function ($query) {
+                $query->orderBy('is_default', 'desc')
+                    ->orderBy('created_at', 'asc');
+            },
+            'productUnits.unit',
+            'productUnits.priceTiers' => function ($query) {
+                $query->orderBy('min_quantity', 'asc');
+            }
+        ]);
+
+        // Ambil data untuk form
+        $taxes = Tax::where('is_active', true)->get();
+        $discounts = Discount::where('is_active', true)->get();
+
+        // Filter unit yang aktif dan belum digunakan oleh produk
+        $availableUnits = Unit::where('is_active', true)
+            ->whereNotIn('id', $product->productUnits->pluck('unit_id'))
+            ->get();
+
+        return view('products.show', compact(
+            'product',
+            'availableUnits',
+            'taxes',
+            'discounts'
+        ));
     }
 
 

@@ -85,19 +85,19 @@
             </a>
         </li>
 
-        <li class="menu-item {{ setActive('inventory.*') }}">
-            <a href="{{ route('inventory.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-archive"></i>
-                <div data-i18n="Analytics">Stok Barang</div>
-            </a>
-        </li>
+{{--        <li class="menu-item {{ setActive('inventory.*') }}">--}}
+{{--            <a href="{{ route('inventory.index') }}" class="menu-link">--}}
+{{--                <i class="menu-icon tf-icons bx bx-archive"></i>--}}
+{{--                <div data-i18n="Analytics">Stok Barang</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
 
-        <li class="menu-item {{ setActive('product-price.*') }}">
-            <a href="{{ route('product-price.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-money"></i>
-                <div data-i18n="Analytics">Harga Produk</div>
-            </a>
-        </li>
+{{--        <li class="menu-item {{ setActive('product-price.*') }}">--}}
+{{--            <a href="{{ route('product-price.index') }}" class="menu-link">--}}
+{{--                <i class="menu-icon tf-icons bx bx-money"></i>--}}
+{{--                <div data-i18n="Analytics">Harga Produk</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
 
         {{-- Manajemen Transaksi --}}
         <li class="menu-header small text-uppercase">

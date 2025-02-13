@@ -6,15 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PriceTier extends Model
 {
-    protected $fillable = ['product_id', 'unit_id', 'min_quantity', 'price'];
+    protected $fillable = ['product_unit_id', 'min_quantity', 'price'];
 
-    public function product()
+    public function productUnit()
     {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function unit()
-    {
-        return $this->belongsTo(Unit::class);
+        return $this->belongsTo(ProductUnit::class);
     }
 }

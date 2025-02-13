@@ -26,6 +26,11 @@ class ProductUnit extends Model
         return $this->belongsTo(Unit::class);
     }
 
+    public function priceTiers()
+    {
+        return $this->hasMany(PriceTier::class);
+    }
+
 
     public function getDiscountPercentageAttribute()
     {

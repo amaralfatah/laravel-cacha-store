@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('price_tiers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained();
-            $table->foreignId('unit_id')->constrained();
+            $table->foreignId('product_unit_id')->constrained();
             $table->decimal('min_quantity', 15, 2);
             $table->decimal('price', 15, 2);
             $table->timestamps();
 
-            $table->unique(['product_id', 'unit_id', 'min_quantity']);
+            $table->unique(['product_unit_id', 'min_quantity']);
         });
     }
 

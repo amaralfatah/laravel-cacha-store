@@ -54,16 +54,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('products', ProductController::class);
 
-    Route::resource('products.units', ProductUnitController::class);
+    Route::resource('products.units', ProductUnitController::class)->except(['index', 'show']);
 
     Route::resource('inventory', InventoryController::class);
     Route::get('check-low-stock', [InventoryController::class, 'checkLowStock'])->name('inventory.check-low-stock');
 
-    Route::get('product-price', [ProductPriceController::class, 'index'])->name('product-price.index');
-    Route::get('product-price/{product}/edit', [ProductPriceController::class, 'edit'])->name('product-price.edit');
-    Route::put('product-price/{product}', [ProductPriceController::class, 'update'])->name('product-price.update');
-    Route::post('product-price/{product}/price-tier', [ProductPriceController::class, 'storePriceTier'])->name('product-price.price-tier.store');
-    Route::delete('product-price/price-tier/{priceTier}', [ProductPriceController::class, 'destroyPriceTier'])->name('product-price.price-tier.destroy');
+    Route::resource('products.prices', ProductPriceController::class)->except(['index', 'show']);
 
     Route::get('pos', [POSController::class, 'index'])->name('pos.index');
     Route::get('pos/get-product', [POSController::class, 'getProduct'])->name('pos.get-product');

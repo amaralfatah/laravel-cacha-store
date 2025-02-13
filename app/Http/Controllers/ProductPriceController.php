@@ -4,110 +4,228 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\PriceTier;
+use App\Models\ProductUnit;
 use App\Models\Tax;
 use App\Models\Discount;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProductPriceController extends Controller
 {
-    /**
-     * Display a listing of products with their price information.
-     */
-    public function index()
+
+    public function create(Product $product)
     {
-        $products = Product::with([
-            'priceTiers',
+        // Load necessary relationships
+        $product->load([
+            'productUnits.unit',
+            'productUnits.priceTiers',
             'tax',
-            'discount',
-            'defaultUnit'
-        ])->get();
-
-        return view('product-price.index', compact('products'));
-    }
-
-    /**
-     * Show the form for editing product price.
-     */
-    public function edit(Product $product)
-    {
-        $data = [
-            'product' => $product,
-            'taxes' => Tax::where('is_active', true)->get(),
-            'discounts' => Discount::where('is_active', true)->get(),
-            'units' => Unit::all(),
-            'priceTiers' => $product->priceTiers
-        ];
-
-        return view('product-price.edit', $data);
-    }
-
-    /**
-     * Update product price information.
-     */
-    public function update(Request $request, Product $product)
-    {
-        $validated = $request->validate([
-            'tax_id' => 'nullable|exists:taxes,id',
-            'discount_id' => 'nullable|exists:discounts,id',
-            'base_price' => 'required|numeric|min:0'
+            'discount'
         ]);
 
-        try {
-            $this->validatePriceTier($product, $validated);
-
-            $product->update($validated);
-
-            return redirect()
-                ->route('product-price.index')
-                ->with('success', 'Harga produk berhasil diupdate');
-
-        } catch (ValidationException $e) {
-            return back()->with('error', $e->getMessage());
-        }
+        return view('products.product-price.create', compact('product'));
     }
+
 
     /**
      * Store a new price tier for the product.
      */
-    public function storePriceTier(Request $request, Product $product)
+    public function store(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'unit_id' => 'required|exists:units,id',
-            'min_quantity' => 'required|numeric|min:1',
+            'product_unit_id' => [
+                'required',
+                Rule::exists('product_units', 'id')->where(function ($query) use ($product) {
+                    return $query->where('product_id', $product->id);
+                }),
+            ],
+            'min_quantity' => 'required|numeric|min:0.01',
             'price' => 'required|numeric|min:0'
         ]);
 
         try {
-            DB::transaction(function () use ($product, $validated) {
-                $this->validatePriceTier($product, $validated);
+            DB::transaction(function () use ($validated) {
+                // Validate tier pricing
+                $productUnit = ProductUnit::with('priceTiers')
+                    ->findOrFail($validated['product_unit_id']);
 
-                PriceTier::create([
-                    'product_id' => $product->id,
-                    ...$validated
-                ]);
+                // Check for conflicts with existing tiers
+                $conflictingTier = $productUnit->priceTiers()
+                    ->where('min_quantity', $validated['min_quantity'])
+                    ->first();
+
+                if ($conflictingTier) {
+                    throw ValidationException::withMessages([
+                        'min_quantity' => 'Price tier for this quantity already exists'
+                    ]);
+                }
+
+                // Check price is lower than tiers with smaller quantities
+                $lowerTier = $productUnit->priceTiers()
+                    ->where('min_quantity', '<', $validated['min_quantity'])
+                    ->orderBy('min_quantity', 'desc')
+                    ->first();
+
+                if ($lowerTier && $validated['price'] >= $lowerTier->price) {
+                    throw ValidationException::withMessages([
+                        'price' => 'Price must be lower than tiers with smaller quantities'
+                    ]);
+                }
+
+                PriceTier::create($validated);
             });
 
             return redirect()
-                ->back()
-                ->with('success', 'Harga bertingkat berhasil ditambahkan');
+                ->route('products.show', $product)
+                ->with('success', 'Price tier added successfully');
 
         } catch (ValidationException $e) {
-            return back()->with('error', $e->getMessage());
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+
+        }
+    }
+
+
+    public function edit(Product $product, PriceTier $price)
+    {
+        // Verify price tier belongs to product
+        if ($price->productUnit->product_id !== $product->id) {
+            abort(404);
+        }
+
+        // Load necessary relationships with specific ordering
+        $product->load([
+            'productUnits.unit',
+            'productUnits.priceTiers' => function ($query) {
+                $query->orderBy('min_quantity', 'asc');
+            },
+            'tax',
+            'discount'
+        ]);
+
+        // Get adjacent tiers for the current unit
+        $currentUnit = $price->productUnit;
+        $adjacentTiers = $currentUnit->priceTiers()
+            ->where('id', '!=', $price->id)
+            ->orderBy('min_quantity', 'asc')
+            ->get();
+
+        // Find previous and next tiers for validation limits
+        $previousTier = $adjacentTiers->where('min_quantity', '<', $price->min_quantity)->last();
+        $nextTier = $adjacentTiers->where('min_quantity', '>', $price->min_quantity)->first();
+
+        return view('products.product-price.edit', compact(
+            'product',
+            'price',
+            'previousTier',
+            'nextTier'
+        ));
+    }
+
+    public function update(Request $request, Product $product, PriceTier $price)
+    {
+        // Verify price tier belongs to product
+        if ($price->productUnit->product_id !== $product->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'product_unit_id' => [
+                'required',
+                Rule::exists('product_units', 'id')->where(function ($query) use ($product) {
+                    return $query->where('product_id', $product->id);
+                }),
+            ],
+            'min_quantity' => [
+                'required',
+                'numeric',
+                'min:0.01',
+                // Unique validation excluding current record
+                Rule::unique('price_tiers')
+                    ->where(function ($query) use ($request) {
+                        return $query->where('product_unit_id', $request->product_unit_id);
+                    })
+                    ->ignore($price->id),
+            ],
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request, $price) {
+                    $productUnit = ProductUnit::findOrFail($request->product_unit_id);
+
+                    // Price cannot be higher than the unit's base price
+                    if ($value >= $productUnit->selling_price) {
+                        $fail('Price must be lower than the unit\'s base price.');
+                    }
+                },
+            ]
+        ]);
+
+        try {
+            DB::transaction(function () use ($validated, $price) {
+                $productUnit = ProductUnit::with(['priceTiers' => function ($query) use ($price) {
+                    $query->where('id', '!=', $price->id);
+                }])->findOrFail($validated['product_unit_id']);
+
+                // Get adjacent tiers
+                $lowerTier = $productUnit->priceTiers
+                    ->where('min_quantity', '<', $validated['min_quantity'])
+                    ->sortByDesc('min_quantity')
+                    ->first();
+
+                $higherTier = $productUnit->priceTiers
+                    ->where('min_quantity', '>', $validated['min_quantity'])
+                    ->sortBy('min_quantity')
+                    ->first();
+
+                // Validate price against lower tier
+                if ($lowerTier && $validated['price'] >= $lowerTier->price) {
+                    throw ValidationException::withMessages([
+                        'price' => "Price must be lower than {$lowerTier->price} (tier for quantity {$lowerTier->min_quantity})"
+                    ]);
+                }
+
+                // Validate price against higher tier
+                if ($higherTier && $validated['price'] <= $higherTier->price) {
+                    throw ValidationException::withMessages([
+                        'price' => "Price must be higher than {$higherTier->price} (tier for quantity {$higherTier->min_quantity})"
+                    ]);
+                }
+
+                $price->update($validated);
+            });
+
+            return redirect()
+                ->route('products.show', $product)
+                ->with('success', 'Price tier updated successfully');
+
+        } catch (ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
         }
     }
 
     /**
      * Remove a price tier.
      */
-    public function destroyPriceTier(PriceTier $priceTier)
+    public function destroy(Product $product, PriceTier $price)
     {
-        $priceTier->delete();
+        // Verify price tier belongs to product
+        if ($price->productUnit->product_id !== $product->id) {
+            abort(404);
+        }
+
+        $price->delete();
 
         return redirect()
-            ->back()
+            ->route('products.show', $product)
             ->with('success', 'Harga bertingkat berhasil dihapus');
     }
 

@@ -11,28 +11,6 @@ use Illuminate\Validation\Rule;
 
 class ProductUnitController extends Controller
 {
-//    public function index(Product $product)
-//    {
-//        // Urutkan data dengan unit default di atas
-//        $productUnits = $product->productUnits()
-//            ->with('unit')
-//            ->orderBy('is_default', 'desc')
-//            ->get();
-//
-//        return view('product_units.index', compact('product', 'productUnits'));
-//    }
-
-//    public function index(Product $product)
-//    {
-//        $productUnits = $product->productUnits()
-//            ->with('unit')
-//            ->orderBy('is_default', 'desc')
-//            ->orderBy('created_at', 'asc')
-//            ->get();
-//
-//        return view('product_units.index', compact('product', 'productUnits'));
-//    }
-
     public function create(Product $product)
     {
         // Ambil unit yang aktif dan belum digunakan oleh produk
@@ -51,7 +29,7 @@ class ProductUnitController extends Controller
         // Cek apakah sudah ada unit default
         $hasDefaultUnit = $product->productUnits()->where('is_default', true)->exists();
 
-        return view('product_units.create', compact('product', 'availableUnits', 'hasDefaultUnit'));
+        return view('products.product_units.create', compact('product', 'availableUnits', 'hasDefaultUnit'));
     }
 
     public function store(Request $request, Product $product)
@@ -122,7 +100,7 @@ class ProductUnitController extends Controller
         // Hitung total stok dalam unit default
         $totalStockInDefaultUnit = $this->calculateTotalStockInDefaultUnit($product);
 
-        return view('product_units.edit', compact('product', 'unit', 'totalStockInDefaultUnit'));
+        return view('products.product_units.edit', compact('product', 'unit', 'totalStockInDefaultUnit'));
     }
 
     public function update(Request $request, Product $product, ProductUnit $unit)
