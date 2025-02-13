@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\StockTake;
+use App\Models\StockHistory;
+use App\Models\ProductUnit;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use DB;
 
 class StockTakeController extends Controller
 {
@@ -17,17 +19,17 @@ class StockTakeController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('stock_takes.index', compact('stockTakes'));
+        return view('stock-takes.index', compact('stockTakes'));
     }
 
     public function create()
     {
         $products = Product::where('is_active', true)
-            ->with(['productUnits.unit', 'inventories', 'category'])
+            ->with(['productUnits.unit', 'category'])
             ->get();
-        $categories = Category::all();
+        $categories = Category::where('is_active', true)->get();
 
-        return view('stock_takes.create', compact('products', 'categories'));
+        return view('stock-takes.create', compact('products', 'categories'));
     }
 
     public function store(Request $request)
@@ -38,40 +40,73 @@ class StockTakeController extends Controller
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.unit_id' => 'required|exists:units,id',
-            'items.*.actual_qty' => 'required|numeric|min:0',
+            'items.*.actual_qty' => 'nullable|numeric|min:0',
         ]);
 
-        $this->validateUniqueUnits($validated['items']);
-
-        $stockTake = StockTake::create([
-            'date' => $validated['date'],
-            'notes' => $validated['notes'],
-            'created_by' => auth()->id(),
-        ]);
-
+        // Validate at least one item has actual_qty
+        $hasQuantity = false;
         foreach ($validated['items'] as $item) {
-            // Get current stock for this product-unit combination
-            $currentStock = Inventory::where('product_id', $item['product_id'])
-                ->where('unit_id', $item['unit_id'])
-                ->value('quantity') ?? 0;
+            if (isset($item['actual_qty']) && $item['actual_qty'] !== null && $item['actual_qty'] !== '') {
+                $hasQuantity = true;
+                break;
+            }
+        }
 
-            $stockTake->items()->create([
-                'product_id' => $item['product_id'],
-                'unit_id' => $item['unit_id'],
-                'system_qty' => $currentStock,
-                'actual_qty' => $item['actual_qty'],
+        if (!$hasQuantity) {
+            throw ValidationException::withMessages([
+                'items' => 'At least one item must have actual quantity filled'
             ]);
         }
 
-        return redirect()
-            ->route('stock-takes.show', $stockTake)
-            ->with('success', 'Stock take created successfully');
+        $this->validateUniqueUnits($validated['items']);
+
+        try {
+            DB::beginTransaction();
+
+            $stockTake = StockTake::create([
+                'date' => $validated['date'],
+                'notes' => $validated['notes'],
+                'status' => 'draft',
+                'created_by' => auth()->id(),
+            ]);
+
+            // Filter hanya item yang memiliki actual_qty
+            foreach ($validated['items'] as $item) {
+                // Skip jika actual_qty kosong
+                if (!isset($item['actual_qty']) || $item['actual_qty'] === '' || $item['actual_qty'] === null) {
+                    continue;
+                }
+
+                // Get current stock from product_units table
+                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                    ->where('unit_id', $item['unit_id'])
+                    ->first();
+
+                $systemQty = $productUnit ? $productUnit->stock : 0;
+
+                $stockTake->items()->create([
+                    'product_id' => $item['product_id'],
+                    'unit_id' => $item['unit_id'],
+                    'system_qty' => $systemQty,
+                    'actual_qty' => $item['actual_qty'],
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('stock-takes.show', $stockTake)
+                ->with('success', 'Stock take created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to create stock take: ' . $e->getMessage());
+        }
     }
 
     public function show(StockTake $stockTake)
     {
-        $stockTake->load(['items.product', 'creator']);
-        return view('stock_takes.show', compact('stockTake'));
+        $stockTake->load(['items.product', 'items.unit', 'creator']);
+        return view('stock-takes.show', compact('stockTake'));
     }
 
     public function complete(StockTake $stockTake)
@@ -80,25 +115,50 @@ class StockTakeController extends Controller
             return back()->with('error', 'Stock take already completed');
         }
 
-        // Update actual inventory quantities
-        foreach ($stockTake->items as $item) {
-            Inventory::updateOrCreate(
-                [
-                    'product_id' => $item->product_id,
-                    'unit_id' => $item->unit_id
-                ],
-                [
-                    'quantity' => $item->actual_qty,
-                    'min_stock' => 0 // Set default min_stock
-                ]
-            );
+        try {
+            DB::beginTransaction();
+
+            // Update product unit quantities and create stock histories
+            foreach ($stockTake->items as $item) {
+                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                    ->where('unit_id', $item['unit_id'])
+                    ->first();
+
+                if (!$productUnit) {
+                    throw new \Exception("Product unit combination not found");
+                }
+
+                // Update stock in product_units
+                $oldStock = $productUnit->stock;
+                $difference = $item->actual_qty - $item->system_qty;
+
+                $productUnit->update([
+                    'stock' => $item->actual_qty
+                ]);
+
+                // Create stock history record
+                StockHistory::create([
+                    'product_unit_id' => $productUnit->id,
+                    'reference_type' => 'stock_takes',
+                    'reference_id' => $stockTake->id,
+                    'type' => $difference >= 0 ? 'adjustment' : 'adjustment',
+                    'quantity' => abs($difference),
+                    'remaining_stock' => $item->actual_qty,
+                    'notes' => "Stock take adjustment from {$oldStock} to {$item->actual_qty}",
+                ]);
+            }
+
+            $stockTake->update(['status' => 'completed']);
+
+            DB::commit();
+
+            return redirect()
+                ->route('stock-takes.index')
+                ->with('success', 'Stock take completed and inventory updated');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to complete stock take: ' . $e->getMessage());
         }
-
-        $stockTake->update(['status' => 'completed']);
-
-        return redirect()
-            ->route('stock-takes.index')
-            ->with('success', 'Stock take completed and inventory updated');
     }
 
     protected function validateUniqueUnits($items)

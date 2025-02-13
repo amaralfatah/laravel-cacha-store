@@ -28,4 +28,9 @@ class StockTakeItem extends Model
     {
         return $this->belongsTo(Unit::class);
     }
+
+    public function productUnit()
+    {
+        return $this->belongsTo(ProductUnit::class, ['product_id', 'unit_id'], ['product_id', 'unit_id']);
+    }
 }

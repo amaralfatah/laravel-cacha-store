@@ -17,8 +17,26 @@ class StockTake extends Model
                 foreach ($stockTake->items as $item) {
                     $adjustment = $item->actual_qty - $item->system_qty;
                     if ($adjustment != 0) {
+                        // Cari atau buat ProductUnit jika belum ada
+                        $productUnit = ProductUnit::firstOrCreate(
+                            [
+                                'product_id' => $item->product_id,
+                                'unit_id' => $item->unit_id
+                            ],
+                            [
+                                'stock' => 0,
+                                'is_default' => false
+                            ]
+                        );
+
+                        // Update stock di ProductUnit
+                        $productUnit->update([
+                            'stock' => $item->actual_qty
+                        ]);
+
+                        // Catat history
                         StockHistory::recordHistory(
-                            $item->productUnit,
+                            $productUnit,
                             'stock_takes',
                             $stockTake->id,
                             'adjustment',

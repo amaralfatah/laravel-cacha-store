@@ -29,6 +29,11 @@ class StockHistory extends Model
     // Helper method to create history from different sources
     public static function recordHistory($productUnit, $referenceType, $referenceId, $type, $quantity, $notes = null)
     {
+        // Validasi productUnit tidak null
+        if (!$productUnit) {
+            throw new \Exception("Product unit not found");
+        }
+
         return self::create([
             'product_unit_id' => $productUnit->id,
             'reference_type' => $referenceType,
