@@ -31,6 +31,17 @@ class ProductUnit extends Model
         return $this->hasMany(Price::class);
     }
 
+    public function stockAdjustments()
+    {
+        return $this->hasMany(StockAdjustment::class);
+    }
+
+    public function stockHistories()
+    {
+        return $this->hasMany(StockHistory::class);
+    }
+
+
 
     public function getDiscountPercentageAttribute()
     {

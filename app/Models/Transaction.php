@@ -24,6 +24,26 @@ class Transaction extends Model
         'invoice_date' => 'datetime'
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($transaction) {
+            if ($transaction->status === 'success') {
+                foreach ($transaction->items as $item) {
+                    StockHistory::recordHistory(
+                        $item->productUnit,
+                        'transactions',
+                        $transaction->id,
+                        'out',
+                        $item->quantity,
+                        'Transaction sale: ' . $transaction->invoice_number
+                    );
+                }
+            }
+        });
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
