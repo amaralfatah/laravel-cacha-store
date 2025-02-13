@@ -182,6 +182,22 @@ class POSController extends Controller
                 }
             }
 
+            if ($request->status === 'success') {
+                foreach ($request->items as $item) {
+                    $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                        ->where('unit_id', $item['unit_id'])
+                        ->first();
+
+                    if ($productUnit) {
+                        if ($productUnit->stock < $item['quantity']) {
+                            throw new \Exception('Stok tidak mencukupi untuk produk ' . $product->name);
+                        }
+
+                        $productUnit->decrement('stock', $item['quantity']);
+                    }
+                }
+            }
+
             DB::commit();
 
             // Clear session data if transaction is completed

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Transaction extends Model
 {
@@ -28,17 +29,31 @@ class Transaction extends Model
     {
         parent::boot();
 
-        static::created(function ($transaction) {
-            if ($transaction->status === 'success') {
+        // When status updated to success
+        static::updated(function ($transaction) {
+            if ($transaction->status === 'success' && $transaction->getOriginal('status') !== 'success') {
                 foreach ($transaction->items as $item) {
-                    StockHistory::recordHistory(
-                        $item->productUnit,
-                        'transactions',
-                        $transaction->id,
-                        'out',
-                        $item->quantity,
-                        'Transaction sale: ' . $transaction->invoice_number
-                    );
+                    $productUnit = ProductUnit::where('product_id', $item->product_id)
+                        ->where('unit_id', $item->unit_id)
+                        ->first();
+
+                    if ($productUnit) {
+                        if ($productUnit->stock < $item->quantity) {
+                            throw new \Exception('Stok tidak mencukupi untuk produk ' . $item->product->name);
+                        }
+
+                        $productUnit->decrement('stock', $item->quantity);
+
+                        StockHistory::create([
+                            'product_unit_id' => $productUnit->id,
+                            'reference_type' => 'transaction_items',
+                            'reference_id' => $item->id,
+                            'type' => 'out',
+                            'quantity' => $item->quantity,
+                            'remaining_stock' => $productUnit->stock,
+                            'notes' => "Transaction sale: {$transaction->invoice_number}"
+                        ]);
+                    }
                 }
             }
         });
@@ -68,5 +83,17 @@ class Transaction extends Model
         $this->discount_amount = $this->items->sum('discount');
         $this->final_amount = $this->total_amount + $this->tax_amount - $this->discount_amount;
         return $this;
+    }
+
+    public function markAsSuccess()
+    {
+        DB::transaction(function () {
+            $this->update(['status' => 'success']);
+        });
+    }
+
+    public function history()
+    {
+        return $this->morphMany(StockHistory::class, 'reference');
     }
 }
