@@ -59,9 +59,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('products.units', ProductUnitController::class)->except(['index', 'show']);
 
-    Route::resource('inventory', InventoryController::class);
-    Route::get('check-low-stock', [InventoryController::class, 'checkLowStock'])->name('inventory.check-low-stock');
-
     Route::resource('products.prices', ProductPriceController::class)->except(['index', 'show']);
 
     Route::get('pos', [POSController::class, 'index'])->name('pos.index');
