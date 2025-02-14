@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
             $table->string('name');
             $table->string('barcode', 100);
             $table->string('barcode_image')->nullable();
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->foreignId('tax_id')->nullable()->constrained();
             $table->foreignId('discount_id')->nullable()->constrained();
             $table->foreignId('default_unit_id')->nullable()->constrained('units');
+            $table->foreignId('supplier_id')->nullable()->constrained('units');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

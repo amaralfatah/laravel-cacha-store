@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('purchase_price', 15, 2);
             $table->decimal('selling_price', 15, 2);
             $table->integer('stock')->default(0);
+            $table->decimal('min_stock', 15, 2)->default(0);
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
