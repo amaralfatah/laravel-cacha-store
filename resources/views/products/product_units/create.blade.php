@@ -127,6 +127,25 @@
                             </div>
 
                             <div class="mb-4">
+                                <label for="min_stock" class="form-label required">Stok Minimum</label>
+                                <div class="input-group">
+                                    <input type="number"
+                                           step="0.01"
+                                           min="0"
+                                           max="999999999.99"
+                                           class="form-control @error('min_stock') is-invalid @enderror"
+                                           id="min_stock"
+                                           name="min_stock"
+                                           value="{{ old('min_stock', 0) }}"
+                                           required>
+                                    <span class="input-group-text unit-code"></span>
+                                </div>
+                                @error('min_stock')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-4">
                                 <div class="form-check form-switch">
                                     <input type="checkbox"
                                            class="form-check-input"

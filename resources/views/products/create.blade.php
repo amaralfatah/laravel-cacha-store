@@ -22,6 +22,15 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="code" class="form-label">Kode Produk</label>
+                                <input type="text" class="form-control @error('code') is-invalid @enderror"
+                                       id="code" name="code" value="{{ old('code') }}">
+                                @error('code')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="barcode" class="form-label">Barcode</label>
                                 <input type="text" class="form-control @error('barcode') is-invalid @enderror"
                                        id="barcode" name="barcode" value="{{ old('barcode') }}">

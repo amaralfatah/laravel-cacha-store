@@ -16,6 +16,7 @@
             <table class="table">
                 <thead>
                 <tr>
+                    <th>Kode Produk</th>
                     <th>Nama</th>
                     <th>Barcode</th>
                     <th>Kategori</th>
@@ -29,6 +30,7 @@
                 <tbody>
                 @foreach ($products as $product)
                     <tr>
+                        <td>{{ $product->code }}</td>
                         <td>{{ $product->name }}</td>
                         <td>{{ $product->barcode }}</td>
                         <td>{{ $product->category->name }}</td>

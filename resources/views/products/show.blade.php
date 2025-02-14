@@ -10,6 +10,9 @@
                 <span class="ms-3">
                     <i class="bi bi-upc me-2"></i>{{ $product->barcode }}
                 </span>
+                <span class="ms-3">
+                    <i class="bi bi-upc me-2"></i>{{ $product->code }}
+                </span>
             </p>
         </div>
         <div class="d-flex gap-2">

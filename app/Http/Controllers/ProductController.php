@@ -34,6 +34,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|max:255',
+            'code' => 'required|unique:products|max:100',
             'barcode' => 'required|unique:products|max:100',
             'category_id' => 'required|exists:categories,id',
             'purchase_price' => 'required|numeric|min:0',
@@ -57,6 +58,7 @@ class ProductController extends Controller
 
             $product = Product::create([
                 'name' => $validated['name'],
+                'code' => $validated['code'],
                 'barcode' => $validated['barcode'],
                 'barcode_image' => $barcodePath,
                 'category_id' => $validated['category_id'],
@@ -101,6 +103,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|max:255',
+            'code' => 'required|max:100|unique:products,code,' . $product->id,
             'barcode' => 'required|max:100|unique:products,barcode,' . $product->id,
             'category_id' => 'required|exists:categories,id',
             'tax_id' => 'nullable|exists:taxes,id',

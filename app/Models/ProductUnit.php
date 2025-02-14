@@ -13,6 +13,7 @@ class ProductUnit extends Model
         'purchase_price',
         'selling_price',
         'stock',
+        'min_stock',
         'is_default'
     ];
 

@@ -46,6 +46,7 @@ class ProductUnitController extends Controller
             'purchase_price' => 'required|numeric|min:0|max:999999999.99',
             'selling_price' => 'required|numeric|min:0|max:999999999.99',
             'stock' => 'required|numeric|min:0|max:999999999.99',
+            'min_stock' => 'required|numeric|min:0|max:999999999.99',
             'is_default' => 'sometimes|boolean',
         ], [
             'unit_id.required' => 'Unit harus dipilih',
@@ -137,6 +138,7 @@ class ProductUnitController extends Controller
             'purchase_price' => 'required|numeric|min:0|max:999999999.99',
             'selling_price' => 'required|numeric|min:0|max:999999999.99',
             'stock' => 'required|numeric|min:0|max:999999999.99',
+            'min_stock' => 'required|numeric|min:0|max:999999999.99',
             'is_default' => 'sometimes|boolean',
         ], [
             'conversion_factor.required' => 'Faktor konversi harus diisi',
