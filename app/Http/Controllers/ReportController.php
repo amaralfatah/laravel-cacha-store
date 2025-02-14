@@ -2,258 +2,138 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ReportExport;
 use App\Models\Transaction;
 use App\Models\Product;
-use App\Models\Inventory;
-use Barryvdh\DomPDF\PDF as DomPDFPDF;
-use Illuminate\Http\Request;
+use App\Models\StockHistory;
+use App\Models\BalanceMutation;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function salesReport(Request $request)
+    public function index()
     {
-        $type = $request->type ?? 'daily';
-        $date = $request->date ?? now();
-        $startDate = $type === 'daily'
-            ? Carbon::parse($date)->startOfDay()
-            : Carbon::parse($date)->startOfMonth();
-        $endDate = $type === 'daily'
-            ? Carbon::parse($date)->endOfDay()
-            : Carbon::parse($date)->endOfMonth();
-
-        $sales = Transaction::with(['customer', 'items.product', 'items.unit'])
-            ->whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'success')
-            ->get();
-
-        return view('reports.sales', compact('sales', 'type', 'date'));
+        return view('reports.index');
     }
 
-    public function stockReport()
+    public function sales(Request $request)
     {
-        $stocks = Inventory::with(['product', 'unit'])
-            ->get();
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
 
-        return view('reports.stock', compact('stocks'));
-    }
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
-    public function bestSellerReport(Request $request)
-    {
-        $startDate = $request->start_date ?? Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ?? Carbon::now();
-
-        $products = Transaction::with(['items.product'])
+        $sales = Transaction::with(['customer', 'cashier', 'items.product', 'items.unit'])
             ->whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'success')
+            ->orderBy('invoice_date', 'desc')
+            ->get();
+
+        $summary = [
+            'total_sales' => $sales->sum('final_amount'),
+            'total_transactions' => $sales->count(),
+            'average_transaction' => $sales->count() > 0 ? $sales->sum('final_amount') / $sales->count() : 0,
+            'total_items' => $sales->sum(function($sale) {
+                return $sale->items->sum('quantity');
+            }),
+        ];
+
+        return view('reports.sales', compact('sales', 'summary', 'startDate', 'endDate'));
+    }
+
+    public function inventory(Request $request)
+    {
+        $products = Product::with(['category', 'productUnits.unit'])
+            ->where('is_active', true)
             ->get()
-            ->flatMap(fn($transaction) => $transaction->items)
-            ->groupBy('product_id')
-            ->map(function ($items) {
+            ->map(function ($product) {
+                $totalStock = $product->productUnits->sum('stock');
+                $lowStock = $product->productUnits->filter(function ($unit) {
+                        return $unit->stock <= $unit->min_stock;
+                    })->count() > 0;
+
                 return [
-                    'product' => $items->first()->product,
-                    'total_quantity' => $items->sum('quantity'),
-                    'total_amount' => $items->sum('subtotal'),
+                    'id' => $product->id,
+                    'code' => $product->code,
+                    'name' => $product->name,
+                    'category' => $product->category->name,
+                    'total_stock' => $totalStock,
+                    'low_stock' => $lowStock,
+                    'units' => $product->productUnits
                 ];
-            })
-            ->sortByDesc('total_quantity')
-            ->values();
-
-        return view('reports.bestseller', compact('products', 'startDate', 'endDate'));
-    }
-
-    public function profitReport(Request $request)
-    {
-        $startDate = $request->start_date ?? Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ?? Carbon::now();
-
-        $transactions = Transaction::with(['items.product'])
-            ->whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'success')
-            ->get();
-
-        $profits = $transactions->map(function ($transaction) {
-            $cost = $transaction->items->sum(function ($item) {
-                return $item->product->base_price * $item->quantity;
             });
 
-            return [
-                'invoice_number' => $transaction->invoice_number,
-                'date' => $transaction->invoice_date,
-                'revenue' => $transaction->final_amount,
-                'cost' => $cost,
-                'profit' => $transaction->final_amount - $cost,
-            ];
-        });
-
-        return view('reports.profit', compact('profits', 'startDate', 'endDate'));
+        return view('reports.inventory', compact('products'));
     }
 
-    private function getReportData(Request $request, $type)
+    public function stockMovement(Request $request)
     {
-        switch ($type) {
-            case 'sales':
-                $reportType = $request->type ?? 'daily';
-                $date = $request->date ?? now();
-                $startDate = $reportType === 'daily'
-                    ? Carbon::parse($date)->startOfDay()
-                    : Carbon::parse($date)->startOfMonth();
-                $endDate = $reportType === 'daily'
-                    ? Carbon::parse($date)->endOfDay()
-                    : Carbon::parse($date)->endOfMonth();
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'product_id' => 'nullable|exists:products,id'
+        ]);
 
-                return [
-                    'sales' => Transaction::with(['customer', 'items.product', 'items.unit'])
-                        ->whereBetween('invoice_date', [$startDate, $endDate])
-                        ->where('status', 'success')
-                        ->get(),
-                    'type' => $reportType,
-                    'date' => $date
-                ];
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
-            case 'stock':
-                return [
-                    'stocks' => Inventory::with(['product', 'unit'])->get()
-                ];
+        $query = StockHistory::with(['productUnit.product', 'productUnit.unit'])
+            ->whereBetween('created_at', [$startDate, $endDate]);
 
-            case 'bestseller':
-                $startDate = $request->start_date ?? Carbon::now()->startOfMonth();
-                $endDate = $request->end_date ?? Carbon::now();
-
-                return [
-                    'products' => Transaction::with(['items.product'])
-                        ->whereBetween('invoice_date', [$startDate, $endDate])
-                        ->where('status', 'success')
-                        ->get()
-                        ->flatMap(fn($transaction) => $transaction->items)
-                        ->groupBy('product_id')
-                        ->map(function ($items) {
-                            return [
-                                'product' => $items->first()->product,
-                                'total_quantity' => $items->sum('quantity'),
-                                'total_amount' => $items->sum('subtotal'),
-                            ];
-                        })
-                        ->sortByDesc('total_quantity')
-                        ->values(),
-                    'startDate' => $startDate,
-                    'endDate' => $endDate
-                ];
-
-            case 'profit':
-                $startDate = $request->start_date ?? Carbon::now()->startOfMonth();
-                $endDate = $request->end_date ?? Carbon::now();
-
-                $transactions = Transaction::with(['items.product'])
-                    ->whereBetween('invoice_date', [$startDate, $endDate])
-                    ->where('status', 'success')
-                    ->get();
-
-                return [
-                    'profits' => $transactions->map(function ($transaction) {
-                        $cost = $transaction->items->sum(function ($item) {
-                            return $item->product->base_price * $item->quantity;
-                        });
-
-                        return [
-                            'invoice_number' => $transaction->invoice_number,
-                            'date' => $transaction->invoice_date,
-                            'revenue' => $transaction->final_amount,
-                            'cost' => $cost,
-                            'profit' => $transaction->final_amount - $cost,
-                        ];
-                    }),
-                    'startDate' => $startDate,
-                    'endDate' => $endDate
-                ];
-
-            default:
-                return [];
+        if ($request->product_id) {
+            $query->whereHas('productUnit', function($q) use ($request) {
+                $q->where('product_id', $request->product_id);
+            });
         }
+
+        $movements = $query->orderBy('created_at', 'desc')->get();
+
+        $products = Product::where('is_active', true)->get();
+
+        return view('reports.stock-movement', compact('movements', 'products', 'startDate', 'endDate'));
     }
 
-    public function exportPDF(Request $request, $type)
+    public function financial(Request $request)
     {
-        switch ($type) {
-            case 'sales':
-                $type = $request->type ?? 'daily';
-                $date = $request->date ?? now();
-                $startDate = $type === 'daily'
-                    ? Carbon::parse($date)->startOfDay()
-                    : Carbon::parse($date)->startOfMonth();
-                $endDate = $type === 'daily'
-                    ? Carbon::parse($date)->endOfDay()
-                    : Carbon::parse($date)->endOfMonth();
+        $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
 
-                $sales = Transaction::with(['customer', 'items.product', 'items.unit'])
-                    ->whereBetween('invoice_date', [$startDate, $endDate])
-                    ->where('status', 'success')
-                    ->get();
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
-                $pdf = Pdf::loadView('reports.pdf.sales', compact('sales'));
-                return $pdf->download('laporan-penjualan.pdf');
+        $mutations = BalanceMutation::with('createdBy')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            case 'stock':
-                $stocks = Inventory::with(['product.category', 'unit'])->get();
-                $pdf = Pdf::loadView('reports.pdf.stock', compact('stocks'));
-                return $pdf->download('laporan-stok.pdf');
+        $summary = [
+            'total_in' => $mutations->where('type', 'in')->sum('amount'),
+            'total_out' => $mutations->where('type', 'out')->sum('amount'),
+            'net_amount' => $mutations->where('type', 'in')->sum('amount') - $mutations->where('type', 'out')->sum('amount'),
+            'current_balance' => DB::table('store_balances')->first()->amount ?? 0,
+        ];
 
-            case 'bestseller':
-                $startDate = $request->start_date ?? Carbon::now()->startOfMonth();
-                $endDate = $request->end_date ?? Carbon::now();
-
-                $products = Transaction::with(['items.product'])
-                    ->whereBetween('invoice_date', [$startDate, $endDate])
-                    ->where('status', 'success')
-                    ->get()
-                    ->flatMap(fn($transaction) => $transaction->items)
-                    ->groupBy('product_id')
-                    ->map(function ($items) {
-                        return [
-                            'product' => $items->first()->product,
-                            'total_quantity' => $items->sum('quantity'),
-                            'total_amount' => $items->sum('subtotal'),
-                        ];
-                    })
-                    ->sortByDesc('total_quantity')
-                    ->values();
-
-                $pdf = Pdf::loadView('reports.pdf.bestseller', compact('products', 'startDate', 'endDate'));
-                return $pdf->download('laporan-produk-terlaris.pdf');
-
-            case 'profit':
-                $startDate = $request->start_date ?? Carbon::now()->startOfMonth();
-                $endDate = $request->end_date ?? Carbon::now();
-
-                $transactions = Transaction::with(['items.product'])
-                    ->whereBetween('invoice_date', [$startDate, $endDate])
-                    ->where('status', 'success')
-                    ->get();
-
-                $profits = $transactions->map(function ($transaction) {
-                    $cost = $transaction->items->sum(function ($item) {
-                        return $item->product->base_price * $item->quantity;
-                    });
-
-                    return [
-                        'invoice_number' => $transaction->invoice_number,
-                        'date' => $transaction->invoice_date,
-                        'revenue' => $transaction->final_amount,
-                        'cost' => $cost,
-                        'profit' => $transaction->final_amount - $cost,
-                    ];
-                });
-
-                $pdf = Pdf::loadView('reports.pdf.profit', compact('profits', 'startDate', 'endDate'));
-                return $pdf->download('laporan-keuntungan.pdf');
-        }
+        return view('reports.financial', compact('mutations', 'summary', 'startDate', 'endDate'));
     }
 
-    public function exportExcel(Request $request, $type)
+    public function exportSales(Request $request)
     {
-        return Excel::download(new ReportExport($request, $type), "laporan-{$type}.xlsx");
+        // Implementation for exporting sales report to Excel/PDF
+    }
+
+    public function exportInventory(Request $request)
+    {
+        // Implementation for exporting inventory report to Excel/PDF
+    }
+
+    public function exportFinancial(Request $request)
+    {
+        // Implementation for exporting financial report to Excel/PDF
     }
 }

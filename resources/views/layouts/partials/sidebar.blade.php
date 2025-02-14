@@ -195,28 +195,34 @@
             </a>
 
             <ul class="menu-sub">
+                <li class="menu-item {{ setActive('reports.index') }}">
+                    <a href="{{ route('reports.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-line-chart"></i>
+                        <div data-i18n="Sales Report">Dashboard</div>
+                    </a>
+                </li>
                 <li class="menu-item {{ setActive('reports.sales') }}">
                     <a href="{{ route('reports.sales') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-line-chart"></i>
                         <div data-i18n="Sales Report">Penjualan</div>
                     </a>
                 </li>
-                <li class="menu-item {{ setActive('reports.stock') }}">
-                    <a href="{{ route('reports.stock') }}" class="menu-link">
+                <li class="menu-item {{ setActive('reports.stock-movement') }}">
+                    <a href="{{ route('reports.stock-movement') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-bar-chart"></i>
-                        <div data-i18n="Stock Report">Stok</div>
+                        <div data-i18n="Stock Report">Pergerakan Stok</div>
                     </a>
                 </li>
-                <li class="menu-item {{ setActive('reports.bestseller') }}">
-                    <a href="{{ route('reports.bestseller') }}" class="menu-link">
+                <li class="menu-item {{ setActive('reports.inventory') }}">
+                    <a href="{{ route('reports.inventory') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-trophy"></i>
-                        <div data-i18n="Bestseller Report">Produk Terlaris</div>
+                        <div data-i18n="Bestseller Report">Inventaris</div>
                     </a>
                 </li>
-                <li class="menu-item {{ setActive('reports.profit') }}">
-                    <a href="{{ route('reports.profit') }}" class="menu-link">
+                <li class="menu-item {{ setActive('reports.financial') }}">
+                    <a href="{{ route('reports.financial') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-money"></i>
-                        <div data-i18n="Profit Report">Keuntungan</div>
+                        <div data-i18n="Profit Report">Keuangan</div>
                     </a>
                 </li>
             </ul>

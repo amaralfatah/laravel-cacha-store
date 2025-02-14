@@ -6,7 +6,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
@@ -19,7 +18,6 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StockTakeController;
-use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockHistoryController;
 use Illuminate\Support\Facades\Route;
@@ -74,14 +72,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/{transaction}/continue', [TransactionController::class, 'continue'])
         ->name('transactions.continue');
 
-    Route::prefix('reports')->group(function () {
-        Route::get('/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
-        Route::get('/stock', [ReportController::class, 'stockReport'])->name('reports.stock');
-        Route::get('/bestseller', [ReportController::class, 'bestSellerReport'])->name('reports.bestseller');
-        Route::get('/profit', [ReportController::class, 'profitReport'])->name('reports.profit');
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('/stock-movement', [ReportController::class, 'stockMovement'])->name('stock-movement');
+        Route::get('/financial', [ReportController::class, 'financial'])->name('financial');
 
-        Route::get('/export/pdf/{type}', [ReportController::class, 'exportPDF'])->name('reports.export.pdf');
-        Route::get('/export/excel/{type}', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
+        // Export routes
+        Route::get('/export-sales', [ReportController::class, 'exportSales'])->name('export-sales');
+        Route::get('/export-inventory', [ReportController::class, 'exportInventory'])->name('export-inventory');
+        Route::get('/export-financial', [ReportController::class, 'exportFinancial'])->name('export-financial');
     });
 
     Route::get('/search', [SearchController::class, 'search'])->name('search');
