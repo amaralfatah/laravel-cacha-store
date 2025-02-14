@@ -10,23 +10,54 @@
                         <form action="{{ route('categories.update', $category) }}" method="POST">
                             @csrf
                             @method('PUT')
+
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Code</label>
+                                <input type="text" class="form-control @error('code') is-invalid @enderror"
+                                       id="code" name="code" value="{{ old('code', $category->code) }}" required>
+                                @error('code')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    id="name" name="name" value="{{ old('name', $category->name) }}" required>
+                                       id="name" name="name" value="{{ old('name', $category->name) }}" required>
                                 @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="mb-3">
+                                <label for="group_id" class="form-label">Group</label>
+                                <select class="form-select @error('group_id') is-invalid @enderror"
+                                        id="group_id" name="group_id" required>
+                                    <option value="">Select Group</option>
+                                    @foreach($groups as $group)
+                                        <option value="{{ $group->id }}"
+                                            {{ old('group_id', $category->group_id) == $group->id ? 'selected' : '' }}>
+                                            {{ $group->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('group_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                             <div class="mb-3">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
-                                        value="1" {{ old('is_active', $category->is_active) ? 'checked' : '' }}>
+                                           value="1" {{ old('is_active', $category->is_active) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="is_active">Active</label>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Update Category</button>
-                            <a href="{{ route('categories.index') }}" class="btn btn-secondary">Cancel</a>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ route('categories.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Update Category</button>
+                            </div>
                         </form>
                     </div>
                 </div>

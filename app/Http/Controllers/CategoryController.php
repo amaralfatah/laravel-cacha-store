@@ -3,30 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Group;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->paginate(10);
+        $categories = Category::with('group')->latest()->paginate(10);
         return view('categories.index', compact('categories'));
     }
 
     public function create()
     {
-        return view('categories.create');
+        $groups = Group::where('is_active', true)->get();
+        return view('categories.create', compact('groups'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories',
+            'code' => 'required|string|max:255|unique:categories',
+            'name' => 'required|string|max:255',
+            'group_id' => 'required|exists:groups,id',
             'is_active' => 'boolean'
         ]);
 
         Category::create([
+            'code' => $request->code,
             'name' => $request->name,
+            'group_id' => $request->group_id,
             'is_active' => $request->has('is_active')
         ]);
 
@@ -36,18 +42,23 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        return view('categories.edit', compact('category'));
+        $groups = Group::where('is_active', true)->get();
+        return view('categories.edit', compact('category', 'groups'));
     }
 
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'code' => 'required|string|max:255|unique:categories,code,' . $category->id,
+            'name' => 'required|string|max:255',
+            'group_id' => 'required|exists:groups,id',
             'is_active' => 'boolean'
         ]);
 
         $category->update([
+            'code' => $request->code,
             'name' => $request->name,
+            'group_id' => $request->group_id,
             'is_active' => $request->has('is_active')
         ]);
 

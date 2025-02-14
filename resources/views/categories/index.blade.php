@@ -7,42 +7,59 @@
             <a href="{{ route('categories.create') }}" class="btn btn-primary">Create New</a>
         </div>
         <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-            <table class="table">
-                <thead>
+            @if(session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Code</th>
                         <th>Name</th>
+                        <th>Group</th>
                         <th>Status</th>
                         <th>Created At</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     @foreach ($categories as $category)
                         <tr>
-                            <td>{{ $category->id }}</td>
+                            <td>{{ $category->code }}</td>
                             <td>{{ $category->name }}</td>
+                            <td>{{ $category->group->name ?? '-' }}</td>
                             <td>
-                                <span class="badge {{ $category->is_active ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $category->is_active ? 'Active' : 'Inactive' }}
-                                </span>
+                                    <span class="badge {{ $category->is_active ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
                             </td>
-                            <td>{{ optional($category->created_at)->format('Y-m-d H:i') ?? '-' }}</td>
+                            <td>{{ $category->created_at->format('Y-m-d H:i') }}</td>
                             <td>
                                 <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-info">Edit</a>
                                 <form action="{{ route('categories.destroy', $category) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure?')">Delete</button>
+                                            onclick="return confirm('Are you sure you want to delete this category?')">Delete</button>
                                 </form>
                             </td>
                         </tr>
                     @endforeach
-                </tbody>
-            </table>
-            {{ $categories->links() }}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-3">
+                {{ $categories->links() }}
+            </div>
         </div>
     </div>
 @endsection
