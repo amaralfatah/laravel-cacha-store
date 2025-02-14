@@ -28,7 +28,6 @@ class UnitController extends Controller
         Unit::create([
             'name' => $request->name,
             'code' => $request->code,
-            'is_base_unit' => $request->has('is_base_unit')
         ]);
 
         return redirect()->route('units.index')
@@ -50,7 +49,6 @@ class UnitController extends Controller
         $unit->update([
             'name' => $request->name,
             'code' => $request->code,
-            'is_base_unit' => $request->has('is_base_unit')
         ]);
 
         return redirect()->route('units.index')

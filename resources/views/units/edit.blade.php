@@ -27,14 +27,6 @@
                                 @enderror
                                 <div class="form-text">Example: PCS, BOX, KG, etc.</div>
                             </div>
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="is_base_unit" name="is_base_unit"
-                                        value="1" {{ old('is_base_unit', $unit->is_base_unit) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_base_unit">Base Unit</label>
-                                </div>
-                                <div class="form-text">Check this if this unit is a base unit for conversion.</div>
-                            </div>
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="{{ route('units.index') }}" class="btn btn-secondary">Cancel</a>
                                 <button type="submit" class="btn btn-primary">Update Unit</button>

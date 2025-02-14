@@ -15,7 +15,6 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>Code</th>
-                            <th>Base Unit</th>
                             <th>Created At</th>
                             <th width="180px">Actions</th>
                         </tr>
@@ -26,11 +25,6 @@
                                 <td>{{ $unit->id }}</td>
                                 <td>{{ $unit->name }}</td>
                                 <td>{{ $unit->code }}</td>
-                                <td>
-                                    <span class="badge {{ $unit->is_base_unit ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $unit->is_base_unit ? 'Yes' : 'No' }}
-                                    </span>
-                                </td>
                                 <td>{{ $unit->created_at->format('Y-m-d H:i') }}</td>
                                 <td>
                                     <a href="{{ route('units.edit', $unit) }}" class="btn btn-sm btn-info">
