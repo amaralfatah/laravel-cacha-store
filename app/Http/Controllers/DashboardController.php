@@ -6,6 +6,9 @@ use App\Models\Transaction;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\TransactionItem;
+use App\Models\ProductUnit;
+use App\Models\StockHistory;
+use App\Models\BalanceMutation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -49,10 +52,13 @@ class DashboardController extends Controller
         // Total profit calculation
         $totalProfit = DB::table('transactions as t')
             ->join('transaction_items as ti', 't.id', '=', 'ti.transaction_id')
-            ->join('products as p', 'ti.product_id', '=', 'p.id')
+            ->join('product_units as pu', function($join) {
+                $join->on('ti.product_id', '=', 'pu.product_id')
+                    ->on('ti.unit_id', '=', 'pu.unit_id');
+            })
             ->where('t.status', 'success')
             ->whereYear('t.created_at', $currentYear)
-            ->select(DB::raw('SUM(ti.subtotal - (ti.quantity * p.base_price)) as total_profit'))
+            ->select(DB::raw('SUM(ti.subtotal - (ti.quantity * pu.purchase_price)) as total_profit'))
             ->value('total_profit');
 
         // Monthly revenue data
@@ -67,23 +73,25 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('month');
 
-        // Order statistics by category
+        // Order statistics by category and group
         $orderStats = DB::table('transaction_items as ti')
             ->join('products as p', 'ti.product_id', '=', 'p.id')
             ->join('categories as c', 'p.category_id', '=', 'c.id')
+            ->join('groups as g', 'c.group_id', '=', 'g.id')
             ->join('transactions as t', 'ti.transaction_id', '=', 't.id')
             ->where('t.status', 'success')
             ->select(
+                'g.name as group_name',
                 'c.name as category',
                 DB::raw('COUNT(DISTINCT ti.transaction_id) as total_orders'),
                 DB::raw('SUM(ti.quantity) as total_quantity')
             )
-            ->groupBy('c.id', 'c.name')
+            ->groupBy('g.id', 'g.name', 'c.id', 'c.name')
             ->orderBy('total_orders', 'desc')
             ->get();
 
         // Recent transactions
-        $recentTransactions = Transaction::with(['customer'])
+        $recentTransactions = Transaction::with(['customer', 'cashier'])
             ->where('status', 'success')
             ->orderBy('created_at', 'desc')
             ->limit(6)
@@ -91,9 +99,11 @@ class DashboardController extends Controller
             ->map(function ($transaction) {
                 return [
                     'id' => $transaction->id,
+                    'invoice_number' => $transaction->invoice_number,
                     'amount' => $transaction->final_amount,
-                    'type' => $transaction->payment_type,
+                    'payment_type' => $transaction->payment_type,
                     'customer' => $transaction->customer ? $transaction->customer->name : 'Guest',
+                    'cashier' => $transaction->cashier ? $transaction->cashier->name : 'System',
                     'date' => $transaction->created_at->format('Y-m-d H:i:s')
                 ];
             });
@@ -117,15 +127,17 @@ class DashboardController extends Controller
         // Top selling products
         $topProducts = DB::table('transaction_items as ti')
             ->join('products as p', 'ti.product_id', '=', 'p.id')
+            ->join('units as u', 'ti.unit_id', '=', 'u.id')
             ->join('transactions as t', 'ti.transaction_id', '=', 't.id')
             ->where('t.status', 'success')
             ->whereMonth('t.created_at', Carbon::now()->month)
             ->select(
-                'p.name',
+                'p.name as product_name',
+                'u.name as unit_name',
                 DB::raw('SUM(ti.quantity) as total_quantity'),
                 DB::raw('SUM(ti.subtotal) as total_sales')
             )
-            ->groupBy('p.id', 'p.name')
+            ->groupBy('p.id', 'p.name', 'u.id', 'u.name')
             ->orderBy('total_quantity', 'desc')
             ->limit(5)
             ->get();
@@ -137,7 +149,7 @@ class DashboardController extends Controller
         $totalTransactions = clone $successfulTransactions;
         $totalTransactions = $totalTransactions->count();
 
-        $totalOrders = $totalTransactions; // Since they represent the same thing
+        $totalOrders = $totalTransactions;
 
         // Change percentage calculations
         $paymentChangePercentage = $previousYearRevenue != 0 ?
@@ -151,7 +163,7 @@ class DashboardController extends Controller
         $transactionChangePercentage = $previousTransactionsCount != 0 ?
             round((($totalTransactions - $previousTransactionsCount) / $previousTransactionsCount) * 100, 2) : 100;
 
-        // Profile report calculations (2021 specific)
+        // Profile report calculations
         $profileReportRevenue = clone $successfulTransactions;
         $profileReportRevenue = $profileReportRevenue->whereYear('created_at', 2021)->sum('final_amount');
 
@@ -161,8 +173,40 @@ class DashboardController extends Controller
         $profileReportChangePercentage = $previousProfileRevenue != 0 ?
             round((($profileReportRevenue - $previousProfileRevenue) / $previousProfileRevenue) * 100, 2) : 100;
 
+        // Store Balance Summary
+        $storeBalance = DB::table('store_balances')
+            ->select(
+                DB::raw('SUM(cash_amount) as total_cash'),
+                DB::raw('SUM(non_cash_amount) as total_non_cash')
+            )
+            ->first();
+
+        // Stock Status Summary
+        $stockStatus = ProductUnit::where('stock', '<=', DB::raw('min_stock'))
+            ->with(['product', 'unit'])
+            ->get()
+            ->map(function ($productUnit) {
+                return [
+                    'product_name' => $productUnit->product->name,
+                    'unit_name' => $productUnit->unit->name,
+                    'current_stock' => $productUnit->stock,
+                    'min_stock' => $productUnit->min_stock
+                ];
+            });
+
+        // Balance Mutations Chart
+        $balanceMutations = BalanceMutation::whereMonth('created_at', Carbon::now()->month)
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(CASE WHEN type = "in" THEN amount ELSE 0 END) as income'),
+                DB::raw('SUM(CASE WHEN type = "out" THEN amount ELSE 0 END) as expense')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         // Income and expense summary
-        $totalIncome = $totalPayments; // They represent the same value
+        $totalIncome = $totalPayments;
         $expensesThisWeek = $currentWeekExpenses;
         $expensesLastWeek = $lastWeekExpenses;
 
@@ -186,6 +230,8 @@ class DashboardController extends Controller
             'recentTransactions',
             'currentWeekExpenses',
             'expenseDifference',
+            'expenseComparison',
+            'expenseDifferencePercentage',
             'topProducts',
             'totalPayments',
             'paymentChangePercentage',
@@ -196,11 +242,10 @@ class DashboardController extends Controller
             'totalIncome',
             'expensesThisWeek',
             'expensesLastWeek',
-            'expenseDifference',
-            'expenseComparison',
-            'expenseDifferencePercentage',
-            'totalProfit',
-            'chartData'
+            'chartData',
+            'storeBalance',
+            'stockStatus',
+            'balanceMutations'
         ));
     }
 }
