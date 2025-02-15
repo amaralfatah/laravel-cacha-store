@@ -180,12 +180,12 @@
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Laporan</span>
         </li>
-        <li class="menu-item {{ setActive('reports.index') }}">
-            <a href="{{ route('reports.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-pie-chart"></i>
-                <div data-i18n="Dashboard">Ringkasan</div>
-            </a>
-        </li>
+{{--        <li class="menu-item {{ setActive('reports.index') }}">--}}
+{{--            <a href="{{ route('reports.index') }}" class="menu-link">--}}
+{{--                <i class="menu-icon tf-icons bx bx-pie-chart"></i>--}}
+{{--                <div data-i18n="Dashboard">Ringkasan</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
         <li class="menu-item {{ setActive('reports.sales') }}">
             <a href="{{ route('reports.sales') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-trending-up"></i>
@@ -201,7 +201,7 @@
         <li class="menu-item {{ setActive('reports.inventory') }}">
             <a href="{{ route('reports.inventory') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-crown"></i>
-                <div data-i18n="Inventory">Produk Terlaris</div>
+                <div data-i18n="Inventory">Produk</div>
             </a>
         </li>
         <li class="menu-item {{ setActive('reports.financial') }}">

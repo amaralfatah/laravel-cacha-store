@@ -2,7 +2,7 @@
 
 @section('content')
     <x-section-header
-        title="Laporan Stok"
+        title="Laporan Produk"
     />
 
     <!-- Kartu Ringkasan -->
