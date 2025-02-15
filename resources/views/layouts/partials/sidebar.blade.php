@@ -169,65 +169,56 @@
             </a>
         </li>
 
+        <!-- Laporan -->
         <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Hak Akses</span>
+            <span class="menu-header-text">Laporan</span>
+        </li>
+        <li class="menu-item {{ setActive('reports.index') }}">
+            <a href="{{ route('reports.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-pie-chart"></i>
+                <div data-i18n="Dashboard">Ringkasan</div>
+            </a>
+        </li>
+        <li class="menu-item {{ setActive('reports.sales') }}">
+            <a href="{{ route('reports.sales') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-trending-up"></i>
+                <div data-i18n="Sales Report">Penjualan</div>
+            </a>
+        </li>
+        <li class="menu-item {{ setActive('reports.stock-movement') }}">
+            <a href="{{ route('reports.stock-movement') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cabinet"></i>
+                <div data-i18n="Stock Report">Stok</div>
+            </a>
+        </li>
+        <li class="menu-item {{ setActive('reports.inventory') }}">
+            <a href="{{ route('reports.inventory') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-crown"></i>
+                <div data-i18n="Inventory">Produk Terlaris</div>
+            </a>
+        </li>
+        <li class="menu-item {{ setActive('reports.financial') }}">
+            <a href="{{ route('reports.financial') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-money"></i>
+                <div data-i18n="Financial">Keuangan</div>
+            </a>
         </li>
 
+        <!-- Pengaturan -->
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Pengaturan</span>
+        </li>
+        <li class="menu-item {{ setActive('stores.*') }}">
+            <a href="{{ route('stores.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user-circle"></i>
+                <div data-i18n="Stores">Toko</div>
+            </a>
+        </li>
         <li class="menu-item {{ setActive('users.*') }}">
             <a href="{{ route('users.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-user-circle"></i>
                 <div data-i18n="Users">Pengguna</div>
             </a>
-        </li>
-
-        <!-- Laporan -->
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Laporan</span>
-        </li>
-
-        <li class="menu-item {{ request()->routeIs('reports.*') ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-file"></i>
-                <div data-i18n="Reports">Laporan</div>
-            </a>
-
-            <ul class="menu-sub">
-                <li class="menu-item {{ setActive('reports.index') }}">
-                    <a href="{{ route('reports.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-pie-chart"></i>
-                        <div data-i18n="Dashboard">Ringkasan</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ setActive('reports.sales') }}">
-                    <a href="{{ route('reports.sales') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-trending-up"></i>
-                        <div data-i18n="Sales Report">Penjualan</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ setActive('reports.stock-movement') }}">
-                    <a href="{{ route('reports.stock-movement') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-cabinet"></i>
-                        <div data-i18n="Stock Report">Stok</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ setActive('reports.inventory') }}">
-                    <a href="{{ route('reports.inventory') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-crown"></i>
-                        <div data-i18n="Inventory">Produk Terlaris</div>
-                    </a>
-                </li>
-                <li class="menu-item {{ setActive('reports.financial') }}">
-                    <a href="{{ route('reports.financial') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-money"></i>
-                        <div data-i18n="Financial">Keuangan</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Laporan -->
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Pengaturan</span>
         </li>
     </ul>
 </aside>
