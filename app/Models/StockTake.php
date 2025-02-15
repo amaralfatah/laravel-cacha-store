@@ -6,7 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockTake extends Model
 {
+    protected $table = 'stock_takes';
+
     protected $fillable = ['date', 'status', 'notes', 'created_by'];
+
+    protected $casts = [
+        'date' => 'date'
+    ];
 
     protected static function boot()
     {

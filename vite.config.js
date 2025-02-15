@@ -8,4 +8,12 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            '$': 'jQuery'
+        }
+    },
+    optimizeDeps: {
+        include: ['jquery']
+    }
 });

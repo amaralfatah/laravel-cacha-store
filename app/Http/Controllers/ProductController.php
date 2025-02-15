@@ -2,25 +2,156 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Discount;
+use App\Models\Supplier;
 use App\Models\Tax;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Milon\Barcode\DNS1D;
+use Yajra\DataTables\DataTables;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'productUnits' => function($query) {
-            $query->where('is_default', true);
-        }])->paginate(10);
+        if ($request->ajax()) {
+            $products = Product::select([
+                'products.id',
+                'products.code',
+                'products.name',
+                'products.barcode',
+                'products.category_id',
+                'products.supplier_id',
+                'products.is_active',
+                'products.created_at'
+            ])->with([
+                'category:id,name,group_id',
+                'category.group:id,name',  // Tambahkan relasi ke group
+                'supplier:id,name',
+                'productUnits' => function($query) {
+                    $query->where('is_default', true)
+                        ->select([
+                            'id',
+                            'product_id',
+                            'unit_id',
+                            'purchase_price',
+                            'selling_price',
+                            'stock',
+                            'min_stock'
+                        ]);
+                },
+                'productUnits.unit:id,name'
+            ]);
 
-        return view('products.index', compact('products'));
+            // Filter grup
+            if ($request->filled('group_id')) {
+                $products->whereHas('category', function($query) use ($request) {
+                    $query->where('group_id', $request->group_id);
+                });
+            }
+
+            // Filter kategori
+            if ($request->filled('category_id')) {
+                $products->where('category_id', $request->category_id);
+            }
+
+            // Filter supplier
+            if ($request->filled('supplier_id')) {
+                $products->where('supplier_id', $request->supplier_id);
+            }
+
+            // Filter status aktif
+            if ($request->filled('is_active')) {
+                $products->where('is_active', $request->is_active);
+            }
+
+            // Filter status stok
+            if ($request->filled('stock_status')) {
+                $products->whereHas('productUnits', function($query) use ($request) {
+                    if ($request->stock_status === 'low') {
+                        $query->whereColumn('stock', '<=', 'min_stock')
+                            ->where('stock', '>', 0);
+                    } elseif ($request->stock_status === 'out') {
+                        $query->where('stock', '<=', 0);
+                    }
+                });
+            }
+
+            return DataTables::of($products)
+                ->addColumn('group_info', function ($product) {
+                    return $product->category?->group?->name ?? '-';
+                })
+                ->addColumn('category_name', function ($product) {
+                    return $product->category?->name ?? '-';
+                })
+                ->addColumn('supplier_name', function ($product) {
+                    return $product->supplier?->name ?? '-';
+                })
+                ->addColumn('unit_info', function ($product) {
+                    $defaultUnit = $product->productUnits->first();
+                    if (!$defaultUnit) return '-';
+
+                    return $defaultUnit->unit->name;
+                })
+                ->addColumn('stock_info', function ($product) {
+                    $defaultUnit = $product->productUnits->first();
+                    if (!$defaultUnit) return '-';
+
+                    $stockStatus = '';
+                    if ($defaultUnit->stock <= 0) {
+                        $stockStatus = '<span class="badge bg-danger">Habis</span>';
+                    } elseif ($defaultUnit->stock <= $defaultUnit->min_stock) {
+                        $stockStatus = '<span class="badge bg-warning">Menipis</span>';
+                    }
+
+                    return sprintf(
+                        '%s %s %s',
+                        number_format($defaultUnit->stock),
+                        $defaultUnit->unit->name,
+                        $stockStatus
+                    );
+                })
+                ->addColumn('purchase_price', function ($product) {
+                    $defaultUnit = $product->productUnits->first();
+                    return $defaultUnit ? 'Rp' . number_format($defaultUnit->purchase_price) : '-';
+                })
+                ->addColumn('selling_price', function ($product) {
+                    $defaultUnit = $product->productUnits->first();
+                    return $defaultUnit ? 'Rp' . number_format($defaultUnit->selling_price) : '-';
+                })
+                ->addColumn('status', function ($product) {
+                    return $product->is_active ?
+                        '<span class="badge bg-success">Aktif</span>' :
+                        '<span class="badge bg-danger">Nonaktif</span>';
+                })
+                ->addColumn('action', function ($product) {
+                    return view('products.partials.action-buttons', compact('product'))->render();
+                })
+                ->rawColumns(['stock_info', 'price_info', 'status', 'action'])
+                ->make(true);
+        }
+
+        // Data untuk filter
+        $groups = Group::where('is_active', true)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        $categories = Category::where('is_active', true)
+            ->select('id', 'name', 'group_id')
+            ->orderBy('name')
+            ->get();
+
+        $suppliers = Supplier::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return view('products.index', compact('groups', 'categories', 'suppliers'));
     }
 
     public function create()

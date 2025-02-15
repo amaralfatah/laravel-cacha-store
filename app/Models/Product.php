@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
@@ -48,13 +49,10 @@ class Product extends Model
         return $this->hasMany(Price::class);
     }
 
-
-
-
-
-
-
-
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
 
 
     public function getCurrentStock()
@@ -63,12 +61,6 @@ class Product extends Model
             ->where('unit_id', $this->default_unit_id)
             ->value('quantity') ?? 0;
     }
-
-
-
-
-
-
 
     public function getPrice($quantity, $unitId)
     {

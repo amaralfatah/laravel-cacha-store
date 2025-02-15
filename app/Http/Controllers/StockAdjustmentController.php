@@ -10,6 +10,7 @@ use App\Models\StockAdjustment;
 use App\Models\StockHistory;
 use Illuminate\Http\Request;
 use DB;
+use Yajra\DataTables\DataTables;
 
 class StockAdjustmentController extends Controller
 {
@@ -78,5 +79,34 @@ class StockAdjustmentController extends Controller
                 ->with('error', 'Error: ' . $e->getMessage())
                 ->withInput();
         }
+    }
+
+    public function data()
+    {
+        $adjustments = StockAdjustment::with(['productUnit.product', 'productUnit.unit', 'creator']);
+
+        return DataTables::of($adjustments)
+            ->addIndexColumn()
+            ->addColumn('product_name', function($adjustment) {
+                return $adjustment->productUnit->product->name ?? '-';
+            })
+            ->addColumn('unit_name', function($adjustment) {
+                return $adjustment->productUnit->unit->name ?? '-';
+            })
+            ->editColumn('created_at', function($adjustment) {
+                return $adjustment->created_at->format('Y-m-d H:i');
+            })
+            ->editColumn('type', function($adjustment) {
+                $badgeClass = $adjustment->type === 'in' ? 'success' : 'danger';
+                return "<span class='badge bg-{$badgeClass}'>" . ucfirst($adjustment->type) . "</span>";
+            })
+            ->editColumn('quantity', function($adjustment) {
+                return number_format($adjustment->quantity, 2);
+            })
+            ->addColumn('creator_name', function($adjustment) {
+                return $adjustment->creator->name ?? '-';
+            })
+            ->rawColumns(['type'])
+            ->make(true);
     }
 }

@@ -63,6 +63,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('products.prices', ProductPriceController::class)->except(['index', 'show']);
 
+    Route::get('/api/groups/{group}/categories', function($group) {
+        return \App\Models\Category::where('group_id', $group)
+            ->where('is_active', true)
+            ->get();
+    });
+
     Route::get('pos', [POSController::class, 'index'])->name('pos.index');
     Route::get('pos/get-product', [POSController::class, 'getProduct'])->name('pos.get-product');
     Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
@@ -88,12 +94,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/search', [SearchController::class, 'search'])->name('search');
 
+    // Pastikan route data berada sebelum resource route
+    Route::get('/stock-takes/data', [StockTakeController::class, 'data'])->name('stock-takes.data');
     Route::resource('stock-takes', StockTakeController::class);
     Route::patch('stock-takes/{stock_take}/complete', [StockTakeController::class, 'complete'])
         ->name('stock-takes.complete');
 
     Route::prefix('stock')->name('stock.')->group(function () {
-        Route::resource('adjustments', StockAdjustmentController::class)->except(['edit', 'update', 'delete']);
+        Route::resource('adjustments', StockAdjustmentController::class)->except(['show','edit', 'update', 'delete']);
+        Route::get('adjustments/data', [StockAdjustmentController::class, 'data'])->name('adjustments.data');
+
         Route::resource('histories', StockHistoryController::class)->only(['index', 'show']);
     });
 

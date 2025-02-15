@@ -1,12 +1,8 @@
-// resources/js/app.js
-
 import './bootstrap';
-import $ from 'jquery';  // Mengimpor jQuery
-import DataTable from 'datatables.net-bs5';
-import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
+import $ from 'jquery';
+import 'datatables.net-bs5';
+import 'datatables.net-responsive-bs5';
+window.$ = $;
 
-// Tidak perlu menulis ke `window`, jQuery dan DataTable sudah dapat digunakan langsung
-$(document).ready(function() {
-    // Inisialisasi DataTable
-    $('.datatable').DataTable(); // Sesuaikan dengan selector Anda
-});
+// Import DataTables configuration
+import './datatables';

@@ -10,6 +10,7 @@ use App\Models\ProductUnit;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use DB;
+use Yajra\DataTables\DataTables;
 
 class StockTakeController extends Controller
 {
@@ -173,5 +174,32 @@ class StockTakeController extends Controller
             }
             $combinations[] = $key;
         }
+    }
+
+    public function data()
+    {
+        $stockTakes = StockTake::with(['items', 'creator']);
+
+        return DataTables::of($stockTakes)
+            ->editColumn('date', function($stockTake) {
+                return $stockTake->date->format('Y-m-d');
+            })
+            ->editColumn('items_count', function($stockTake) {
+                return $stockTake->items->count();
+            })
+            ->editColumn('status', function($stockTake) {
+                $badgeClass = $stockTake->status === 'completed' ? 'success' : 'warning';
+                return "<span class='badge bg-{$badgeClass}'>" . ucfirst($stockTake->status) . "</span>";
+            })
+            ->editColumn('creator_name', function($stockTake) {
+                return $stockTake->creator->name ?? '-';
+            })
+            ->addColumn('action', function($stockTake) {
+                return '<a href="'. route('stock-takes.show', $stockTake) .'" class="btn btn-sm btn-info">
+                <i class="bi bi-eye"></i> View
+            </a>';
+            })
+            ->rawColumns(['status', 'action'])
+            ->make(true);
     }
 }
