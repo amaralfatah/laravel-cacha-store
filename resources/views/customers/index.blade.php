@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <x-section-header
         title="Manajemen Pelanggan"
         :route="route('customers.create')"
@@ -11,37 +10,43 @@
 
     <div class="card">
         <div class="card-body">
-            <table class="table">
-                <thead>
+            <div class="table-responsive">
+                <table class="table table-hover" id="datatable">
+                    <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
+                        <th>No</th>
+                        <th>Nama</th>
                         <th>Telpon</th>
-{{--                        <th>Created At</th>--}}
                         <th>Aksi</th>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach ($customers as $customer)
-                        <tr>
-                            <td>{{ $customer->id }}</td>
-                            <td>{{ $customer->name }}</td>
-                            <td>{{ $customer->phone }}</td>
-{{--                            <td>{{ $customer->created_at->format('Y-m-d H:i') }}</td>--}}
-                            <td>
-                                <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-info">Edit</a>
-                                <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure?')">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            {{ $customers->links() }}
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const table = $('#datatable').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                ajax: "{{ route('customers.index') }}",
+                columns: [
+                    {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
+                    {data: 'name', name: 'name'},
+                    {data: 'phone', name: 'phone'},
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false,
+                    }
+                ],
+                order: [[1, 'asc']],
+            });
+        });
+    </script>
+@endpush

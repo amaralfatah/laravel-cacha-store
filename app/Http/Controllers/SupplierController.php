@@ -4,13 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::latest()->paginate(10);
-        return view('suppliers.index', compact('suppliers'));
+        if ($request->ajax()) {
+            $suppliers = Supplier::query();
+
+            return DataTables::of($suppliers)
+                ->addIndexColumn()
+                ->addColumn('action', function ($supplier) {
+                    return view('suppliers.partials.actions', compact('supplier'))->render();
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('suppliers.index');
     }
 
     public function create()

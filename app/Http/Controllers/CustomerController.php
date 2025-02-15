@@ -4,13 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::latest()->paginate(10);
-        return view('customers.index', compact('customers'));
+        if ($request->ajax()) {
+            $customers = Customer::query();
+
+            return DataTables::of($customers)
+                ->addIndexColumn()
+                ->addColumn('actions', function ($customer) {
+                    return view('customers.partials.actions', compact('customer'))->render();
+                })
+                ->rawColumns(['actions'])
+                ->make(true);
+        }
+
+        return view('customers.index');
     }
 
     public function create()
