@@ -1,11 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+
+    <x-section-header
+        title="Manajemen Kategori"
+        :route="route('categories.create')"
+        buttonText="Tambah Kategori"
+        icon="bx-plus"
+    />
+
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Categories</h5>
-            <a href="{{ route('categories.create') }}" class="btn btn-primary">Create New</a>
-        </div>
         <div class="card-body">
             @if(session('success'))
                 <div class="alert alert-success">
@@ -23,12 +27,12 @@
                 <table class="table table-striped table-bordered">
                     <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Group</th>
+                        <th>Kode</th>
+                        <th>Nama</th>
+                        <th>Kelompok</th>
                         <th>Status</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
+{{--                        <th>Created At</th>--}}
+                        <th>Aksi</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -42,7 +46,7 @@
                                         {{ $category->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                             </td>
-                            <td>{{ $category->created_at->format('Y-m-d H:i') }}</td>
+{{--                            <td>{{ $category->created_at->format('Y-m-d H:i') }}</td>--}}
                             <td>
                                 <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-info">Edit</a>
                                 <form action="{{ route('categories.destroy', $category) }}" method="POST" class="d-inline">

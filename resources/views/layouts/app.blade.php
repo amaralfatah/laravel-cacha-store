@@ -100,9 +100,7 @@
             <!-- Content -->
 
             <div class="container-xxl flex-grow-1 container-p-y">
-                <x-page-header>
-                    @yield('page-action')
-                </x-page-header>
+{{--                <x-breadcrumb />--}}
                 @yield('content')
             </div>
             <!-- / Content -->

@@ -74,7 +74,7 @@
                         </li>
                     @endif
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 hover:bg-light-primary" href="#">
+                        <a class="dropdown-item d-flex align-items-center gap-2 hover:bg-light-primary" href="{{route('stores.index')}}">
                             <i class="bx bx-cog"></i>
                             <span>Settings</span>
                         </a>

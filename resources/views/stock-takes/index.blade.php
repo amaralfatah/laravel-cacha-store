@@ -2,10 +2,12 @@
 
 @section('content')
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Stock Takes</h2>
-        <a href="{{ route('stock-takes.create') }}" class="btn btn-primary">New Stock Take</a>
-    </div>
+    <x-section-header
+        title="Stock Opname"
+        :route="route('stock-takes.create')"
+        buttonText="Tambah Stock Opname"
+        icon="bx-plus"
+    />
 
     <div class="card">
         <div class="card-body">
@@ -18,12 +20,12 @@
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Items</th>
+                            <th>Tanggal</th>
+                            <th>Jml Barang</th>
                             <th>Status</th>
-                            <th>Created By</th>
-                            <th>Created At</th>
-                            <th class="text-end">Action</th>
+                            <th>Dibuat Oleh</th>
+{{--                            <th>Created At</th>--}}
+                            <th class="text-end">Aksi</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -38,7 +40,7 @@
                                         </span>
                                 </td>
                                 <td>{{ $stockTake->creator->name }}</td>
-                                <td>{{ $stockTake->created_at->format('Y-m-d H:i') }}</td>
+{{--                                <td>{{ $stockTake->created_at->format('Y-m-d H:i') }}</td>--}}
                                 <td class="text-end">
                                     <a href="{{ route('stock-takes.show', $stockTake) }}"
                                        class="btn btn-sm btn-info">

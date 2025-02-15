@@ -2,13 +2,12 @@
 
 @section('content')
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Stock Adjustments</h2>
-        <div>
-            <a href="{{ route('stock-takes.index') }}" class="btn btn-info me-2">Stock Opname</a>
-            <a href="{{ route('stock.adjustments.create') }}" class="btn btn-primary">New Adjustment</a>
-        </div>
-    </div>
+    <x-section-header
+        title="Penyesuaian Stok"
+        :route="route('stock.adjustments.create')"
+        buttonText="Tambah Penyesuaian Stok"
+        icon="bx-plus"
+    />
 
     <div class="card">
         <div class="card-body">

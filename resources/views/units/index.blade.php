@@ -1,31 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
+
+    <x-section-header
+        title="Manajemen Satuan"
+        :route="route('units.create')"
+        buttonText="Tambah Satuan"
+        icon="bx-plus"
+    />
+
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Units</h5>
-            <a href="{{ route('units.create') }}" class="btn btn-primary">Create New</a>
-        </div>
+
         <div class="card-body">
 
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Kode</th>
                             <th>Name</th>
-                            <th>Code</th>
-                            <th>Created At</th>
-                            <th width="180px">Actions</th>
+{{--                            <th>Code</th>--}}
+{{--                            <th>Created At</th>--}}
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($units as $unit)
                             <tr>
-                                <td>{{ $unit->id }}</td>
-                                <td>{{ $unit->name }}</td>
                                 <td>{{ $unit->code }}</td>
-                                <td>{{ $unit->created_at->format('Y-m-d H:i') }}</td>
+                                <td>{{ $unit->name }}</td>
+{{--                                <td>{{ $unit->code }}</td>--}}
+{{--                                <td>{{ $unit->created_at->format('Y-m-d H:i') }}</td>--}}
                                 <td>
                                     <a href="{{ route('units.edit', $unit) }}" class="btn btn-sm btn-info">
                                         <i class="bi bi-pencil-square"></i> Edit

@@ -2,17 +2,16 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Manajemen Users</h3>
-            <div class="card-tools">
-                <a href="{{ route('users.create') }}" class="btn btn-primary">
-                    Tambah User
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
 
+    <x-section-header
+        title="Manajemen Pengguna"
+        :route="route('users.create')"
+        buttonText="Tambah User"
+        icon="bx-plus"
+    />
+
+    <div class="card">
+        <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>

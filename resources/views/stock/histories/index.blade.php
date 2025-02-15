@@ -3,13 +3,13 @@
 
 @section('content')
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Stock Management</h2>
-        <div>
+    {{-- With custom actions --}}
+    <x-section-header title="Riwayat Stok">
+        <x-slot:actions>
             <a href="{{ route('stock.adjustments.create') }}" class="btn btn-primary me-2">New Adjustment</a>
             <a href="{{ route('stock-takes.create') }}" class="btn btn-info">New Stock Opname</a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-section-header>
 
     <!-- Overview Cards -->
     <div class="row mb-4">
@@ -159,15 +159,15 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Unit</th>
-                        <th>Type</th>
-                        <th>Quantity</th>
-                        <th>Remaining</th>
-                        <th>Source</th>
-                        <th>Notes</th>
+                        <th>Tanggal</th>
+                        <th>Produk</th>
+                        <th>Kategori</th>
+                        <th>Satuan</th>
+                        <th>Tipe</th>
+                        <th>Jumlah</th>
+                        <th>Total</th>
+                        <th>Sumber</th>
+                        <th>Catatan</th>
                     </tr>
                     </thead>
                     <tbody>

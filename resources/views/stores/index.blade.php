@@ -2,13 +2,17 @@
 @extends('layouts.app')
 
 @section('page-action')
-    <a href="{{ route('stores.create') }}" class="btn btnsm btn-primary">
-        <i class="bx bx-plus"></i> Tambah Toko
-    </a>
+
 @endsection
 
 @section('content')
 
+    <x-section-header
+        title="Manajemen Toko"
+        :route="route('stores.create')"
+        buttonText="Tambah Toko"
+        icon="bx-plus"
+    />
 
     {{-- Search and Filter --}}
     <div class="card mb-4">

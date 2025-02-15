@@ -141,6 +141,13 @@
             <span class="menu-header-text">Data Master</span>
         </li>
 
+        <li class="menu-item {{ setActive('groups.*') }}">
+            <a href="{{ route('groups.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-category"></i>
+                <div data-i18n="Groups">Kelompok</div>
+            </a>
+        </li>
+
         <li class="menu-item {{ setActive('categories.*') }}">
             <a href="{{ route('categories.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-category"></i>

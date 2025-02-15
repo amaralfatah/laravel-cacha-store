@@ -2,14 +2,13 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="row mb-3">
-        <div class="col">
-            <h2>Produk</h2>
-        </div>
-        <div class="col text-end">
-            <a href="{{ route('products.create') }}" class="btn btn-primary">Tambah Produk Baru</a>
-        </div>
-    </div>
+
+    <x-section-header
+        title="Manajemen Produk"
+        :route="route('products.create')"
+        buttonText="Tambah Produk"
+        icon="bx-plus"
+    />
 
     <div class="card">
         <div class="card-body">

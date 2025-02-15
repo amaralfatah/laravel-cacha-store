@@ -1,21 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Customers</h5>
-            <a href="{{ route('customers.create') }}" class="btn btn-primary">Create New</a>
-        </div>
-        <div class="card-body">
 
+    <x-section-header
+        title="Manajemen Pelanggan"
+        :route="route('customers.create')"
+        buttonText="Tambah Pelanggan"
+        icon="bx-plus"
+    />
+
+    <div class="card">
+        <div class="card-body">
             <table class="table">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Phone</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
+                        <th>Telpon</th>
+{{--                        <th>Created At</th>--}}
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,7 +27,7 @@
                             <td>{{ $customer->id }}</td>
                             <td>{{ $customer->name }}</td>
                             <td>{{ $customer->phone }}</td>
-                            <td>{{ $customer->created_at->format('Y-m-d H:i') }}</td>
+{{--                            <td>{{ $customer->created_at->format('Y-m-d H:i') }}</td>--}}
                             <td>
                                 <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-info">Edit</a>
                                 <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="d-inline">
