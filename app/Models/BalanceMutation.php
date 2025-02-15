@@ -18,7 +18,8 @@ class BalanceMutation extends Model
         'amount',
         'previous_balance',
         'current_balance',
-        'source',
+        'source_type',
+        'source_id',
         'notes',
         'created_by'
     ];
@@ -51,8 +52,22 @@ class BalanceMutation extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function source(): MorphTo
+    public function source()
     {
         return $this->morphTo();
+    }
+
+    protected $appends = ['source_label'];
+
+    // Accessor untuk menampilkan source type yang ramah user
+    public function getSourceLabelAttribute()
+    {
+        $typeMap = [
+            'App\Models\Transaction' => 'Transaksi Penjualan',
+            'App\Models\Purchase' => 'Transaksi Pembelian',
+            // Tambahkan mapping lainnya sesuai kebutuhan
+        ];
+
+        return $typeMap[$this->source_type] ?? 'Lainnya';
     }
 }

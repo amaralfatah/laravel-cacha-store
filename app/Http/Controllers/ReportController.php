@@ -242,11 +242,21 @@ class ReportController extends Controller
                     return 'Rp ' . number_format($mutation->amount, 0, ',', '.');
                 })
                 ->editColumn('source_type', function($mutation) {
-                    $text = ucwords(str_replace('_', ' ', $mutation->source_type));
+                    $sourceLabels = [
+                        'App\Models\Transaction' => 'Transaksi Penjualan',
+                        'App\Models\Purchase' => 'Transaksi Pembelian',
+                        'App\Models\Expense' => 'Pengeluaran',
+                        'App\Models\CashAdjustment' => 'Penyesuaian Kas',
+                        // Tambahkan mapping lainnya sesuai kebutuhan
+                    ];
+
+                    $label = $sourceLabels[$mutation->source_type] ?? 'Lainnya';
+
                     if ($mutation->source_id) {
-                        $text .= " #" . $mutation->source_id;
+                        $label .= " #" . $mutation->source_id;
                     }
-                    return $text;
+
+                    return $label;
                 })
                 ->editColumn('previous_balance', function($mutation) {
                     return 'Rp ' . number_format($mutation->previous_balance, 0, ',', '.');
@@ -256,6 +266,14 @@ class ReportController extends Controller
                 })
                 ->editColumn('createdBy.name', function($mutation) {
                     return $mutation->createdBy->name;
+                })
+                ->editColumn('payment_method', function($mutation) {
+                    $methodLabels = [
+                        'cash' => 'Tunai',
+                        'transfer' => 'Transfer',
+                        'adjustment' => 'Penyesuaian'
+                    ];
+                    return $methodLabels[$mutation->payment_method] ?? ucfirst($mutation->payment_method);
                 })
                 ->rawColumns(['type'])
                 ->make(true);

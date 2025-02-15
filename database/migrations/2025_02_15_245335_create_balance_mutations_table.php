@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->decimal('previous_balance', 15, 2);
             $table->decimal('current_balance', 15, 2);
-            $table->nullableMorphs('source');
+            $table->morphs('source');
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();

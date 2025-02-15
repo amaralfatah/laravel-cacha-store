@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Store;
 use App\Models\StoreBalance;
 use App\Models\BalanceMutation;
 use App\Models\Transaction;
@@ -9,10 +10,27 @@ use Illuminate\Support\Facades\DB;
 
 trait POSBalanceHandler
 {
+    protected function getDefaultStore()
+    {
+        return Store::where('code', 'MAIN')->first() ?? Store::create([
+            'code' => 'MAIN',
+            'name' => 'Toko Cacha',
+            'address' => 'Emplak, Kalipucang, Pangandaran',
+            'phone' => '081234567890',
+            'email' => 'tokocacha@example.com',
+            'is_active' => true
+        ]);
+    }
+
     protected function handleTransactionBalance($transaction)
     {
         try {
             DB::beginTransaction();
+
+            // Get default store
+            $store = $transaction->store_id ?
+                Store::findOrFail($transaction->store_id) :
+                $this->getDefaultStore();
 
             // Get or create store balance
             $storeBalance = StoreBalance::firstOrCreate(
@@ -24,28 +42,23 @@ trait POSBalanceHandler
                 ]
             );
 
-            // Determine payment method and previous balance
             $isDefaultPayment = $transaction->payment_type === 'cash';
             $balanceField = $isDefaultPayment ? 'cash_amount' : 'non_cash_amount';
             $previousBalance = $storeBalance->$balanceField;
-
-            // Calculate new balance
             $newBalance = $previousBalance + $transaction->final_amount;
 
-            // Update store balance
             $storeBalance->$balanceField = $newBalance;
             $storeBalance->last_updated_by = auth()->id();
             $storeBalance->save();
 
-            // Create balance mutation record
             BalanceMutation::create([
-                'store_id' => $transaction->store_id ?? 1, // Assuming default store if not set
+                'store_id' => $store->id,
                 'type' => 'in',
                 'payment_method' => $transaction->payment_type,
                 'amount' => $transaction->final_amount,
                 'previous_balance' => $previousBalance,
                 'current_balance' => $newBalance,
-                'source_type' => Transaction::class,
+                'source_type' => get_class($transaction),
                 'source_id' => $transaction->id,
                 'notes' => "Payment for invoice {$transaction->invoice_number}",
                 'created_by' => auth()->id()
@@ -64,14 +77,16 @@ trait POSBalanceHandler
         try {
             DB::beginTransaction();
 
-            $storeBalance = StoreBalance::firstOrFail();
+            // Get default store
+            $store = $transaction->store_id ?
+                Store::findOrFail($transaction->store_id) :
+                $this->getDefaultStore();
 
-            // Determine payment method and current balance
+            $storeBalance = StoreBalance::firstOrFail();
             $isDefaultPayment = $transaction->payment_type === 'cash';
             $balanceField = $isDefaultPayment ? 'cash_amount' : 'non_cash_amount';
             $currentBalance = $storeBalance->$balanceField;
 
-            // Check if sufficient balance exists
             if ($currentBalance < $transaction->final_amount) {
                 throw new \Exception(
                     'Insufficient ' .
@@ -80,23 +95,19 @@ trait POSBalanceHandler
                 );
             }
 
-            // Calculate new balance
             $newBalance = $currentBalance - $transaction->final_amount;
-
-            // Update store balance
             $storeBalance->$balanceField = $newBalance;
             $storeBalance->last_updated_by = auth()->id();
             $storeBalance->save();
 
-            // Create balance mutation record for reversal
             BalanceMutation::create([
-                'store_id' => $transaction->store_id ?? 1, // Assuming default store if not set
+                'store_id' => $store->id,
                 'type' => 'out',
                 'payment_method' => $transaction->payment_type,
                 'amount' => $transaction->final_amount,
                 'previous_balance' => $currentBalance,
                 'current_balance' => $newBalance,
-                'source_type' => Transaction::class,
+                'source_type' => get_class($transaction),
                 'source_id' => $transaction->id,
                 'notes' => "Reversal for invoice {$transaction->invoice_number}",
                 'created_by' => auth()->id()
