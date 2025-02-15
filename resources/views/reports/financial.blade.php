@@ -3,17 +3,14 @@
 @section('title', 'Laporan Keuangan')
 
 @section('content')
-
-    <x-section-header
-        title="Laporan Keuangan"
-    />
+    <x-section-header title="Laporan Keuangan"/>
 
     <!-- Form Filter -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-light">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('reports.financial') }}" class="row g-3">
+                    <form id="filter-form" method="GET" action="{{ route('reports.financial') }}" class="row g-3">
                         <div class="col-md-4">
                             <label for="start_date" class="form-label small mb-1">Tanggal Mulai</label>
                             <input type="date" class="form-control" id="start_date" name="start_date"
@@ -123,82 +120,61 @@
                         <th>Catatan</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    @forelse($mutations as $mutation)
-                        <tr>
-                            <td class="text-center">{{ $mutation->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="text-center">
-                                    <span class="badge bg-{{ $mutation->type === 'in' ? 'success' : 'danger' }}">
-                                        {{ $mutation->type === 'in' ? 'MASUK' : 'KELUAR' }}
-                                    </span>
-                            </td>
-                            <td class="text-end">Rp {{ number_format($mutation->amount, 0, ',', '.') }}</td>
-                            <td>
-                                {{ ucwords(str_replace('_', ' ', $mutation->source_type)) }}
-                                @if($mutation->source_id)
-                                    #{{ $mutation->source_id }}
-                                @endif
-                            </td>
-                            <td class="text-end">Rp {{ number_format($mutation->previous_balance, 0, ',', '.') }}</td>
-                            <td class="text-end">Rp {{ number_format($mutation->current_balance, 0, ',', '.') }}</td>
-                            <td>{{ $mutation->createdBy->name }}</td>
-                            <td>{{ $mutation->notes }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center">Tidak ada transaksi ditemukan</td>
-                        </tr>
-                    @endforelse
-                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-
 @endsection
 
 @push('scripts')
     <script>
         $(document).ready(function () {
-            $('#financialTable').DataTable({
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'excel',
-                        text: '<i class="fas fa-file-excel me-1"></i> Excel',
-                        className: 'btn btn-success btn-sm',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf me-1"></i> PDF',
-                        className: 'btn btn-danger btn-sm',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="fas fa-print me-1"></i> Cetak',
-                        className: 'btn btn-primary btn-sm',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
+            let table = $('#financialTable').DataTable({
+                processing: true,
+                serverSide: true,
+                scrollX: true,
+                ajax: {
+                    url: "{{ route('reports.financial') }}",
+                    data: function(d) {
+                        d.start_date = $('#start_date').val();
+                        d.end_date = $('#end_date').val();
                     }
+                },
+                columns: [
+                    {data: 'created_at', name: 'created_at', className: 'text-center'},
+                    {data: 'type', name: 'type', className: 'text-center'},
+                    {data: 'amount', name: 'amount', className: 'text-end'},
+                    {data: 'source_type', name: 'source_type'},
+                    {data: 'previous_balance', name: 'previous_balance', className: 'text-end'},
+                    {data: 'current_balance', name: 'current_balance', className: 'text-end'},
+                    {data: 'createdBy.name', name: 'createdBy.name'},
+                    {data: 'notes', name: 'notes'}
                 ],
-                pageLength: 25,
                 order: [[0, 'desc']],
             });
+
+            // Handle filter form submission
+            $('#filter-form').on('submit', function(e) {
+                e.preventDefault();
+                table.draw();
+
+                // Update summary cards via AJAX
+                $.get($(this).attr('action'), $(this).serialize(), function(response) {
+                    updateSummaryCards(response.summary);
+                });
+            });
         });
+
+        function updateSummaryCards(summary) {
+            $('.total-in').text('Rp ' + number_format(summary.total_in));
+            $('.total-out').text('Rp ' + number_format(summary.total_out));
+            $('.net-amount').text('Rp ' + number_format(summary.net_amount));
+            $('.current-balance').text('Rp ' + number_format(summary.current_balance));
+        }
+
+        function number_format(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
     </script>
 
-    <style>
-        @media print {
-            .breadcrumb, .card-header, form, .dataTables_filter, .dataTables_length, .dataTables_paginate, .dt-buttons {
-                display: none !important;
-            }
-        }
-    </style>
 @endpush

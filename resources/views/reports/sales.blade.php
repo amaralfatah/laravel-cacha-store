@@ -1,15 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-
-    <x-section-header
-        title="Laporan Penjualan"
-    />
+    <x-section-header title="Laporan Penjualan"/>
 
     <!-- Form Filter -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('reports.sales') }}" >
+            <form id="filter-form" method="GET" action="{{ route('reports.sales') }}">
                 <div class="row">
                     <div class="col-md-4">
                         <div>
@@ -78,7 +75,7 @@
         <div class="card-body">
             <!-- Tabel Penjualan -->
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped" id="sales-table">
                     <thead>
                     <tr>
                         <th>No. Faktur</th>
@@ -93,29 +90,65 @@
                         <th>Pembayaran</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    @forelse($sales as $sale)
-                        <tr>
-                            <td>{{ $sale->invoice_number }}</td>
-                            <td>{{ $sale->invoice_date->format('d/m/Y H:i') }}</td>
-                            <td>{{ $sale->customer->name }}</td>
-                            <td>{{ $sale->cashier->name }}</td>
-                            <td>{{ $sale->items->sum('quantity') }}</td>
-                            <td>Rp {{ number_format($sale->total_amount, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($sale->tax_amount, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($sale->final_amount, 0, ',', '.') }}</td>
-                            <td>{{ $sale->payment_type === 'cash' ? 'Tunai' : 'Transfer' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="10" class="text-center">Tidak ada data penjualan</td>
-                        </tr>
-                    @endforelse
-                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            let table = $('#sales-table').DataTable({
+                processing: true,
+                serverSide: true,
+                scrollX: true,
+                ajax: {
+                    url: "{{ route('reports.sales') }}",
+                    data: function(d) {
+                        d.start_date = $('#start_date').val();
+                        d.end_date = $('#end_date').val();
+                    }
+                },
+                columns: [
+                    {data: 'invoice_number', name: 'invoice_number'},
+                    {data: 'invoice_date', name: 'invoice_date'},
+                    {data: 'customer.name', name: 'customer.name'},
+                    {data: 'cashier.name', name: 'cashier.name'},
+                    {data: 'total_items', name: 'total_items'},
+                    {data: 'total_amount', name: 'total_amount'},
+                    {data: 'discount_amount', name: 'discount_amount'},
+                    {data: 'tax_amount', name: 'tax_amount'},
+                    {data: 'final_amount', name: 'final_amount'},
+                    {data: 'payment_type', name: 'payment_type'}
+                ],
+                order: [[1, 'desc']],
+                pageLength: 25
+            });
+
+            // Handle filter form submission
+            $('#filter-form').on('submit', function(e) {
+                e.preventDefault();
+                table.draw();
+
+                // Update summary cards via AJAX
+                $.get($(this).attr('action'), $(this).serialize(), function(response) {
+                    // Update summary cards with new data
+                    updateSummaryCards(response.summary);
+                });
+            });
+        });
+
+        function updateSummaryCards(summary) {
+            // Update summary cards with new data
+            $('.total-sales').text('Rp ' + number_format(summary.total_sales));
+            $('.total-transactions').text(summary.total_transactions);
+            $('.average-transaction').text('Rp ' + number_format(summary.average_transaction));
+            $('.total-items').text(summary.total_items);
+        }
+
+        function number_format(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+    </script>
+@endpush

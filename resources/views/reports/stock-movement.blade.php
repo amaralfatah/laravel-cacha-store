@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <x-section-header
         title="Laporan Pergerakan Stok"
     />
@@ -9,7 +8,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <!-- Form Filter -->
-            <form method="GET" action="{{ route('reports.stock-movement') }}" class="mb-4">
+            <form id="filter-form" method="GET" action="{{ route('reports.stock-movement') }}" class="mb-4">
                 <div class="row">
                     <div class="col-md-3">
                         <div>
@@ -56,7 +55,7 @@
         <div class="card-body">
             <!-- Tabel Pergerakan Stok -->
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped" id="stock-movement-table">
                     <thead>
                     <tr>
                         <th>Tanggal</th>
@@ -69,41 +68,45 @@
                         <th>Catatan</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    @forelse($movements as $movement)
-                        <tr>
-                            <td>{{ $movement->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $movement->productUnit->product->name }}</td>
-                            <td>{{ $movement->productUnit->unit->name }}</td>
-                            <td>
-                                <span
-                                    class="badge bg-{{ $movement->type === 'in' ? 'success' : ($movement->type === 'out' ? 'danger' : 'warning') }}">
-                                    {{ $movement->type === 'in' ? 'Masuk' : ($movement->type === 'out' ? 'Keluar' : 'Penyesuaian') }}
-                                </span>
-                            </td>
-                            <td>{{ $movement->quantity }}</td>
-                            <td>{{ $movement->remaining_stock }}</td>
-                            <td>
-                                @php
-                                    $refTypes = [
-                                        'stock_adjustments' => 'Penyesuaian Stok',
-                                        'transactions' => 'Transaksi',
-                                        'stock_takes' => 'Stok Opname'
-                                    ];
-                                @endphp
-                                {{ $refTypes[$movement->reference_type] ?? $movement->reference_type }}
-                            </td>
-                            <td>{{ $movement->notes }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center">Tidak ada pergerakan stok ditemukan</td>
-                        </tr>
-                    @endforelse
-                    </tbody>
                 </table>
             </div>
         </div>
     </div>
-
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            let table = $('#stock-movement-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "{{ route('reports.stock-movement') }}",
+                    data: function(d) {
+                        d.start_date = $('#start_date').val();
+                        d.end_date = $('#end_date').val();
+                        d.product_id = $('#product_id').val();
+                    }
+                },
+                columns: [
+                    {data: 'created_at', name: 'created_at'},
+                    {data: 'productUnit.product.name', name: 'productUnit.product.name'},
+                    {data: 'productUnit.unit.name', name: 'productUnit.unit.name'},
+                    {data: 'type', name: 'type'},
+                    {data: 'quantity', name: 'quantity'},
+                    {data: 'remaining_stock', name: 'remaining_stock'},
+                    {data: 'reference_type', name: 'reference_type'},
+                    {data: 'notes', name: 'notes'}
+                ],
+                order: [[0, 'desc']],
+                pageLength: 25
+            });
+
+            // Handle filter form submission
+            $('#filter-form').on('submit', function(e) {
+                e.preventDefault();
+                table.draw();
+            });
+        });
+    </script>
+@endpush
