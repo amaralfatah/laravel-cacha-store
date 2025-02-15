@@ -13,15 +13,19 @@ return new class extends Migration
     {
         Schema::create('balance_mutations', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->constrained();
             $table->enum('type', ['in', 'out']);
+            $table->enum('payment_method', ['cash', 'transfer', 'adjustment']);
             $table->decimal('amount', 15, 2);
-            $table->string('source_type');
-            $table->bigInteger('source_id');
             $table->decimal('previous_balance', 15, 2);
             $table->decimal('current_balance', 15, 2);
-            $table->text('notes');
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamp('created_at');
+            $table->nullableMorphs('source');
+            $table->text('notes')->nullable();
+            $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
+            $table->timestamps();
+
+            // Indexes for performance
+            $table->index(['store_id', 'type', 'payment_method']);
         });
     }
 

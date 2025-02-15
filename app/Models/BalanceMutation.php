@@ -4,18 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class BalanceMutation extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'store_id',
         'type',
+        'payment_method',
         'amount',
-        'source_type',
-        'source_id',
         'previous_balance',
         'current_balance',
+        'source',
         'notes',
         'created_by'
     ];
@@ -38,7 +41,17 @@ class BalanceMutation extends Model
     /**
      * Get the source model of the mutation
      */
-    public function source()
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function source(): MorphTo
     {
         return $this->morphTo();
     }

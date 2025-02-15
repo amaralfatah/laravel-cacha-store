@@ -14,6 +14,8 @@ use Illuminate\Validation\Rule;
 
 class POSController extends Controller
 {
+
+    use POSBalanceHandler;
     public function index()
     {
         $customers = Customer::all();
@@ -136,6 +138,12 @@ class POSController extends Controller
             // Create or update transaction
             if ($request->pending_transaction_id) {
                 $transaction = Transaction::findOrFail($request->pending_transaction_id);
+
+                // If there was a previous successful transaction, revert the balance
+                if ($transaction->status === 'success') {
+                    $this->revertTransactionBalance($transaction);
+                }
+
                 $transaction->items()->delete();
 
                 if ($request->status === 'success') {
@@ -196,6 +204,11 @@ class POSController extends Controller
                         $productUnit->decrement('stock', $item['quantity']);
                     }
                 }
+            }
+
+            // Handle balance only for successful transactions
+            if ($transaction->status === 'success') {
+                $this->handleTransactionBalance($transaction);
             }
 
             DB::commit();
