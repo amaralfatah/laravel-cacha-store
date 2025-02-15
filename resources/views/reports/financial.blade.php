@@ -130,9 +130,6 @@
     <script>
         $(document).ready(function () {
             let table = $('#financialTable').DataTable({
-                processing: true,
-                serverSide: true,
-                scrollX: true,
                 ajax: {
                     url: "{{ route('reports.financial') }}",
                     data: function(d) {
@@ -150,7 +147,7 @@
                     {data: 'createdBy.name', name: 'createdBy.name'},
                     {data: 'notes', name: 'notes'}
                 ],
-                order: [[0, 'desc']],
+                order: [[0, 'desc']]
             });
 
             // Handle filter form submission
@@ -158,7 +155,6 @@
                 e.preventDefault();
                 table.draw();
 
-                // Update summary cards via AJAX
                 $.get($(this).attr('action'), $(this).serialize(), function(response) {
                     updateSummaryCards(response.summary);
                 });
@@ -176,5 +172,4 @@
             return new Intl.NumberFormat('id-ID').format(number);
         }
     </script>
-
 @endpush

@@ -1,24 +1,34 @@
+// resources/js/datatables.js
+
 import $ from 'jquery';
 import DataTable from 'datatables.net-bs5';
+import 'datatables.net-responsive-bs5';
 import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
+import 'datatables.net-responsive-bs5/css/responsive.bootstrap5.css';
 
-// Export fungsi inisialisasi untuk digunakan di komponen lain
-export function initializeDataTable(selector, options = {}) {
-    return new DataTable(selector, {
-        processing: true,
-        serverSide: true,
-        ...options
-    });
-}
-
-// Inisialisasi default untuk semua tabel dengan class 'datatable'
-document.addEventListener('DOMContentLoaded', () => {
-    $('.datatable').each(function() {
-        if (!$.fn.DataTable.isDataTable(this)) {
-            $(this).DataTable({
-                processing: true,
-                serverSide: true,
-            });
+// Extend jQuery DataTable defaults
+$.extend(true, $.fn.dataTable.defaults, {
+    processing: true,
+    serverSide: true,
+    scrollX: true,
+    dom: "<'row mb-2'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'l><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'f<'ms-2'B>>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    buttons: [
+        {
+            extend: 'excel',
+            text: '<i class="bx bxs-file-export me-1"></i>',
+            className: 'btn btn-outline-secondary btn-sm'
+        },
+        {
+            extend: 'pdf',
+            text: '<i class="bx bxs-file-pdf me-1"></i>',
+            className: 'btn btn-outline-secondary btn-sm'
+        },
+        {
+            extend: 'print',
+            text: '<i class="bx bx-printer me-1"></i>',
+            className: 'btn btn-outline-secondary btn-sm'
         }
-    });
+    ]
 });
