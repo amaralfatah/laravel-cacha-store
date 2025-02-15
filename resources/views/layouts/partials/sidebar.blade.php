@@ -169,6 +169,10 @@
             </a>
         </li>
 
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Hak Akses</span>
+        </li>
+
         <li class="menu-item {{ setActive('users.*') }}">
             <a href="{{ route('users.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-user-circle"></i>
@@ -219,6 +223,11 @@
                     </a>
                 </li>
             </ul>
+        </li>
+
+        <!-- Laporan -->
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Pengaturan</span>
         </li>
     </ul>
 </aside>
