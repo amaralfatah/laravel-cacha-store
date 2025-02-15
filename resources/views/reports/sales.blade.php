@@ -75,7 +75,7 @@
         <div class="card-body">
             <!-- Tabel Penjualan -->
             <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="sales-table">
+                <table class="table table-hover" id="sales-table">
                     <thead>
                     <tr>
                         <th>No. Faktur</th>

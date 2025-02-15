@@ -45,7 +45,7 @@
         <div class="card-body">
             <!-- Tabel Inventaris -->
             <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="inventory-table">
+                <table class="table table-hover" id="inventory-table">
                     <thead>
                     <tr>
                         <th>Kode</th>

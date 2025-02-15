@@ -107,17 +107,17 @@
         <div class="card-body">
             <!-- Tabel Transaksi -->
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover" id="financialTable">
-                    <thead class="table-light">
+                <table class="table table-hover" id="financialTable">
+                    <thead>
                     <tr>
-                        <th class="text-center">Tanggal</th>
-                        <th class="text-center">Tipe</th>
-                        <th class="text-center">Jumlah</th>
+                        <th>Tanggal</th>
+                        <th>Tipe</th>
+                        <th>Jumlah</th>
                         <th>Sumber</th>
-                        <th class="text-center">Saldo Sebelumnya</th>
-                        <th class="text-center">Saldo Saat Ini</th>
+                        <th>Saldo Sebelumnya</th>
+                        <th>Saldo Saat Ini</th>
                         <th>Dibuat Oleh</th>
-                        <th>Catatan</th>
+                        <th class="w-100">Catatan</th>
                     </tr>
                     </thead>
                 </table>
@@ -138,12 +138,12 @@
                     }
                 },
                 columns: [
-                    {data: 'created_at', name: 'created_at', className: 'text-center'},
-                    {data: 'type', name: 'type', className: 'text-center'},
-                    {data: 'amount', name: 'amount', className: 'text-end'},
+                    {data: 'created_at', name: 'created_at'},
+                    {data: 'type', name: 'type'},
+                    {data: 'amount', name: 'amount'},
                     {data: 'source_type', name: 'source_type'},
-                    {data: 'previous_balance', name: 'previous_balance', className: 'text-end'},
-                    {data: 'current_balance', name: 'current_balance', className: 'text-end'},
+                    {data: 'previous_balance', name: 'previous_balance'},
+                    {data: 'current_balance', name: 'current_balance'},
                     {data: 'createdBy.name', name: 'createdBy.name'},
                     {data: 'notes', name: 'notes'}
                 ],

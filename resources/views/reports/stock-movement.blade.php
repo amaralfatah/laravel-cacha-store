@@ -55,7 +55,7 @@
         <div class="card-body">
             <!-- Tabel Pergerakan Stok -->
             <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="stock-movement-table">
+                <table class="table table-hover" id="stock-movement-table">
                     <thead>
                     <tr>
                         <th>Tanggal</th>
