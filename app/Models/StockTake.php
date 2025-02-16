@@ -8,7 +8,7 @@ class StockTake extends Model
 {
     protected $table = 'stock_takes';
 
-    protected $fillable = ['date', 'status', 'notes', 'created_by'];
+    protected $fillable = ['store_id', 'date', 'status', 'notes', 'created_by'];
 
     protected $casts = [
         'date' => 'date'
@@ -63,5 +63,10 @@ class StockTake extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 }

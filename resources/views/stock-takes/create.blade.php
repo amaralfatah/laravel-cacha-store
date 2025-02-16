@@ -16,6 +16,21 @@
                                    value="{{ old('date', date('Y-m-d')) }}" required>
                         </div>
                     </div>
+                    @if(auth()->user()->role === 'admin')
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="store_id" class="form-label">Store</label>
+                                <select class="form-control" id="store_id" name="store_id" required>
+                                    <option value="">Select Store</option>
+                                    @foreach($stores as $store)
+                                        <option value="{{ $store->id }}" {{ old('store_id') == $store->id ? 'selected' : '' }}>
+                                            {{ $store->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    @endif
                     <div class="col-md-12">
                         <div class="mb-3">
                             <label for="notes" class="form-label">Notes</label>

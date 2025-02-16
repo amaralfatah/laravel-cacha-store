@@ -1,6 +1,5 @@
 @extends('layouts.app')
 
-
 @section('content')
     <x-section-header
         title="Stock Opname"
@@ -16,6 +15,7 @@
                     <thead>
                     <tr>
                         <th>Tanggal</th>
+                        <th>Toko</th>
                         <th>Jml Barang</th>
                         <th>Status</th>
                         <th>Dibuat Oleh</th>
@@ -39,12 +39,12 @@
                     url: "{{ route('stock-takes.data') }}",
                     error: function (xhr, error, thrown) {
                         console.error('DataTables error:', error);
-                        // Tampilkan pesan error yang user-friendly
                         $('#stock-takes-table_processing').html('Terjadi kesalahan saat memuat data');
                     }
                 },
                 columns: [
                     {data: 'date', name: 'date'},
+                    {data: 'store_name', name: 'store.name'},
                     {data: 'items_count', name: 'items_count'},
                     {data: 'status', name: 'status'},
                     {data: 'creator_name', name: 'creator_name'},

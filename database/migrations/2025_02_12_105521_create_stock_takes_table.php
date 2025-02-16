@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('stock_takes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->date('date');
             $table->enum('status', ['draft', 'completed'])->default('draft');
             $table->text('notes')->nullable();

@@ -24,6 +24,10 @@
                     <p>{{ $stockTake->date }}</p>
                 </div>
                 <div class="col-md-3">
+                    <p class="mb-1"><strong>Store:</strong></p>
+                    <p>{{ $stockTake->store->name }}</p>
+                </div>
+                <div class="col-md-3">
                     <p class="mb-1"><strong>Status:</strong></p>
                     <p>
                             <span class="badge bg-{{ $stockTake->status === 'completed' ? 'success' : 'warning' }}">

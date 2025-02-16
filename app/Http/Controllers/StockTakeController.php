@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\StockTake;
+use App\Models\Store;
 use App\Models\StockHistory;
 use App\Models\ProductUnit;
 use Illuminate\Http\Request;
@@ -16,21 +17,34 @@ class StockTakeController extends Controller
 {
     public function index()
     {
-        $stockTakes = StockTake::with('creator')
-            ->latest()
-            ->paginate(10);
+        // If admin, get all stock takes, otherwise filter by store
+        $query = StockTake::with('creator');
 
+        if (auth()->user()->role !== 'admin') {
+            $query->where('store_id', auth()->user()->store_id);
+        }
+
+        $stockTakes = $query->latest()->paginate(10);
         return view('stock-takes.index', compact('stockTakes'));
     }
 
     public function create()
     {
-        $products = Product::where('is_active', true)
-            ->with(['productUnits.unit', 'category'])
-            ->get();
+        // Filter products by store for non-admin users
+        $productsQuery = Product::where('is_active', true)
+            ->with(['productUnits.unit', 'category']);
+
+        if (auth()->user()->role !== 'admin') {
+            $productsQuery->where('store_id', auth()->user()->store_id);
+        }
+
+        $products = $productsQuery->get();
         $categories = Category::where('is_active', true)->get();
 
-        return view('stock-takes.create', compact('products', 'categories'));
+        // Get stores for admin users
+        $stores = auth()->user()->role === 'admin' ? Store::all() : [];
+
+        return view('stock-takes.create', compact('products', 'categories', 'stores'));
     }
 
     public function store(Request $request)
@@ -38,11 +52,17 @@ class StockTakeController extends Controller
         $validated = $request->validate([
             'date' => 'required|date',
             'notes' => 'nullable|string',
+            'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : 'nullable',
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.unit_id' => 'required|exists:units,id',
             'items.*.actual_qty' => 'nullable|numeric|min:0',
         ]);
+
+        // Set store_id based on user role
+        $storeId = auth()->user()->role === 'admin'
+            ? $request->store_id
+            : auth()->user()->store_id;
 
         // Validate at least one item has actual_qty
         $hasQuantity = false;
@@ -68,6 +88,7 @@ class StockTakeController extends Controller
                 'date' => $validated['date'],
                 'notes' => $validated['notes'],
                 'status' => 'draft',
+                'store_id' => $storeId,
                 'created_by' => auth()->id(),
             ]);
 
@@ -178,9 +199,13 @@ class StockTakeController extends Controller
 
     public function data()
     {
-        $stockTakes = StockTake::with(['items', 'creator']);
+        $query = StockTake::with(['items', 'creator', 'store']);
 
-        return DataTables::of($stockTakes)
+        if (auth()->user()->role !== 'admin') {
+            $query->where('store_id', auth()->user()->store_id);
+        }
+
+        return DataTables::of($query)
             ->editColumn('date', function($stockTake) {
                 return $stockTake->date->format('Y-m-d');
             })
@@ -193,6 +218,9 @@ class StockTakeController extends Controller
             })
             ->editColumn('creator_name', function($stockTake) {
                 return $stockTake->creator->name ?? '-';
+            })
+            ->addColumn('store_name', function($stockTake) {
+                return $stockTake->store->name ?? '-';
             })
             ->addColumn('action', function($stockTake) {
                 return '<a href="'. route('stock-takes.show', $stockTake) .'" class="btn btn-sm btn-info">
