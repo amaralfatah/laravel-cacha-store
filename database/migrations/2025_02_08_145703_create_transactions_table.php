@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
+            $table->foreignId('store_id')->nullable()->index();
             $table->foreignId('customer_id')->constrained();
             $table->foreignId('cashier_id')->constrained('users');
             $table->decimal('total_amount', 15, 2);

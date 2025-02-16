@@ -344,18 +344,15 @@
 
         const data = {
             invoice_number: document.getElementById('invoice_number').value,
+            store_id: document.getElementById('store_id').value,
             customer_id: document.getElementById('customer_id').value,
             items: cart,
             payment_type: paymentType,
             reference_number: referenceNumber,
-            total_amount: parseFloat(document.getElementById('subtotal').value.replace(/[^0-9.-]+/g,
-                "")),
-            tax_amount: parseFloat(document.getElementById('tax_amount').value.replace(/[^0-9.-]+/g,
-                "")),
-            discount_amount: parseFloat(document.getElementById('discount_amount').value.replace(
-                /[^0-9.-]+/g, "")),
-            final_amount: parseFloat(document.getElementById('final_amount').value.replace(/[^0-9.-]+/g,
-                "")),
+            total_amount: parseFloat(document.getElementById('subtotal').value.replace(/[^0-9.-]+/g, "")),
+            tax_amount: parseFloat(document.getElementById('tax_amount').value.replace(/[^0-9.-]+/g, "")),
+            discount_amount: parseFloat(document.getElementById('discount_amount').value.replace(/[^0-9.-]+/g, "")),
+            final_amount: parseFloat(document.getElementById('final_amount').value.replace(/[^0-9.-]+/g, "")),
             pending_transaction_id: pendingTransactionId,
             status: 'success'
         };
@@ -433,20 +430,17 @@
 
         const data = {
             invoice_number: document.getElementById('invoice_number').value,
+            store_id: document.getElementById('store_id').value,
             customer_id: document.getElementById('customer_id').value,
             items: cart,
-            payment_type: document.getElementById('payment_type').value,
-            reference_number: document.getElementById('reference_number').value,
-            total_amount: parseFloat(document.getElementById('subtotal').value.replace(/[^0-9.-]+/g,
-                "")),
-            tax_amount: parseFloat(document.getElementById('tax_amount').value.replace(/[^0-9.-]+/g,
-                "")),
-            discount_amount: parseFloat(document.getElementById('discount_amount').value.replace(
-                /[^0-9.-]+/g, "")),
-            final_amount: parseFloat(document.getElementById('final_amount').value.replace(/[^0-9.-]+/g,
-                "")),
-            pending_transaction_id: pendingTransactionId, // Include existing pending transaction ID if any
-            status: 'pending'
+            payment_type: paymentType,
+            reference_number: referenceNumber,
+            total_amount: parseFloat(document.getElementById('subtotal').value.replace(/[^0-9.-]+/g, "")),
+            tax_amount: parseFloat(document.getElementById('tax_amount').value.replace(/[^0-9.-]+/g, "")),
+            discount_amount: parseFloat(document.getElementById('discount_amount').value.replace(/[^0-9.-]+/g, "")),
+            final_amount: parseFloat(document.getElementById('final_amount').value.replace(/[^0-9.-]+/g, "")),
+            pending_transaction_id: pendingTransactionId,
+            status: 'success'
         };
 
         try {

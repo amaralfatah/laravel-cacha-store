@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Inventory;
 use App\Models\ProductUnit;
+use App\Models\Store;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,11 +22,18 @@ class POSController extends Controller
         $customers = Customer::all();
         $latestInvoice = Transaction::latest()->first();
         $invoiceNumber = $this->generateInvoiceNumber($latestInvoice);
-
-        // Check if there's cart data from a pending transaction
         $cartData = session('cart_data');
 
-        return view('pos.index', compact('customers', 'invoiceNumber', 'cartData'));
+        // Add store handling
+        $stores = [];
+        if (Auth::user()->role === 'admin') {
+            $stores = Store::all();
+            $selectedStore = session('selected_store_id') ? Store::find(session('selected_store_id')) : null;
+        } else {
+            $selectedStore = Auth::user()->store;
+        }
+
+        return view('pos.index', compact('customers', 'invoiceNumber', 'cartData', 'stores', 'selectedStore'));
     }
 
     public function getProduct(Request $request)
@@ -87,7 +95,7 @@ class POSController extends Controller
         try {
             DB::beginTransaction();
 
-            // Basic validation
+            // Add store_id to validation
             $validated = $request->validate([
                 'invoice_number' => [
                     'required',
@@ -95,6 +103,7 @@ class POSController extends Controller
                     Rule::unique('transactions')->ignore($request->pending_transaction_id)
                 ],
                 'customer_id' => 'required|exists:customers,id',
+                'store_id' => 'required|exists:stores,id',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.unit_id' => 'required|exists:units,id',
@@ -103,6 +112,11 @@ class POSController extends Controller
                 'reference_number' => 'required_if:payment_type,transfer',
                 'pending_transaction_id' => 'nullable|exists:transactions,id'
             ]);
+
+            // Verify store access
+            if (Auth::user()->role !== 'admin' && Auth::user()->store_id !== (int)$request->store_id) {
+                throw new \Exception('Unauthorized store access');
+            }
 
             // Calculate totals
             $total_amount = 0;
@@ -122,8 +136,8 @@ class POSController extends Controller
                 $total_discount += $discount;
             }
 
-            // Prepare transaction data
             $transactionData = [
+                'store_id' => $request->store_id,
                 'customer_id' => $request->customer_id,
                 'cashier_id' => Auth::id(),
                 'total_amount' => $total_amount,

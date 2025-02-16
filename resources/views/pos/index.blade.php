@@ -32,6 +32,38 @@
                         </div>
                     </div>
 
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label>No. Invoice</label>
+                            <input type="text" class="form-control" id="invoice_number" value="{{ $invoiceNumber }}" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Store</label>
+                            @if(Auth::user()->role === 'admin')
+                                <select class="form-select" id="store_id">
+                                    @foreach ($stores as $store)
+                                        <option value="{{ $store->id }}" {{ $selectedStore && $selectedStore->id === $store->id ? 'selected' : '' }}>
+                                            {{ $store->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" class="form-control" value="{{ Auth::user()->store->name }}" readonly>
+                                <input type="hidden" id="store_id" value="{{ Auth::user()->store_id }}">
+                            @endif
+                        </div>
+                        <div class="col-md-4">
+                            <label>Customer</label>
+                            <select class="form-select" id="customer_id">
+                                @foreach ($customers as $customer)
+                                    <option value="{{ $customer->id }}" {{ $customer->id === 1 ? 'selected' : '' }}>
+                                        {{ $customer->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label>Scan Barcode</label>
                         <input type="text" class="form-control" id="barcode" autofocus>

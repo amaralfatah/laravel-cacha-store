@@ -15,13 +15,19 @@ class TransactionController extends Controller
         if ($request->ajax()) {
             $transactions = Transaction::select([
                 'transactions.id',
+                'transactions.store_id',
                 'transactions.invoice_number',
                 'transactions.invoice_date',
                 'transactions.customer_id',
                 'transactions.final_amount',
                 'transactions.status',
                 'transactions.created_at'
-            ])->with(['customer:id,name']);
+            ])->with(['customer:id,name', 'store:id,name']);
+
+            // Filter berdasarkan store untuk non-admin
+            if (auth()->user()->role !== 'admin') {
+                $transactions->where('transactions.store_id', auth()->user()->store_id);
+            }
 
             // Filter Status
             if ($request->filled('status')) {
@@ -59,6 +65,9 @@ class TransactionController extends Controller
             }
 
             return DataTables::of($transactions)
+                ->addColumn('store_name', function ($transaction) {
+                    return $transaction->store?->name ?? '-';
+                })
                 ->addColumn('invoice_date_formatted', function ($transaction) {
                     return $transaction->invoice_date ?
                         Carbon::parse($transaction->invoice_date)->format('d/m/Y H:i') : '-';
@@ -78,6 +87,12 @@ class TransactionController extends Controller
                     return $badges[$transaction->status] ?? '-';
                 })
                 ->addColumn('action', function ($transaction) {
+
+                    if (auth()->user()->role !== 'admin' &&
+                        $transaction->store_id !== auth()->user()->store_id) {
+                        return '';
+                    }
+
                     if ($transaction->status == 'pending') {
                         return sprintf(
                             '<a href="%s" class="btn btn-primary btn-sm">Lanjutkan</a>',
@@ -101,11 +116,21 @@ class TransactionController extends Controller
                 ->make(true);
         }
 
-        return view('transactions.index');
+        $stores = [];
+        if (auth()->user()->role === 'admin') {
+            $stores = \App\Models\Store::select('id', 'name')->get();
+        }
+
+        return view('transactions.index', compact('stores'));
     }
 
     public function continue(Transaction $transaction)
     {
+        if (auth()->user()->role !== 'admin' &&
+            $transaction->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
         try {
             // Load the transaction with all necessary relationships based on database schema
             $transaction->load([
@@ -115,12 +140,14 @@ class TransactionController extends Controller
                 'items.product.tax',
                 'items.product.discount',
                 'items.unit',
-                'customer'
+                'customer',
+                'store'
             ]);
 
             // Convert transaction data to cart format matching store function requirements
             $cartData = [
                 'pending_transaction_id' => $transaction->id,
+                'store_id' => $transaction->store_id,
                 'invoice_number' => $transaction->invoice_number,
                 'customer_id' => $transaction->customer_id,
                 'items' => $transaction->items->map(function ($item) {

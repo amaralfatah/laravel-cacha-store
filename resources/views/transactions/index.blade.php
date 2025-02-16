@@ -9,6 +9,17 @@
         <div class="card-body">
             <div class="filter-row">
                 <div class="row g-3">
+                    @if(auth()->user()->role === 'admin')
+                        <div class="col-md-3">
+                            <label class="form-label">Toko</label>
+                            <select id="store-filter" class="form-select">
+                                <option value="">Semua Toko</option>
+                                @foreach($stores as $store)
+                                    <option value="{{ $store->id }}">{{ $store->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="col-md-3">
                         <label class="form-label">Status Transaksi</label>
                         <select id="status-filter" class="form-select">
@@ -47,6 +58,9 @@
                     <tr>
                         <th>No. Invoice</th>
                         <th>Tanggal</th>
+                        @if(auth()->user()->role === 'admin')
+                            <th>Toko</th>
+                        @endif
                         <th>Customer</th>
                         <th>Total</th>
                         <th>Status</th>
@@ -84,6 +98,12 @@
                         name: 'invoice_date',
                         width: '150px'
                     },
+                        @if(auth()->user()->role === 'admin')
+                    {
+                        data: 'store_name',
+                        name: 'store.name'
+                    },
+                        @endif
                     {
                         data: 'customer_name',
                         name: 'customer.name',

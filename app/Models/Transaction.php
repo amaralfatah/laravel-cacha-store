@@ -9,6 +9,7 @@ class Transaction extends Model
 {
     protected $fillable = [
         'invoice_number',
+        'store_id',
         'customer_id',
         'cashier_id',
         'total_amount',
@@ -72,6 +73,11 @@ class Transaction extends Model
     public function items()
     {
         return $this->hasMany(TransactionItem::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 
     public function calculateTotals()
