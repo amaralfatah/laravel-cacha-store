@@ -8,20 +8,45 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    // CategoryController.php
+
     public function index()
     {
-        $categories = Category::with('group')->latest()->paginate(10);
+        $categories = Category::with(['group', 'store'])->latest();
+
+        if (auth()->user()->role !== 'admin') {
+            $categories->where('store_id', auth()->user()->store_id);
+        }
+
+        $categories = $categories->paginate(10);
         return view('categories.index', compact('categories'));
     }
 
     public function create()
     {
-        $groups = Group::where('is_active', true)->get();
-        return view('categories.create', compact('groups'));
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $groups = Group::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $stores = auth()->user()->role === 'admin'
+            ? \App\Models\Store::all()
+            : \App\Models\Store::where('id', auth()->user()->store_id)->get();
+
+        return view('categories.create', compact('groups', 'stores'));
     }
 
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
         $request->validate([
             'code' => 'required|string|max:255|unique:categories',
             'name' => 'required|string|max:255',
@@ -33,7 +58,10 @@ class CategoryController extends Controller
             'code' => $request->code,
             'name' => $request->name,
             'group_id' => $request->group_id,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->has('is_active'),
+            'store_id' => auth()->user()->role === 'admin'
+                ? $request->store_id
+                : auth()->user()->store_id
         ]);
 
         return redirect()->route('categories.index')
@@ -42,12 +70,39 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        $groups = Group::where('is_active', true)->get();
-        return view('categories.edit', compact('category', 'groups'));
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        if (auth()->user()->role !== 'admin' &&
+            $category->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
+        $groups = Group::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $stores = auth()->user()->role === 'admin'
+            ? \App\Models\Store::all()
+            : \App\Models\Store::where('id', auth()->user()->store_id)->get();
+
+        return view('categories.edit', compact('category', 'groups', 'stores'));
     }
 
     public function update(Request $request, Category $category)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        if (auth()->user()->role !== 'admin' &&
+            $category->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
         $request->validate([
             'code' => 'required|string|max:255|unique:categories,code,' . $category->id,
             'name' => 'required|string|max:255',
@@ -59,7 +114,8 @@ class CategoryController extends Controller
             'code' => $request->code,
             'name' => $request->name,
             'group_id' => $request->group_id,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->has('is_active'),
+            'store_id' => $category->store_id // Keep original store_id
         ]);
 
         return redirect()->route('categories.index')
@@ -68,6 +124,15 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        if (auth()->user()->role !== 'admin' &&
+            $category->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
         if ($category->products()->count() > 0) {
             return redirect()->route('categories.index')
                 ->with('error', 'Cannot delete category with associated products.');

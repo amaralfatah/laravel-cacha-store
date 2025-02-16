@@ -10,7 +10,24 @@
                         <form action="{{ route('categories.update', $category) }}" method="POST">
                             @csrf
                             @method('PUT')
-
+                            @if(auth()->user()->role === 'admin')
+                                <div class="mb-3">
+                                    <label for="store_id" class="form-label">Store</label>
+                                    <select class="form-select @error('store_id') is-invalid @enderror"
+                                            id="store_id" name="store_id" required>
+                                        <option value="">Select Store</option>
+                                        @foreach($stores as $store)
+                                            <option value="{{ $store->id }}"
+                                                {{ old('store_id', $category->store_id ?? '') == $store->id ? 'selected' : '' }}>
+                                                {{ $store->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('store_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label for="code" class="form-label">Code</label>
                                 <input type="text" class="form-control @error('code') is-invalid @enderror"

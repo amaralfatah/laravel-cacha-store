@@ -170,6 +170,7 @@ class CategorySeeder extends Seeder
 
         foreach ($categories as $category) {
             Category::create([
+                'store_id' => $category['store_id'],
                 'code' => $category['code'],
                 'name' => $category['name'],
                 'group_id' => $category['group_id'],
