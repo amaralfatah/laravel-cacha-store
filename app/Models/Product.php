@@ -60,6 +60,23 @@ class Product extends Model
         return $this->belongsTo(Store::class);
     }
 
+    public function transactionItems()
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
+
+    public function stockHistories()
+    {
+        return $this->hasManyThrough(
+            StockHistory::class,
+            ProductUnit::class,
+            'product_id', // Foreign key on product_units table
+            'product_unit_id', // Foreign key on stock_histories table
+            'id', // Local key on products table
+            'id' // Local key on product_units table
+        );
+    }
+
     public function getCurrentStock()
     {
         return $this->inventories()

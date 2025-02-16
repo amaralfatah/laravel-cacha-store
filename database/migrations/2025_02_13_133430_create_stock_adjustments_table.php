@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('product_unit_id')->constrained('product_units');
             $table->enum('type', ['in', 'out', 'adjustment']);
             $table->decimal('quantity', 15, 2);
-            $table->text('notes');
+            $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });

@@ -6,10 +6,12 @@ use App\Models\Group;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Discount;
+use App\Models\StockAdjustment;
 use App\Models\Supplier;
 use App\Models\Tax;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Milon\Barcode\DNS1D;
@@ -362,7 +364,9 @@ class ProductController extends Controller
     {
         // Load relasi yang dibutuhkan dengan eager loading
         $product->load([
-            'category',
+            'store',
+            'category.group',
+            'supplier',
             'tax',
             'discount',
             'productUnits' => function ($query) {
@@ -372,26 +376,80 @@ class ProductController extends Controller
             'productUnits.unit',
             'productUnits.prices' => function ($query) {
                 $query->orderBy('min_quantity', 'asc');
+            },
+            'transactionItems' => function ($query) {
+                $query->with(['transaction:id,invoice_number,invoice_date', 'unit:id,code'])
+                    ->latest()
+                    ->take(5);
+            },
+            'stockHistories' => function ($query) {
+                $query->with('productUnit.unit:id,code')
+                    ->latest()
+                    ->take(20);
             }
         ]);
 
-        // Ambil data untuk form
-        $taxes = Tax::where('is_active', true)->get();
-        $discounts = Discount::where('is_active', true)->get();
+        // Ambil data untuk form dan modal
+        $taxes = Cache::remember('active_taxes', 60, function () {
+            return Tax::where('is_active', true)
+                ->select('id', 'name', 'rate')
+                ->get();
+        });
+
+        $discounts = Cache::remember('active_discounts', 60, function () {
+            return Discount::where('is_active', true)
+                ->select('id', 'name', 'type', 'value')
+                ->get();
+        });
 
         // Filter unit yang aktif dan belum digunakan oleh produk
-        $availableUnits = Unit::where('is_active', true)
-            ->whereNotIn('id', $product->productUnits->pluck('unit_id'))
+        $availableUnits = Cache::remember(
+            "available_units_product_{$product->id}",
+            60,
+            function () use ($product) {
+                return Unit::where('is_active', true)
+                    ->whereNotIn('id', $product->productUnits->pluck('unit_id'))
+                    ->select('id', 'name', 'code')
+                    ->get();
+            }
+        );
+
+        // Hitung statistik untuk produk
+        $statistics = [
+            'total_sales' => $product->transactionItems()
+                ->whereHas('transaction', function ($query) {
+                    $query->where('status', 'success');
+                })
+                ->sum('quantity'),
+            'total_revenue' => $product->transactionItems()
+                ->whereHas('transaction', function ($query) {
+                    $query->where('status', 'success');
+                })
+                ->sum('subtotal'),
+            'stock_value' => $product->productUnits->sum(function ($unit) {
+                return $unit->stock * $unit->purchase_price;
+            }),
+            'potential_revenue' => $product->productUnits->sum(function ($unit) {
+                return $unit->stock * $unit->selling_price;
+            })
+        ];
+
+        // Ambil riwayat penyesuaian stok
+        $stockAdjustments = StockAdjustment::with('user:id,name')
+            ->whereIn('product_unit_id', $product->productUnits->pluck('id'))
+            ->latest()
+            ->take(10)
             ->get();
 
         return view('products.show', compact(
             'product',
             'availableUnits',
             'taxes',
-            'discounts'
+            'discounts',
+            'statistics',
+            'stockAdjustments'
         ));
     }
-
 
     public function destroy(Product $product)
     {

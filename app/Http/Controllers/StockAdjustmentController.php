@@ -46,7 +46,7 @@ class StockAdjustmentController extends Controller
             'product_unit_id' => 'required|exists:product_units,id',
             'type' => 'required|in:in,out',
             'quantity' => 'required|numeric|min:0.01',
-            'notes' => 'required|string'
+            'notes' => 'nullable|string'
         ];
 
         if (auth()->user()->role === 'admin') {
@@ -60,7 +60,7 @@ class StockAdjustmentController extends Controller
 
             $productUnit = ProductUnit::findOrFail($validated['product_unit_id']);
 
-// Check if user has access to this product's store
+            // Check if user has access to this product's store
             if (auth()->user()->role !== 'admin' && $productUnit->product->store_id !== auth()->user()->store_id) {
                 throw new \Exception("Unauthorized access to product");
             }
@@ -85,6 +85,12 @@ class StockAdjustmentController extends Controller
             ]);
 
             DB::commit();
+
+            // Check if redirect_back exists in request
+            if ($request->has('redirect_back')) {
+                return back()->with('success', 'Stock adjustment completed successfully');
+            }
+
             return redirect()->route('stock.adjustments.index')
                 ->with('success', 'Stock adjustment completed successfully');
 
