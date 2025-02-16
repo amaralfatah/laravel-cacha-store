@@ -12,7 +12,24 @@
                         <form action="{{ route('products.update', $product) }}" method="POST">
                             @csrf
                             @method('PUT')
-
+                            @if(auth()->user()->role === 'admin')
+                                <div class="mb-3">
+                                    <label for="store_id" class="form-label">Toko</label>
+                                    <select class="form-select @error('store_id') is-invalid @enderror"
+                                            id="store_id" name="store_id" required>
+                                        <option value="">Pilih Toko</option>
+                                        @foreach($stores as $store)
+                                            <option value="{{ $store->id }}"
+                                                {{ old('store_id', $product->store_id ?? '') == $store->id ? 'selected' : '' }}>
+                                                {{ $store->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('store_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label for="name" class="form-label">Nama</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"

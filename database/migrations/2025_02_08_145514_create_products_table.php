@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('barcode', 100);
             $table->string('barcode_image')->nullable();
+            $table->foreignId('store_id')->nullable()->index();
             $table->foreignId('category_id')->constrained();
             $table->foreignId('tax_id')->nullable()->constrained();
             $table->foreignId('discount_id')->nullable()->constrained();

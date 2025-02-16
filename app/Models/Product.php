@@ -12,6 +12,7 @@ class Product extends Model
         'name',
         'barcode',
         'barcode_image',
+        'store_id',
         'category_id',
         'tax_id',
         'discount_id',
@@ -54,6 +55,10 @@ class Product extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
 
     public function getCurrentStock()
     {

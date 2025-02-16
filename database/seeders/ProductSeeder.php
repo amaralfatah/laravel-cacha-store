@@ -42,6 +42,7 @@ class ProductSeeder extends Seeder
                 'code' => 'P001',
                 'name' => 'Mie Goreng Sedap',
                 'barcode' => '8995757214004',
+                'store_id' => 1,
                 'category_id' => 9, // MAKANAN INSTAN (00901)
                 'supplier_id' => 1,
                 'is_active' => true,
@@ -73,6 +74,7 @@ class ProductSeeder extends Seeder
             foreach ($products as $productData) {
                 // Create product
                 $product = Product::create([
+                    'store_id' => $productData['store_id'],
                     'code' => $productData['code'],
                     'name' => $productData['name'],
                     'barcode' => $productData['barcode'],

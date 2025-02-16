@@ -25,11 +25,13 @@ class ProductController extends Controller
                 'products.code',
                 'products.name',
                 'products.barcode',
+                'products.store_id',
                 'products.category_id',
                 'products.supplier_id',
                 'products.is_active',
                 'products.created_at'
             ])->with([
+                'store:id,name',
                 'category:id,name,group_id',
                 'category.group:id,name',  // Tambahkan relasi ke group
                 'supplier:id,name',
@@ -47,6 +49,11 @@ class ProductController extends Controller
                 },
                 'productUnits.unit:id,name'
             ]);
+
+            // Filter berdasarkan store untuk non-admin
+            if (auth()->user()->role !== 'admin') {
+                $products->where('products.store_id', auth()->user()->store_id);
+            }
 
             // Filter grup
             if ($request->filled('group_id')) {
@@ -83,6 +90,9 @@ class ProductController extends Controller
             }
 
             return DataTables::of($products)
+                ->addColumn('store_name', function ($product) {
+                    return $product->store->name ?? '-';
+                })
                 ->addColumn('group_info', function ($product) {
                     return $product->category?->group?->name ?? '-';
                 })
@@ -136,18 +146,26 @@ class ProductController extends Controller
                 ->make(true);
         }
 
-        // Data untuk filter
         $groups = Group::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
 
         $categories = Category::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
             ->select('id', 'name', 'group_id')
             ->orderBy('name')
             ->get();
 
-        $suppliers = Supplier::select('id', 'name')
+        $suppliers = Supplier::when(auth()->user()->role !== 'admin', function($query) {
+            return $query->where('store_id', auth()->user()->store_id);
+        })
+            ->select('id', 'name')
             ->orderBy('name')
             ->get();
 
@@ -156,9 +174,23 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::where('is_active', true)->get();
-        $units = Unit::where('is_active', true)->get();
-        return view('products.create', compact('categories', 'units'));
+        $categories = Category::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $units = Unit::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $stores = auth()->user()->role === 'admin'
+            ? \App\Models\Store::all()
+            : \App\Models\Store::where('id', auth()->user()->store_id)->get();
+
+        return view('products.create', compact('categories', 'units', 'stores'));
     }
 
     public function store(Request $request)
@@ -172,6 +204,7 @@ class ProductController extends Controller
             'selling_price' => 'required|numeric|min:0',
             'default_unit_id' => 'required|exists:units,id',
             'stock' => 'required|numeric|min:0',
+            'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
             'is_active' => 'boolean'
         ]);
 
@@ -194,6 +227,9 @@ class ProductController extends Controller
                 'barcode_image' => $barcodePath,
                 'category_id' => $validated['category_id'],
                 'default_unit_id' => $validated['default_unit_id'],
+                'store_id' => auth()->user()->role === 'admin'
+                    ? $validated['store_id']
+                    : auth()->user()->store_id,
                 'is_active' => $validated['is_active']
             ]);
 
@@ -221,17 +257,53 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::where('is_active', true)->get();
-        $taxes = Tax::where('is_active', true)->get();
-        $discounts = Discount::where('is_active', true)->get();
+        // Cek akses
+        if (auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
+        $categories = Category::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $taxes = Tax::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $discounts = Discount::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $stores = auth()->user()->role === 'admin'
+            ? \App\Models\Store::all()
+            : \App\Models\Store::where('id', auth()->user()->store_id)->get();
 
         $defaultUnit = $product->productUnits()->where('is_default', true)->first();
 
-        return view('products.edit', compact('product', 'categories', 'taxes', 'discounts', 'defaultUnit'));
+        return view('products.edit', compact(
+            'product',
+            'categories',
+            'taxes',
+            'discounts',
+            'defaultUnit',
+            'stores'
+        ));
     }
 
     public function update(Request $request, Product $product)
     {
+        if (auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|max:255',
             'code' => 'required|max:100|unique:products,code,' . $product->id,
@@ -323,6 +395,11 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if (auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
         $product->productUnits()->delete();
 
         if ($product->barcode_image) {

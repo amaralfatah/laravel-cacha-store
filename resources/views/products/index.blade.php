@@ -71,6 +71,9 @@
                     <tr>
                         <th>Kode</th>
                         <th>Nama Produk</th>
+                        @if(auth()->user()->role === 'admin')
+                            <th>Toko</th>
+                        @endif
                         <th>Grup</th>
                         <th>Kategori</th>
                         <th>Supplier</th>
@@ -108,6 +111,7 @@
                 columns: [
                     { data: 'code', name: 'code' },
                     { data: 'name', name: 'name' },
+                    { data: 'store_name', name: 'store_name' },
                     { data: 'group_info', name: 'category.group.name' },
                     { data: 'category_name', name: 'category.name' },
                     { data: 'supplier_name', name: 'supplier.name' },
