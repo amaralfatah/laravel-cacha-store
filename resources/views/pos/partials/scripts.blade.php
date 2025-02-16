@@ -649,7 +649,7 @@ background-color: #e9ecef;
 
             if (result.success) {
                 showSuccessModal('Transaksi berhasil disimpan sebagai draft!', () => {
-                    window.location.href = '{{ route('transactions.index') }}';
+                    window.location.href = '{{ route('pos.index') }}';
                 });
             } else {
                 showErrorModal(result.message);
@@ -658,5 +658,85 @@ background-color: #e9ecef;
             console.error('Error:', error);
             showErrorModal('Terjadi kesalahan saat menyimpan transaksi');
         }
+    });
+
+    // Add this code to your existing JavaScript file
+
+    // Show pending transactions modal
+    document.getElementById('btn-show-pending').addEventListener('click', async function() {
+        try {
+            const response = await fetch('{{ route("transactions.index") }}?' + new URLSearchParams({
+                status: 'pending'
+            }), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const result = await response.json();
+            const tbody = document.querySelector('#pending-transactions-table tbody');
+            tbody.innerHTML = '';
+
+            if (result.data && result.data.length > 0) {
+                result.data.forEach(transaction => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                    <td>${transaction.invoice_number}</td>
+                    <td>${transaction.invoice_date_formatted}</td>
+                    <td>${transaction.customer_name}</td>
+                    <td>${transaction.final_amount_formatted}</td>
+                    <td>
+                        <a href="{{ url('transactions') }}/${transaction.id}/continue"
+                           class="btn btn-primary btn-sm">
+                            Lanjutkan
+                        </a>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">
+                        Tidak ada transaksi pending
+                    </td>
+                </tr>
+            `;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('pendingTransactionsModal'));
+            modal.show();
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorModal('Terjadi kesalahan saat mengambil data transaksi pending');
+        }
+    });
+
+    // Add keyboard navigation for the modal
+    document.getElementById('pendingTransactionsModal').addEventListener('shown.bs.modal', function () {
+        const modal = this;
+        const links = modal.querySelectorAll('a.btn-primary');
+        let currentIndex = -1;
+
+        modal.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentIndex = Math.min(currentIndex + 1, links.length - 1);
+                    links[currentIndex]?.focus();
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentIndex = Math.max(currentIndex - 1, 0);
+                    links[currentIndex]?.focus();
+                    break;
+
+                case 'Escape':
+                    e.preventDefault();
+                    bootstrap.Modal.getInstance(modal).hide();
+                    break;
+            }
+        });
     });
 </script>

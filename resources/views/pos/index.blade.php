@@ -9,6 +9,11 @@
     <div class="row">
         <!-- Left Column - Product Input -->
         <div class="col-md-8">
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary" id="btn-show-pending">
+                    Transaksi Pending
+                </button>
+            </div>
             <div class="card">
                 <div class="card-header">
                     <h4>Transaksi Penjualan</h4>
@@ -137,6 +142,36 @@
                         <button class="btn btn-warning mb-2" id="btn-pending">Simpan Sebagai Draft</button>
                         <button class="btn btn-primary" id="btn-save">Simpan Transaksi</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pendingTransactionsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Daftar Transaksi Pending</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="pending-transactions-table">
+                            <thead>
+                            <tr>
+                                <th>No. Invoice</th>
+                                <th>Tanggal</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Aksi</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
