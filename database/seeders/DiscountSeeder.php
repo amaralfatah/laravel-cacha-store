@@ -12,6 +12,7 @@ class DiscountSeeder extends Seeder
     {
         DB::table('discounts')->insert([
             [
+                'store_id' => 1,
                 'name' => 'Promo Hari Raya 10%',
                 'type' => 'percentage',
                 'value' => 10,
@@ -20,6 +21,7 @@ class DiscountSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
+                'store_id' => 1,
                 'name' => 'Diskon Jum\'at Berkah',
                 'type' => 'fixed',
                 'value' => 5000,
@@ -28,6 +30,7 @@ class DiscountSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
+                'store_id' => 1,
                 'name' => 'Potongan Tahun Baru',
                 'type' => 'fixed',
                 'value' => 2500,

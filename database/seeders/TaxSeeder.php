@@ -12,6 +12,7 @@ class TaxSeeder extends Seeder
     {
         DB::table('taxes')->insert([
             [
+                'store_id' => 1,
                 'name' => 'PPN 11%',
                 'rate' => 11,
                 'is_active' => true,
@@ -19,6 +20,7 @@ class TaxSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
+                'store_id' => 1,
                 'name' => 'Pajak Parkir',
                 'rate' => 1,
                 'is_active' => false,

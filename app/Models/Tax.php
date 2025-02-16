@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tax extends Model
 {
-    protected $fillable = ['name', 'rate', 'is_active'];
+    protected $fillable = ['store_id', 'name', 'rate', 'is_active'];
 
     public function products()
     {
@@ -16,5 +16,10 @@ class Tax extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 }

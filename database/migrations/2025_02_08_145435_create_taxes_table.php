@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('taxes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->string('name');
             $table->decimal('rate', 5, 2);
             $table->boolean('is_active')->default(true);

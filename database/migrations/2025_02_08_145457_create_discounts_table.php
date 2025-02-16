@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->string('name');
             $table->enum('type', ['percentage', 'fixed']);
             $table->decimal('value', 15, 2);
