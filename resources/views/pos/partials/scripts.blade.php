@@ -29,21 +29,6 @@
         calculateTotals();
     }
 
-    // Barcode scanner handling
-    document.getElementById('pos_barcode').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            getProduct(this.value);
-            this.value = '';
-        }
-    });
-
-    // Payment type handling
-    document.getElementById('pos_payment_type').addEventListener('change', function() {
-        const refContainer = document.getElementById('pos_reference_number_container');
-        refContainer.style.display = this.value === 'transfer' ? 'block' : 'none';
-    });
-
     // Keyboard navigation functions
     function handleProductListNavigation(e, productList) {
         const items = productList.querySelectorAll('.product-item');
@@ -133,49 +118,6 @@
             showErrorModal('Terjadi kesalahan saat mengambil data produk');
         }
     }
-
-    document.getElementById('pos_search_product').addEventListener('input', async function () {
-        const productList = document.getElementById('pos_product_list');
-
-        if (this.value.length >= 3) {
-            try {
-                const response = await fetch(`{{ route('pos.search-product') }}?search=${this.value}`);
-                const products = await response.json();
-
-                productList.innerHTML = '';
-
-                if (products.length > 0) {
-                    productList.style.display = 'block';
-
-                    products.forEach(product => {
-                        const div = document.createElement('div');
-                        div.className = 'product-item';
-                        div.textContent = `${product.name} - ${product.barcode}`;
-                        div.onclick = () => {
-                            getProduct(product.barcode);
-                            productList.style.display = 'none';
-                            this.value = '';
-                        };
-                        productList.appendChild(div);
-                    });
-                } else {
-                    productList.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                productList.style.display = 'none';
-            }
-        } else {
-            productList.style.display = 'none';
-        }
-    });
-
-    document.getElementById('pos_search_product').addEventListener('keydown', function (e) {
-        const productList = document.getElementById('pos_product_list');
-        if (productList.style.display === 'block') {
-            handleProductListNavigation(e, productList);
-        }
-    });
 
     // Cart handling functions
     function addToCart(product) {
@@ -364,108 +306,6 @@
         modal.show();
         document.getElementById('errorOkButton').focus();
     }
-
-    // Transaction handlers
-    document.getElementById('btn-save').addEventListener('click', async function () {
-        if (cart.length === 0) {
-            showErrorModal('Keranjang masih kosong!');
-            return;
-        }
-
-        const paymentType = document.getElementById('pos_payment_type').value;
-        const referenceNumber = document.getElementById('pos_reference_number').value;
-
-        if (paymentType === 'transfer' && !referenceNumber) {
-            showErrorModal('Nomor referensi harus diisi untuk pembayaran transfer!');
-            return;
-        }
-
-        const data = {
-            invoice_number: document.getElementById('pos_invoice_number').value,
-            store_id: document.getElementById('pos_store_id').value,
-            customer_id: document.getElementById('pos_customer_id').value,
-            items: cart,
-            payment_type: paymentType,
-            reference_number: referenceNumber,
-            total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
-            tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
-            discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
-            final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
-            pending_transaction_id: pendingTransactionId,
-            status: 'success'
-        };
-
-        try {
-            const response = await fetch('{{ route('pos.store') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccessModal('Transaksi berhasil disimpan!', () => {
-                    window.open(`{{ url('pos/invoice') }}/${result.transaction_id}`, '_blank');
-                    window.location.reload();
-                });
-            } else {
-                showErrorModal(result.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showErrorModal('Terjadi kesalahan saat menyimpan transaksi');
-        }
-    });
-
-    document.getElementById('btn-pending').addEventListener('click', async function() {
-        if (cart.length === 0) {
-            showErrorModal('Keranjang masih kosong!');
-            return;
-        }
-
-        try {
-            const data = {
-                invoice_number: document.getElementById('pos_invoice_number').value,
-                store_id: document.getElementById('pos_store_id').value,
-                customer_id: document.getElementById('pos_customer_id').value,
-                items: cart,
-                payment_type: document.getElementById('pos_payment_type').value,
-                reference_number: document.getElementById('pos_reference_number').value,
-                total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
-                tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
-                discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
-                final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
-                pending_transaction_id: pendingTransactionId,
-                status: 'pending'
-            };
-
-            const response = await fetch('{{ route('pos.store') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccessModal('Transaksi berhasil disimpan sebagai draft!', () => {
-                    window.location.href = '{{ route('transactions.index') }}';
-                });
-            } else {
-                showErrorModal(result.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showErrorModal('Terjadi kesalahan saat menyimpan transaksi');
-        }
-    });
 
     // Helper functions
     function updateCartTable() {
@@ -659,4 +499,164 @@ background-color: #e9ecef;
 }
 `;
     document.head.appendChild(style);
+
+    // Barcode scanner handling
+    document.getElementById('pos_barcode').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            getProduct(this.value);
+            this.value = '';
+        }
+    });
+
+    // Payment type handling
+    document.getElementById('pos_payment_type').addEventListener('change', function() {
+        const refContainer = document.getElementById('pos_reference_number_container');
+        refContainer.style.display = this.value === 'transfer' ? 'block' : 'none';
+    });
+
+    document.getElementById('pos_search_product').addEventListener('input', async function () {
+        const productList = document.getElementById('pos_product_list');
+
+        if (this.value.length >= 3) {
+            try {
+                const response = await fetch(`{{ route('pos.search-product') }}?search=${this.value}`);
+                const products = await response.json();
+
+                productList.innerHTML = '';
+
+                if (products.length > 0) {
+                    productList.style.display = 'block';
+
+                    products.forEach(product => {
+                        const div = document.createElement('div');
+                        div.className = 'product-item';
+                        div.textContent = `${product.name} - ${product.barcode}`;
+                        div.onclick = () => {
+                            getProduct(product.barcode);
+                            productList.style.display = 'none';
+                            this.value = '';
+                        };
+                        productList.appendChild(div);
+                    });
+                } else {
+                    productList.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                productList.style.display = 'none';
+            }
+        } else {
+            productList.style.display = 'none';
+        }
+    });
+
+    document.getElementById('pos_search_product').addEventListener('keydown', function (e) {
+        const productList = document.getElementById('pos_product_list');
+        if (productList.style.display === 'block') {
+            handleProductListNavigation(e, productList);
+        }
+    });
+
+    // Transaction handlers
+    document.getElementById('btn-save').addEventListener('click', async function () {
+        if (cart.length === 0) {
+            showErrorModal('Keranjang masih kosong!');
+            return;
+        }
+
+        const paymentType = document.getElementById('pos_payment_type').value;
+        const referenceNumber = document.getElementById('pos_reference_number').value;
+
+        if (paymentType === 'transfer' && !referenceNumber) {
+            showErrorModal('Nomor referensi harus diisi untuk pembayaran transfer!');
+            return;
+        }
+
+        const data = {
+            invoice_number: document.getElementById('pos_invoice_number').value,
+            store_id: document.getElementById('pos_store_id').value,
+            customer_id: document.getElementById('pos_customer_id').value,
+            items: cart,
+            payment_type: paymentType,
+            reference_number: referenceNumber,
+            total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
+            tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
+            discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
+            final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
+            pending_transaction_id: pendingTransactionId,
+            status: 'success'
+        };
+
+        try {
+            const response = await fetch('{{ route('pos.store') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showSuccessModal('Transaksi berhasil disimpan!', () => {
+                    window.open(`{{ url('pos/invoice') }}/${result.transaction_id}`, '_blank');
+                    window.location.reload();
+                });
+            } else {
+                showErrorModal(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorModal('Terjadi kesalahan saat menyimpan transaksi');
+        }
+    });
+
+    document.getElementById('btn-pending').addEventListener('click', async function() {
+        if (cart.length === 0) {
+            showErrorModal('Keranjang masih kosong!');
+            return;
+        }
+
+        try {
+            const data = {
+                invoice_number: document.getElementById('pos_invoice_number').value,
+                store_id: document.getElementById('pos_store_id').value,
+                customer_id: document.getElementById('pos_customer_id').value,
+                items: cart,
+                payment_type: document.getElementById('pos_payment_type').value,
+                reference_number: document.getElementById('pos_reference_number').value,
+                total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
+                tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
+                discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
+                final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
+                pending_transaction_id: pendingTransactionId,
+                status: 'pending'
+            };
+
+            const response = await fetch('{{ route('pos.store') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showSuccessModal('Transaksi berhasil disimpan sebagai draft!', () => {
+                    window.location.href = '{{ route('transactions.index') }}';
+                });
+            } else {
+                showErrorModal(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorModal('Terjadi kesalahan saat menyimpan transaksi');
+        }
+    });
 </script>
