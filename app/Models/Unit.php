@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Unit extends Model
 {
     protected $fillable = [
+        'store_id',
         'name',
         'code',
         'is_base_unit',
@@ -21,5 +22,10 @@ class Unit extends Model
     public function productUnits()
     {
         return $this->hasMany(ProductUnit::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 }
