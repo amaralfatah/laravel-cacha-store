@@ -13,6 +13,20 @@
                 @csrf
 
                 <div class="row">
+                    @if(auth()->user()->role === 'admin')
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="store_id" class="form-label">Store</label>
+                                <select name="store_id" id="store_id" class="form-control" required>
+                                    <option value="">Select Store</option>
+                                    @foreach($stores as $store)
+                                        <option value="{{ $store->id }}">{{ $store->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="product_unit_id" class="form-label">Product & Unit</label>

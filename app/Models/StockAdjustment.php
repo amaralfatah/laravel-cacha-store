@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockAdjustment extends Model
 {
     protected $fillable = [
+        'store_id',
         'product_unit_id',
         'type',
         'quantity',
@@ -48,5 +49,10 @@ class StockAdjustment extends Model
     public function history()
     {
         return $this->morphOne(StockHistory::class, 'reference');
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 }
