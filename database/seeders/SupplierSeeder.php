@@ -12,6 +12,7 @@ class SupplierSeeder extends Seeder
     {
         DB::table('suppliers')->insert([
             [
+                'store_id' => 1,
                 'code' => '0102102',
                 'name' => 'Agus Sandal Purwokerto',
                 'phone' => '083456789012',
@@ -19,6 +20,7 @@ class SupplierSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
+                'store_id' => 1,
                 'code' => 'TSK001',
                 'name' => 'Grosir Snack Tasik',
                 'phone' => '084567890123',

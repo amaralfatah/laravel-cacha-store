@@ -24,12 +24,14 @@ class CustomerSeeder extends Seeder
         // Tambahkan customer lainnya
         $customers = [
             [
+                'store_id' => 1,
                 'name' => 'Amar Al Fatah',
                 'phone' => '085819450001',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
+                'store_id' => 2,
                 'name' => 'Khansa Almi\'raj',
                 'phone' => '085322471629',
                 'created_at' => now(),

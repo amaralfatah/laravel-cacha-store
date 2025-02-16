@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <x-section-header
         title="Manajemen Kelompok"
         :route="route('groups.create')"
@@ -10,56 +11,44 @@
 
     <div class="card">
         <div class="card-body">
-            @if (session('success'))
-                <div class="alert alert-success" role="alert">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped" id="groups-table">
                     <thead>
                     <tr>
+                        <th>No</th>
                         <th>Kode</th>
                         <th>Nama</th>
+                        @if(auth()->user()->role === 'admin')
+                            <th>Toko</th>
+                        @endif
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    @forelse ($groups as $group)
-                        <tr>
-                            <td>{{ $group->code }}</td>
-                            <td>{{ $group->name }}</td>
-                            <td>
-                                            <span class="badge {{ $group->is_active ? 'bg-success' : 'bg-danger' }}">
-                                                {{ $group->is_active ? 'Active' : 'Inactive' }}
-                                            </span>
-                            </td>
-                            <td>
-                                <form action="{{ route('groups.destroy', $group) }}" method="POST"
-                                      class="d-inline">
-                                    <a href="{{ route('groups.edit', $group) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure?')">Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="text-center">No groups found.</td>
-                        </tr>
-                    @endforelse
-                    </tbody>
                 </table>
-            </div>
-
-            <div class="d-flex justify-content-center mt-3">
-                {{ $groups->links() }}
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function() {
+            $('#groups-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("groups.index") }}',
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'code', name: 'code' },
+                    { data: 'name', name: 'name' },
+                        @if(auth()->user()->role === 'admin')
+                    { data: 'store_name', name: 'store_name' },  // Ubah dari store.name menjadi store_name
+                        @endif
+                    { data: 'status', name: 'status' },
+                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                ],
+            });
+        });
+    </script>
+@endpush

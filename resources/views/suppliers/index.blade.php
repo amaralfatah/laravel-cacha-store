@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <x-section-header
         title="Manajemen Pemasok"
         :route="route('suppliers.create')"
@@ -18,6 +17,9 @@
                     <th>Kode</th>
                     <th>Nama</th>
                     <th>Telpon</th>
+                    @if(auth()->user()->role === 'admin')
+                        <th>Toko</th>
+                    @endif
                     <th>Aksi</th>
                 </tr>
                 </thead>
@@ -39,6 +41,9 @@
                     {data: 'code', name: 'code'},
                     {data: 'name', name: 'name'},
                     {data: 'phone', name: 'phone'},
+                        @if(auth()->user()->role === 'admin')
+                    {data: 'store_name', name: 'store_name'},
+                        @endif
                     {
                         data: 'action',
                         name: 'action',
@@ -48,6 +53,6 @@
                 ],
                 order: [[1, 'asc']],
             });
-        })
+        });
     </script>
 @endpush

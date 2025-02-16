@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->string('name');
             $table->string('phone', 20);
             $table->timestamps();

@@ -7,9 +7,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Supplier extends Model
 {
-    protected $fillable = ['code', 'name', 'phone'];
+    protected $fillable = ['store_id', 'code', 'name', 'phone'];
 
-    public function products(): HasMany
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+
+    public function products()
     {
         return $this->hasMany(Product::class);
     }

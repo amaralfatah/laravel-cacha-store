@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->string('code')->unique();
             $table->string('name');
             $table->boolean('is_active')->default(true);

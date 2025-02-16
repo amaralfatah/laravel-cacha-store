@@ -17,6 +17,9 @@
                         <th>No</th>
                         <th>Nama</th>
                         <th>Telpon</th>
+                        @if(auth()->user()->role === 'admin')
+                            <th>Toko</th>
+                        @endif
                         <th>Aksi</th>
                     </tr>
                     </thead>
@@ -38,6 +41,9 @@
                     {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
                     {data: 'name', name: 'name'},
                     {data: 'phone', name: 'phone'},
+                        @if(auth()->user()->role === 'admin')
+                    {data: 'store_name', name: 'store_name'},
+                        @endif
                     {
                         data: 'actions',
                         name: 'actions',

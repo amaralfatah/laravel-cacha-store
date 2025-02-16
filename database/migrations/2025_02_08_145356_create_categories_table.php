@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->string('code')->unique();
             $table->foreignId('group_id')->nullable()->constrained();
             $table->string('name');

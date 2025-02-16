@@ -9,6 +9,32 @@
                     <div class="card-body">
                         <form action="{{ route('suppliers.store') }}" method="POST">
                             @csrf
+                            @if(auth()->user()->role === 'admin')
+                                <div class="mb-3">
+                                    <label for="store_id" class="form-label">Toko</label>
+                                    <select class="form-select @error('store_id') is-invalid @enderror"
+                                            id="store_id" name="store_id" required>
+                                        <option value="">Pilih Toko</option>
+                                        @foreach($stores as $store)
+                                            <option value="{{ $store->id }}"
+                                                {{ old('store_id', $supplier->store_id ?? '') == $store->id ? 'selected' : '' }}>
+                                                {{ $store->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('store_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            @endif
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Kode</label>
+                                <input type="text" class="form-control @error('code') is-invalid @enderror"
+                                       id="code" name="code" value="{{ old('code') }}" required>
+                                @error('code')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
