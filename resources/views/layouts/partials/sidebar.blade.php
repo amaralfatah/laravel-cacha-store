@@ -217,7 +217,7 @@
         </li>
         <li class="menu-item {{ setActive('stores.*') }}">
             <a href="{{ route('stores.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-user-circle"></i>
+                <i class="menu-icon tf-icons bx bxl-shopify"></i>
                 <div data-i18n="Stores">Toko</div>
             </a>
         </li>
