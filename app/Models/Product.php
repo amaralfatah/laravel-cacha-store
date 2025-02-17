@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Sluggable\HasSlug;
+use Spatie\Sluggable\SlugOptions;
 
 class Product extends Model
 {
+    use HasSlug;
+
     protected $fillable = [
         'code',
         'name',
@@ -17,7 +21,30 @@ class Product extends Model
         'tax_id',
         'discount_id',
         'supplier_id',
-        'is_active'
+        'featured',
+        'is_active',
+
+
+        // SEO fields
+        'slug',
+        'description',
+        'short_description',
+        'seo_title',
+        'seo_description',
+        'seo_keywords',
+        'seo_canonical_url',
+        'og_title',
+        'og_description',
+        'og_type',
+        'schema_brand',
+        'schema_sku',
+        'schema_gtin',
+        'schema_mpn'
+    ];
+
+    protected $casts = [
+        'featured' => 'boolean',
+        'is_active' => 'boolean'
     ];
 
     public function category()
@@ -40,11 +67,6 @@ class Product extends Model
         return $this->hasMany(ProductUnit::class);
     }
 
-//    public function defaultUnit()
-//    {
-//        return $this->belongsTo(Unit::class, 'default_unit_id');
-//    }
-
     public function prices()
     {
         return $this->hasMany(Price::class);
@@ -65,7 +87,24 @@ class Product extends Model
         return $this->hasMany(TransactionItem::class);
     }
 
-    // Tambahkan method untuk mendapatkan default unit
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_primary', true);
+    }
+
+    public function getSlugOptions() : SlugOptions
+    {
+        return SlugOptions::create()
+            ->generateSlugsFrom('name')
+            ->saveSlugsTo('slug')
+            ->doNotGenerateSlugsOnUpdate();
+    }
+
     public function getDefaultUnitAttribute()
     {
         return $this->productUnits()
@@ -94,29 +133,14 @@ class Product extends Model
 
     public function getPrice($quantity, $unitId)
     {
-        \Log::info('Getting price for product', [
-            'product_id' => $this->id,
-            'quantity' => $quantity,
-            'unit_id' => $unitId
-        ]);
-
         // Get product unit
         $productUnit = $this->productUnits()
             ->where('unit_id', $unitId)
             ->first();
 
         if (!$productUnit) {
-            \Log::error('Product unit not found', [
-                'product_id' => $this->id,
-                'unit_id' => $unitId
-            ]);
             throw new \Exception("Unit tidak ditemukan untuk produk ini");
         }
-
-        \Log::info('Found product unit', [
-            'product_unit_id' => $productUnit->id,
-            'selling_price' => $productUnit->selling_price
-        ]);
 
         // Check for tiered pricing
         $price = $productUnit->prices()
@@ -125,16 +149,9 @@ class Product extends Model
             ->first();
 
         if ($price) {
-            \Log::info('Found tiered price', [
-                'min_quantity' => $price->min_quantity,
-                'price' => $price->price
-            ]);
             return $price->price;
         }
 
-        \Log::info('Using default selling price', [
-            'price' => $productUnit->selling_price
-        ]);
         return $productUnit->selling_price;
     }
 
@@ -153,23 +170,48 @@ class Product extends Model
 
     public function getTaxAmount($price)
     {
-        \Log::info('Calculating tax', [
-            'product_id' => $this->id,
-            'base_price' => $price,
-            'has_tax' => $this->tax ? true : false
-        ]);
-
         if (!$this->tax) {
             return 0;
         }
 
         $taxAmount = $price * $this->tax->rate / 100;
 
-        \Log::info('Tax calculated', [
-            'rate' => $this->tax->rate,
-            'amount' => $taxAmount
-        ]);
-
         return $taxAmount;
+    }
+
+    public function getSeoData()
+    {
+        return [
+            'title' => $this->seo_title ?? $this->name,
+            'description' => $this->seo_description ?? $this->short_description,
+            'keywords' => $this->seo_keywords,
+            'canonical' => $this->seo_canonical_url,
+            'opengraph' => [
+                'title' => $this->og_title ?? $this->name,
+                'description' => $this->og_description ?? $this->short_description,
+                'type' => $this->og_type ?? 'product',
+                'image' => $this->primaryImage?->image_path ? asset('storage/' . $this->primaryImage->image_path) : null,
+            ],
+            'json-ld' => [
+                '@context' => 'https://schema.org',
+                '@type' => 'Product',
+                'name' => $this->name,
+                'description' => $this->description,
+                'brand' => [
+                    '@type' => 'Brand',
+                    'name' => $this->schema_brand
+                ],
+                'sku' => $this->schema_sku,
+                'gtin' => $this->schema_gtin,
+                'mpn' => $this->schema_mpn,
+                'image' => $this->primaryImage?->image_path ? asset('storage/' . $this->primaryImage->image_path) : null,
+                'offers' => [
+                    '@type' => 'Offer',
+                    'availability' => $this->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                    'price' => $this->selling_price,
+                    'priceCurrency' => 'IDR'
+                ]
+            ]
+        ];
     }
 }

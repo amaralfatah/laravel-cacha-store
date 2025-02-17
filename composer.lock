@@ -4,8 +4,80 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd9d724f48793e86decd7ed5c6339edf",
+    "content-hash": "11a3d2eb8bc70d137d6910a61b7889da",
     "packages": [
+        {
+            "name": "artesaos/seotools",
+            "version": "v1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/artesaos/seotools.git",
+                "reference": "44920c7408c927f63c505aadcf35037c55c0a818"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/artesaos/seotools/zipball/44920c7408c927f63c505aadcf35037c55c0a818",
+                "reference": "44920c7408c927f63c505aadcf35037c55c0a818",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "illuminate/config": "^10.0 || ^11.0",
+                "illuminate/support": "^10.0 || ^11.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^8.0 || ^9.0",
+                "phpspec/phpspec": "~5.1.1 || ^6.0 || ^7.0",
+                "phpunit/phpunit": "^9.0 || ^10.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "SEO": "Artesaos\\SEOTools\\Facades\\SEOTools",
+                        "JsonLd": "Artesaos\\SEOTools\\Facades\\JsonLd",
+                        "SEOMeta": "Artesaos\\SEOTools\\Facades\\SEOMeta",
+                        "Twitter": "Artesaos\\SEOTools\\Facades\\TwitterCard",
+                        "OpenGraph": "Artesaos\\SEOTools\\Facades\\OpenGraph"
+                    },
+                    "providers": [
+                        "Artesaos\\SEOTools\\Providers\\SEOToolsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Artesaos\\SEOTools\\": "src/SEOTools/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Vinicius",
+                    "email": "luiz.vinicius73@gmail.com"
+                }
+            ],
+            "description": "SEO Tools for Laravel and Lumen",
+            "keywords": [
+                "JSON-LD",
+                "laravel",
+                "lumen",
+                "metatags",
+                "opengraph",
+                "seo",
+                "seotools",
+                "webmaster"
+            ],
+            "support": {
+                "issues": "https://github.com/artesaos/seotools/issues",
+                "source": "https://github.com/artesaos/seotools"
+            },
+            "time": "2024-05-20T12:43:47+00:00"
+        },
         {
             "name": "barryvdh/laravel-dompdf",
             "version": "v3.1.0",
@@ -4330,6 +4402,65 @@
                 "source": "https://github.com/MyIntervals/PHP-CSS-Parser/tree/v8.7.0"
             },
             "time": "2024-10-27T17:38:32+00:00"
+        },
+        {
+            "name": "spatie/laravel-sluggable",
+            "version": "3.7.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-sluggable.git",
+                "reference": "cfe8440ebce367b66bdfec6e1a7c8e33879092fc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-sluggable/zipball/cfe8440ebce367b66bdfec6e1a7c8e33879092fc",
+                "reference": "cfe8440ebce367b66bdfec6e1a7c8e33879092fc",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^8.0|^9.0|^10.0|^11.0",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^6.23|^7.0|^8.0|^9.0",
+                "pestphp/pest": "^1.20|^2.0",
+                "spatie/laravel-translatable": "^5.0|^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\Sluggable\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Generate slugs when saving Eloquent models",
+            "homepage": "https://github.com/spatie/laravel-sluggable",
+            "keywords": [
+                "laravel-sluggable",
+                "spatie"
+            ],
+            "support": {
+                "source": "https://github.com/spatie/laravel-sluggable/tree/3.7.2"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-12-30T09:06:04+00:00"
         },
         {
             "name": "symfony/clock",

@@ -70,6 +70,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart-data');
 
+    Route::prefix('products')->group(function () {
+        Route::post('{product}/images', [ProductController::class, 'storeImages'])->name('products.images.store');
+        Route::delete('images/{id}', [ProductController::class, 'deleteImage'])->name('products.images.delete');
+    });
+
     // General Routes
     Route::resource('groups', GroupController::class);
     Route::resource('categories', CategoryController::class);
