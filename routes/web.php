@@ -24,17 +24,18 @@ use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 
+// Public Routes
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Guest routes
+// Guest Routes
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AuthController::class, 'login']);
 });
 
-// Authenticated routes
+// Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -46,6 +47,8 @@ Route::middleware('auth')->group(function () {
     // Dashboard & Misc Routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart-data');
+
+    // General Routes
     Route::resource('groups', GroupController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('taxes', TaxController::class);
@@ -58,48 +61,41 @@ Route::middleware('auth')->group(function () {
     Route::resource('products.prices', ProductPriceController::class)->except(['index', 'show']);
 
     // Product Import Routes
-    Route::prefix('products-import')->group(function () {
-        Route::get('', [ProductImportController::class, 'showImportForm'])->name('products.import.form');
-        Route::post('', [ProductImportController::class, 'import'])->name('products.import');
-        Route::get('template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
-    });
+    Route::get('products-import', [ProductImportController::class, 'showImportForm'])->name('products.import.form');
+    Route::post('products-import', [ProductImportController::class, 'import'])->name('products.import');
+    Route::get('products-import/template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
 
     // POS Routes
-    Route::prefix('pos')->group(function () {
-        Route::get('', [POSController::class, 'index'])->name('pos.index');
-        Route::get('get-product', [POSController::class, 'getProduct'])->name('pos.get-product');
-        Route::get('search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
-        Route::post('', [POSController::class, 'store'])->name('pos.store');
-        Route::get('invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
-    });
+    Route::get('pos', [POSController::class, 'index'])->name('pos.index');
+    Route::get('pos/get-product', [POSController::class, 'getProduct'])->name('pos.get-product');
+    Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
+    Route::post('pos', [POSController::class, 'store'])->name('pos.store');
+    Route::get('pos/invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
 
     // Transaction Routes
-    Route::resource('transactions', TransactionController::class)->only(['index']);
-    Route::get('transactions/{transaction}/continue', [TransactionController::class, 'continue'])->name('transactions.continue');
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/{transaction}/continue', [TransactionController::class, 'continue'])->name('transactions.continue');
 
     // Report Routes
     Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('', [ReportController::class, 'index'])->name('index');
-        Route::get('sales', [ReportController::class, 'sales'])->name('sales');
-        Route::get('inventory', [ReportController::class, 'inventory'])->name('inventory');
-        Route::get('stock-movement', [ReportController::class, 'stockMovement'])->name('stock-movement');
-        Route::get('financial', [ReportController::class, 'financial'])->name('financial');
-        // Export Routes
-        Route::get('export-sales', [ReportController::class, 'exportSales'])->name('export-sales');
-        Route::get('export-inventory', [ReportController::class, 'exportInventory'])->name('export-inventory');
-        Route::get('export-financial', [ReportController::class, 'exportFinancial'])->name('export-financial');
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('/stock-movement', [ReportController::class, 'stockMovement'])->name('stock-movement');
+        Route::get('/financial', [ReportController::class, 'financial'])->name('financial');
+
     });
 
     // Search Route
     Route::get('/search', [SearchController::class, 'search'])->name('search');
 
-    // Stock Take Routes
-    Route::prefix('stock-takes')->group(function () {
-        Route::get('data', [StockTakeController::class, 'data'])->name('stock-takes.data');
-        Route::get('get-products', [StockTakeController::class, 'getProducts'])->name('stock-takes.products');
-        Route::patch('{stock_take}/complete', [StockTakeController::class, 'complete'])->name('stock-takes.complete');
-        Route::resource('', StockTakeController::class);
-    });
+    // Stock Take Routes (Custom routes before resource)
+    Route::get('stock-takes/data', [StockTakeController::class, 'data'])->name('stock-takes.data');
+    Route::get('stock-takes/get-products', [StockTakeController::class, 'getProducts'])->name('stock-takes.products');
+    Route::patch('stock-takes/{stock_take}/complete', [StockTakeController::class, 'complete'])->name('stock-takes.complete');
+
+    // Resource route for stock-takes
+    Route::resource('stock-takes', StockTakeController::class);
 
     // Stock Routes
     Route::prefix('stock')->name('stock.')->group(function () {
