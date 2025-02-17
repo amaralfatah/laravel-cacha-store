@@ -215,18 +215,30 @@
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Pengaturan</span>
         </li>
+        @if(Auth::user()->role === 'admin')
         <li class="menu-item {{ setActive('stores.*') }}">
             <a href="{{ route('stores.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bxl-shopify"></i>
                 <div data-i18n="Stores">Toko</div>
             </a>
         </li>
-        <li class="menu-item {{ setActive('users.*') }}">
-            <a href="{{ route('users.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-user-circle"></i>
-                <div data-i18n="Users">Pengguna</div>
-            </a>
-        </li>
+
+            <li class="menu-item {{ setActive('users.*') }}">
+                <a href="{{ route('users.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-user-circle"></i>
+                    <div data-i18n="Users">Pengguna</div>
+                </a>
+            </li>
+        @endif
+
+        @if(Auth::user()->role === 'user')
+            <li class="menu-item {{ setActive('user.store.*') }}">
+                <a href="{{ route('user.store.show') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bxl-shopify"></i>
+                    <div data-i18n="Store">Toko</div>
+                </a>
+            </li>
+        @endif
     </ul>
 </aside>
 <!-- / Menu -->

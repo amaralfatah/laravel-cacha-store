@@ -24,9 +24,6 @@ class CategoryController extends Controller
 
     public function create()
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
 
         $groups = Group::where('is_active', true)
             ->when(auth()->user()->role !== 'admin', function($query) {
@@ -43,9 +40,6 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
 
         $request->validate([
             'code' => 'required|string|max:255|unique:categories',
@@ -70,9 +64,6 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
 
         if (auth()->user()->role !== 'admin' &&
             $category->store_id !== auth()->user()->store_id) {
@@ -94,9 +85,6 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
 
         if (auth()->user()->role !== 'admin' &&
             $category->store_id !== auth()->user()->store_id) {
@@ -124,9 +112,6 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
 
         if (auth()->user()->role !== 'admin' &&
             $category->store_id !== auth()->user()->store_id) {

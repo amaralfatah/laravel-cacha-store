@@ -22,6 +22,7 @@ use App\Http\Controllers\StockTakeController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\User\StoreController as UserStoreController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -42,6 +43,12 @@ Route::middleware('auth')->group(function () {
     // Admin Routes
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::resource('users', UserController::class);
+    });
+
+    Route::middleware('role:user')->prefix('user')->name('user.')->group(function () {
+        Route::get('/store', [UserStoreController::class, 'show'])->name('store.show');
+        Route::get('/store/edit', [UserStoreController::class, 'edit'])->name('store.edit');
+        Route::put('/store', [UserStoreController::class, 'update'])->name('store.update');
     });
 
     // Dashboard & Misc Routes

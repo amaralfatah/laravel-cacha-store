@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('store_balances', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('store_id')->nullable()->index();
             $table->decimal('cash_amount', 15, 2)->default(0);
             $table->decimal('non_cash_amount', 15, 2)->default(0);
             $table->foreignId('last_updated_by')->constrained('users');

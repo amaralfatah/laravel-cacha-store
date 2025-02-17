@@ -37,4 +37,33 @@ class Store extends Model
     {
         return $this->hasMany(Category::class);
     }
+
+    // Relasi dengan User
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    // Relasi dengan Products
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    // Relasi dengan Customers
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    // Relasi dengan Transactions
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function storeBalance()
+    {
+        return $this->hasOne(StoreBalance::class);
+    }
 }

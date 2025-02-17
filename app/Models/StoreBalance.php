@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StoreBalance extends Model
 {
     protected $fillable = [
+        'store_id',
         'cash_amount',
         'non_cash_amount',
         'last_updated_by'
