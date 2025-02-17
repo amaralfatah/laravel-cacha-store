@@ -28,11 +28,13 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AuthController::class, 'login']);
 });
 
+// Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -41,79 +43,72 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class);
     });
 
+    // Dashboard & Misc Routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('dashboard.chart-data');
-
     Route::resource('groups', GroupController::class);
-
     Route::resource('categories', CategoryController::class);
-
     Route::resource('taxes', TaxController::class);
-
     Route::resource('discounts', DiscountController::class);
-
     Route::resource('suppliers', SupplierController::class);
-
     Route::resource('customers', CustomerController::class);
-
     Route::resource('units', UnitController::class);
-
     Route::resource('products', ProductController::class);
-
     Route::resource('products.units', ProductUnitController::class)->except(['index', 'show']);
-
     Route::resource('products.prices', ProductPriceController::class)->except(['index', 'show']);
 
-    // routes/web.php
-    Route::get('products-import', [ProductImportController::class, 'showImportForm'])->name('products.import.form');
-    Route::post('products-import', [ProductImportController::class, 'import'])->name('products.import');
-    Route::get('products-import/template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
-
-    Route::get('pos', [POSController::class, 'index'])->name('pos.index');
-    Route::get('pos/get-product', [POSController::class, 'getProduct'])->name('pos.get-product');
-    Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
-    Route::post('pos', [POSController::class, 'store'])->name('pos.store');
-    Route::get('pos/invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
-
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/{transaction}/continue', [TransactionController::class, 'continue'])
-        ->name('transactions.continue');
-
-    Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
-        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
-        Route::get('/stock-movement', [ReportController::class, 'stockMovement'])->name('stock-movement');
-        Route::get('/financial', [ReportController::class, 'financial'])->name('financial');
-
-        // Export routes
-        Route::get('/export-sales', [ReportController::class, 'exportSales'])->name('export-sales');
-        Route::get('/export-inventory', [ReportController::class, 'exportInventory'])->name('export-inventory');
-        Route::get('/export-financial', [ReportController::class, 'exportFinancial'])->name('export-financial');
+    // Product Import Routes
+    Route::prefix('products-import')->group(function () {
+        Route::get('', [ProductImportController::class, 'showImportForm'])->name('products.import.form');
+        Route::post('', [ProductImportController::class, 'import'])->name('products.import');
+        Route::get('template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
     });
 
+    // POS Routes
+    Route::prefix('pos')->group(function () {
+        Route::get('', [POSController::class, 'index'])->name('pos.index');
+        Route::get('get-product', [POSController::class, 'getProduct'])->name('pos.get-product');
+        Route::get('search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
+        Route::post('', [POSController::class, 'store'])->name('pos.store');
+        Route::get('invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
+    });
+
+    // Transaction Routes
+    Route::resource('transactions', TransactionController::class)->only(['index']);
+    Route::get('transactions/{transaction}/continue', [TransactionController::class, 'continue'])->name('transactions.continue');
+
+    // Report Routes
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('', [ReportController::class, 'index'])->name('index');
+        Route::get('sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('inventory', [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('stock-movement', [ReportController::class, 'stockMovement'])->name('stock-movement');
+        Route::get('financial', [ReportController::class, 'financial'])->name('financial');
+        // Export Routes
+        Route::get('export-sales', [ReportController::class, 'exportSales'])->name('export-sales');
+        Route::get('export-inventory', [ReportController::class, 'exportInventory'])->name('export-inventory');
+        Route::get('export-financial', [ReportController::class, 'exportFinancial'])->name('export-financial');
+    });
+
+    // Search Route
     Route::get('/search', [SearchController::class, 'search'])->name('search');
 
-    // Route khusus harus didefinisikan sebelum resource route
-    Route::get('stock-takes/data', [StockTakeController::class, 'data'])
-        ->name('stock-takes.data');
+    // Stock Take Routes
+    Route::prefix('stock-takes')->group(function () {
+        Route::get('data', [StockTakeController::class, 'data'])->name('stock-takes.data');
+        Route::get('get-products', [StockTakeController::class, 'getProducts'])->name('stock-takes.products');
+        Route::patch('{stock_take}/complete', [StockTakeController::class, 'complete'])->name('stock-takes.complete');
+        Route::resource('', StockTakeController::class);
+    });
 
-    Route::get('stock-takes/get-products', [StockTakeController::class, 'getProducts'])
-        ->name('stock-takes.products');
-
-    Route::patch('stock-takes/{stock_take}/complete', [StockTakeController::class, 'complete'])
-        ->name('stock-takes.complete');
-
-// Resource route di posisi terakhir
-    Route::resource('stock-takes', StockTakeController::class);
-
+    // Stock Routes
     Route::prefix('stock')->name('stock.')->group(function () {
         Route::resource('adjustments', StockAdjustmentController::class)->except(['show','edit', 'update', 'delete']);
         Route::get('adjustments/data', [StockAdjustmentController::class, 'data'])->name('adjustments.data');
-
         Route::resource('histories', StockHistoryController::class)->only(['index', 'show']);
     });
 
+    // Store Routes
     Route::resource('stores', StoreController::class);
     Route::patch('stores/{store}/toggle-status', [StoreController::class, 'toggleStatus'])->name('stores.toggle-status');
 });
