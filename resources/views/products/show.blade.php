@@ -2,29 +2,30 @@
 
 @section('content')
     <!-- Product Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
             <h2 class="mb-1">{{ $product->name }}</h2>
-            <div class="text-muted small">
+            <div class="text-muted small d-flex flex-wrap gap-2">
                 <span><i class="bi bi-building me-1"></i>{{ $product->store->name }}</span>
-                <span class="ms-3"><i class="bi bi-tag me-1"></i>{{ $product->code }}</span>
-                <span class="ms-3"><i class="bi bi-upc me-1"></i>{{ $product->barcode }}</span>
-                <span class="ms-3"><i class="bi bi-folder me-1"></i>{{ $product->category->group->name }} / {{ $product->category->name }}</span>
+                <span><i class="bi bi-tag me-1"></i>{{ $product->code }}</span>
+                <span><i class="bi bi-upc me-1"></i>{{ $product->barcode }}</span>
+                <span><i class="bi bi-folder me-1"></i>{{ $product->category->group->name }} / {{ $product->category->name }}</span>
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal"
                     data-bs-target="#stockHistoryModal">
                 <i class="bi bi-clock-history me-1"></i>Riwayat Stok
             </button>
-            <a href="{{ route('products.edit', $product) }}" class="btn btn-outline-primary">
+            <a href="{{ route('products.edit', $product) }}" class="btn btn-outline-primary btn-sm">
                 <i class="bi bi-pencil-square me-1"></i>Edit
             </a>
-            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Kembali
             </a>
         </div>
     </div>
+
 
     <div class="row g-4">
         <!-- Quick Overview Card -->
@@ -302,14 +303,18 @@
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title">Penyesuaian Stok - {{ $unit->unit->name }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        <h5 class="modal-title">Penyesuaian Stok
+                                                            - {{ $unit->unit->name }}</h5>
+                                                        <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <form action="{{ route('stock.adjustments.store') }}" method="POST">
                                                         @csrf
-                                                        <input type="hidden" name="product_unit_id" value="{{ $unit->id }}">
+                                                        <input type="hidden" name="product_unit_id"
+                                                               value="{{ $unit->id }}">
                                                         @if(auth()->user()->role === 'admin')
-                                                            <input type="hidden" name="store_id" value="{{ $product->store_id }}">
+                                                            <input type="hidden" name="store_id"
+                                                                   value="{{ $product->store_id }}">
                                                         @endif
                                                         <!-- Tambahkan input hidden untuk redirect back -->
                                                         <input type="hidden" name="redirect_back" value="1">
@@ -331,7 +336,8 @@
                                                                            step="0.01"
                                                                            min="0.01"
                                                                            required>
-                                                                    <span class="input-group-text">{{ $unit->unit->code }}</span>
+                                                                    <span
+                                                                        class="input-group-text">{{ $unit->unit->code }}</span>
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3">
@@ -344,9 +350,11 @@
                                                         <div class="modal-footer">
                                                             <button type="button"
                                                                     class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Batal</button>
+                                                                    data-bs-dismiss="modal">Batal
+                                                            </button>
                                                             <button type="submit"
-                                                                    class="btn btn-primary">Simpan</button>
+                                                                    class="btn btn-primary">Simpan
+                                                            </button>
                                                         </div>
                                                     </form>
                                                 </div>
