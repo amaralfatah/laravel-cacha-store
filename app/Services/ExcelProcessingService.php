@@ -380,26 +380,48 @@ class ExcelProcessingService
 
     protected function cleanData($data)
     {
+        $defaults = [
+            'kode' => null,           // No default as it's required
+            'nama' => null,           // No default as it's required
+            'barcode' => null,        // Optional field
+            'kategori' => null,       // Optional field
+            'supplier' => null,       // Optional field
+            'satuan' => null,         // No default as it's required
+            'hrgbeli' => 0,          // Default purchase price is 0
+            'hrgjual' => 0,          // Default selling price is 0
+            'stokawal' => 0,         // Default initial stock is 0
+            'stokmin' => 0,          // Default minimum stock is 0
+            'group_code' => null     // Optional field
+        ];
+
         $cleaned = [];
         foreach ($data as $key => $value) {
-            // Bersihkan whitespace jika string
+            // Clean whitespace if string
             if (is_string($value)) {
                 $value = trim($value);
             }
 
-            // Handle null atau empty string
-            if ($value === '' || $value === null) {
-                $cleaned[$key] = null;
+            // Handle null, empty string, or whitespace-only string
+            if ($value === '' || $value === null || (is_string($value) && trim($value) === '')) {
+                $cleaned[$key] = $defaults[$key] ?? null;
                 continue;
             }
 
-            // Hapus karakter khusus dari kode
+            // Remove special characters from code
             if ($key === 'kode') {
                 $value = preg_replace('/[^A-Za-z0-9-_]/', '', $value);
             }
 
             $cleaned[$key] = $value;
         }
+
+        // Ensure all default fields are set even if they weren't in the input
+        foreach ($defaults as $key => $defaultValue) {
+            if (!isset($cleaned[$key])) {
+                $cleaned[$key] = $defaultValue;
+            }
+        }
+
         return $cleaned;
     }
 
