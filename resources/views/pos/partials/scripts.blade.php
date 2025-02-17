@@ -121,9 +121,8 @@
 
     // Cart handling functions
     function addToCart(product) {
-        const defaultUnit = product.available_units.find(unit =>
-            unit.unit_id === product.default_unit_id
-        );
+        // Ubah pencarian default unit menggunakan is_default
+        const defaultUnit = product.available_units.find(unit => unit.is_default === true);
 
         if (!defaultUnit) {
             showErrorModal('Produk tidak memiliki unit default!');
@@ -139,15 +138,16 @@
         const newItem = {
             product_id: product.id,
             product_name: product.name,
-            unit_id: product.default_unit_id,
+            unit_id: defaultUnit.unit_id, // Gunakan unit_id dari defaultUnit
             unit_name: defaultUnit.unit_name,
             available_units: product.available_units,
             quantity: 1,
             unit_price: parseFloat(defaultUnit.selling_price),
             tax_rate: product.tax ? parseFloat(product.tax.rate) : 0,
-            discount: product.discount ? calculateDiscount(product) : 0
+            discount: product.discount ? calculateDiscount(product, defaultUnit.selling_price) : 0
         };
 
+        // Sisanya sama seperti sebelumnya
         showUnitSelectionModal(newItem, (selectedUnit) => {
             const selectedUnitId = parseInt(selectedUnit);
             const existingItemWithUnit = cart.find(item =>
@@ -484,18 +484,90 @@
         return parseFloat(productUnit.selling_price);
     }
 
+    function addProductFromSearch(product) {
+        // Format the product data to match the expected structure
+        const formattedProduct = {
+            id: product.id,
+            name: product.name,
+            barcode: product.barcode,
+            available_units: [{
+                unit_id: product.default_unit.id,
+                unit_name: product.default_unit.name,
+                selling_price: parseFloat(product.default_unit.selling_price),
+                stock: product.default_unit.stock,
+                is_default: true,
+                conversion_factor: 1,
+                prices: []
+            }],
+            tax: product.tax,
+            discount: product.discount
+        };
+
+        // Store product details for later use
+        productDetails[product.id] = formattedProduct;
+
+        // Create cart item
+        const newItem = {
+            product_id: product.id,
+            product_name: product.name,
+            unit_id: product.default_unit.id,
+            unit_name: product.default_unit.name,
+            available_units: formattedProduct.available_units,
+            quantity: 1,
+            unit_price: parseFloat(product.default_unit.selling_price),
+            tax_rate: product.tax ? parseFloat(product.tax.rate) : 0,
+            discount: product.discount ? calculateDiscount(formattedProduct) : 0
+        };
+
+        // Check stock
+        if (product.default_unit.stock <= 0) {
+            showErrorModal('Stok produk tidak tersedia!');
+            return;
+        }
+
+        // Add to cart
+        const existingItemIndex = cart.findIndex(item =>
+            item.product_id === product.id &&
+            item.unit_id === product.default_unit.id
+        );
+
+        if (existingItemIndex !== -1) {
+            cart[existingItemIndex].quantity += 1;
+            calculateItemSubtotal(cart[existingItemIndex]);
+        } else {
+            calculateItemSubtotal(newItem);
+            cart.push(newItem);
+        }
+
+        updateCartTable();
+        calculateTotals();
+    }
+
     // Add CSS for keyboard navigation
     const style = document.createElement('style');
     style.textContent = `
 .product-item {
-padding: 8px;
-cursor: pointer;
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
 }
 .product-item:hover {
-background-color: #f8f9fa;
+    background-color: #f8f9fa;
 }
 .product-item.active {
-background-color: #e9ecef;
+    background-color: #e9ecef;
+}
+#pos_product_list {
+    position: absolute;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 `;
     document.head.appendChild(style);
@@ -521,19 +593,26 @@ background-color: #e9ecef;
         if (this.value.length >= 3) {
             try {
                 const response = await fetch(`{{ route('pos.search-product') }}?search=${this.value}`);
-                const products = await response.json();
+                const result = await response.json();
 
                 productList.innerHTML = '';
 
-                if (products.length > 0) {
+                if (result.success && result.data.length > 0) {
                     productList.style.display = 'block';
 
-                    products.forEach(product => {
+                    result.data.forEach(product => {
                         const div = document.createElement('div');
                         div.className = 'product-item';
-                        div.textContent = `${product.name} - ${product.barcode}`;
+                        div.innerHTML = `
+                        ${product.name}
+                        <br>
+                        <small class="text-muted">
+                            ${product.barcode || 'No Barcode'} - Stock: ${product.default_unit.stock}
+                            - ${formatCurrency(product.default_unit.selling_price)}
+                        </small>
+                    `;
                         div.onclick = () => {
-                            getProduct(product.barcode);
+                            addProductFromSearch(product);
                             productList.style.display = 'none';
                             this.value = '';
                         };

@@ -13,7 +13,7 @@ class SupplierSeeder extends Seeder
         DB::table('suppliers')->insert([
             [
                 'store_id' => 1,
-                'code' => '0102102',
+                'code' => '0102',
                 'name' => 'Agus Sandal Purwokerto',
                 'phone' => '083456789012',
                 'created_at' => now(),

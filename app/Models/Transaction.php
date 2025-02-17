@@ -26,40 +26,6 @@ class Transaction extends Model
         'invoice_date' => 'datetime'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        // When status updated to success
-        static::updated(function ($transaction) {
-            if ($transaction->status === 'success' && $transaction->getOriginal('status') !== 'success') {
-                foreach ($transaction->items as $item) {
-                    $productUnit = ProductUnit::where('product_id', $item->product_id)
-                        ->where('unit_id', $item->unit_id)
-                        ->first();
-
-                    if ($productUnit) {
-                        if ($productUnit->stock < $item->quantity) {
-                            throw new \Exception('Stok tidak mencukupi untuk produk ' . $item->product->name);
-                        }
-
-                        $productUnit->decrement('stock', $item->quantity);
-
-                        StockHistory::create([
-                            'product_unit_id' => $productUnit->id,
-                            'reference_type' => 'transaction_items',
-                            'reference_id' => $item->id,
-                            'type' => 'out',
-                            'quantity' => $item->quantity,
-                            'remaining_stock' => $productUnit->stock,
-                            'notes' => "Transaction sale: {$transaction->invoice_number}"
-                        ]);
-                    }
-                }
-            }
-        });
-    }
-
     public function customer()
     {
         return $this->belongsTo(Customer::class);

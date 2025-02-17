@@ -16,7 +16,6 @@ class Product extends Model
         'category_id',
         'tax_id',
         'discount_id',
-        'default_unit_id',
         'is_active'
     ];
 
@@ -40,10 +39,10 @@ class Product extends Model
         return $this->hasMany(ProductUnit::class);
     }
 
-    public function defaultUnit()
-    {
-        return $this->belongsTo(Unit::class, 'default_unit_id');
-    }
+//    public function defaultUnit()
+//    {
+//        return $this->belongsTo(Unit::class, 'default_unit_id');
+//    }
 
     public function prices()
     {
@@ -65,6 +64,14 @@ class Product extends Model
         return $this->hasMany(TransactionItem::class);
     }
 
+    // Tambahkan method untuk mendapatkan default unit
+    public function getDefaultUnitAttribute()
+    {
+        return $this->productUnits()
+            ->where('is_default', true)
+            ->first();
+    }
+
     public function stockHistories()
     {
         return $this->hasManyThrough(
@@ -79,9 +86,9 @@ class Product extends Model
 
     public function getCurrentStock()
     {
-        return $this->inventories()
-            ->where('unit_id', $this->default_unit_id)
-            ->value('quantity') ?? 0;
+        return $this->productUnits()
+            ->where('is_default', true)
+            ->value('stock') ?? 0;
     }
 
     public function getPrice($quantity, $unitId)
@@ -132,12 +139,6 @@ class Product extends Model
 
     public function getDiscountAmount($price)
     {
-        \Log::info('Calculating discount', [
-            'product_id' => $this->id,
-            'base_price' => $price,
-            'has_discount' => $this->discount ? true : false
-        ]);
-
         if (!$this->discount) {
             return 0;
         }
@@ -145,12 +146,6 @@ class Product extends Model
         $discountAmount = $this->discount->type === 'percentage'
             ? ($price * $this->discount->value / 100)
             : $this->discount->value;
-
-        \Log::info('Discount calculated', [
-            'type' => $this->discount->type,
-            'value' => $this->discount->value,
-            'amount' => $discountAmount
-        ]);
 
         return $discountAmount;
     }

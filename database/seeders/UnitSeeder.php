@@ -17,12 +17,12 @@ class UnitSeeder extends Seeder
             ],
             [
                 'store_id' => 1,
-                'code' => 'BND15',
+                'code' => 'BND 15',
                 'name' => 'BANDIT 15'
             ],
             [
                 'store_id' => 1,
-                'code' => 'BND4',
+                'code' => 'BND 4',
                 'name' => 'BANDIT 4'
             ],
             [
@@ -119,6 +119,56 @@ class UnitSeeder extends Seeder
                 'store_id' => 1,
                 'code' => 'BOX',
                 'name' => 'BOX/DUS'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '01',
+                'name' => 'Undefined01'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '02',
+                'name' => 'Undefined02'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '03',
+                'name' => 'Undefined03'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '04',
+                'name' => 'Undefined04'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '05',
+                'name' => 'Undefined05'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '06',
+                'name' => 'Undefined06'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '07',
+                'name' => 'Undefined07'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '08',
+                'name' => 'Undefined08'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '09',
+                'name' => 'Undefined09'
+            ],
+            [
+                'store_id' => 1,
+                'code' => '10',
+                'name' => 'Undefined10'
             ],
         ];
 

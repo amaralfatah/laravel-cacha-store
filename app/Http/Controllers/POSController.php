@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Models\ProductUnit;
 use App\Models\Store;
 use App\Models\Transaction;
+use App\Traits\StockMovementHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ use Illuminate\Validation\Rule;
 class POSController extends Controller
 {
 
-    use POSBalanceHandler;
+    use POSBalanceHandler, StockMovementHandler;
     public function index()
     {
         $customers = Customer::all();
@@ -38,56 +39,114 @@ class POSController extends Controller
 
     public function getProduct(Request $request)
     {
-        $product = Product::with([
-            'defaultUnit',
-            'tax',
-            'discount',
-            'productUnits.unit',
-            'productUnits.prices' => function ($query) {
-                $query->orderBy('min_quantity', 'desc');
-            }
-        ])
-            ->where('barcode', $request->barcode)
-            ->where('is_active', true)
-            ->firstOrFail();
+        try {
+            $product = Product::with([
+                'tax',
+                'discount',
+                'productUnits.unit',
+                'productUnits.prices'
+            ])
+                ->where('barcode', $request->barcode)
+                ->where('is_active', true)
+                ->first();
 
-        // Mapping available units dengan prices
-        $response = $product->toArray();
-        $response['available_units'] = $product->productUnits->map(function ($pu) {
-            $prices = $pu->prices->map(function ($price) {
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Produk tidak ditemukan'
+                ], 404);
+            }
+
+            // Check for default unit
+            $defaultUnit = $product->productUnits->where('is_default', true)->first();
+            if (!$defaultUnit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Produk tidak memiliki unit default'
+                ], 400);
+            }
+
+            $availableUnits = $product->productUnits->map(function ($productUnit) {
                 return [
-                    'min_quantity' => $price->min_quantity,
-                    'price' => $price->price
+                    'unit_id' => $productUnit->unit_id,
+                    'unit_name' => $productUnit->unit->name,
+                    'conversion_factor' => $productUnit->conversion_factor,
+                    'selling_price' => $productUnit->selling_price,
+                    'stock' => $productUnit->stock,
+                    'is_default' => $productUnit->is_default,
+                    'prices' => $productUnit->prices->map(function ($price) {
+                        return [
+                            'min_quantity' => $price->min_quantity,
+                            'price' => $price->price
+                        ];
+                    })
                 ];
             });
 
-            return [
-                'unit_id' => $pu->unit_id,
-                'unit_name' => $pu->unit->name,
-                'conversion_factor' => $pu->conversion_factor,
-                'selling_price' => $pu->selling_price,
-                'stock' => $pu->stock,
-                'prices' => $prices
-            ];
-        });
+            return response()->json([
+                'success' => true,
+                'data' => array_merge($product->toArray(), [
+                    'available_units' => $availableUnits
+                ])
+            ]);
 
-        return response()->json($response);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function searchProduct(Request $request)
     {
-        $search = $request->search;
+        try {
+            $search = $request->search;
 
-        $products = Product::where(function ($query) use ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('barcode', 'like', "%{$search}%");
-        })
-            ->where('is_active', true)
-            ->with(['defaultUnit', 'tax', 'discount'])
-            ->limit(10)
-            ->get();
+            $products = Product::where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
+            })
+                ->where('is_active', true)
+                ->with([
+                    'productUnits' => function ($query) {
+                        $query->where('is_default', true);
+                    },
+                    'productUnits.unit',
+                    'tax',
+                    'discount'
+                ])
+                ->limit(10)
+                ->get();
 
-        return response()->json($products);
+            $formattedProducts = $products->map(function ($product) {
+                $defaultUnit = $product->productUnits->first();
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'barcode' => $product->barcode,
+                    'default_unit' => $defaultUnit ? [
+                        'id' => $defaultUnit->unit_id,
+                        'name' => $defaultUnit->unit->name,
+                        'stock' => $defaultUnit->stock,
+                        'selling_price' => $defaultUnit->selling_price
+                    ] : null,
+                    'tax' => $product->tax,
+                    'discount' => $product->discount
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $formattedProducts
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -95,7 +154,6 @@ class POSController extends Controller
         try {
             DB::beginTransaction();
 
-            // Add store_id to validation
             $validated = $request->validate([
                 'invoice_number' => [
                     'required',
@@ -123,7 +181,12 @@ class POSController extends Controller
             $total_tax = 0;
             $total_discount = 0;
 
-            foreach ($request->items as $index => $item) {
+            // Validate stock availability first
+            if ($request->status === 'success') {
+                $this->validateStockAvailability($request->items);
+            }
+
+            foreach ($request->items as $item) {
                 $product = Product::with(['productUnits', 'tax', 'discount'])->find($item['product_id']);
 
                 $unit_price = $product->getPrice($item['quantity'], $item['unit_id']);
@@ -138,6 +201,7 @@ class POSController extends Controller
 
             $transactionData = [
                 'store_id' => $request->store_id,
+                'invoice_number' => $request->invoice_number,
                 'customer_id' => $request->customer_id,
                 'cashier_id' => Auth::id(),
                 'total_amount' => $total_amount,
@@ -146,40 +210,27 @@ class POSController extends Controller
                 'final_amount' => $total_amount + $total_tax - $total_discount,
                 'payment_type' => $request->payment_type,
                 'reference_number' => $request->reference_number,
+                'status' => $request->status,
                 'invoice_date' => now()
             ];
 
             // Create or update transaction
             if ($request->pending_transaction_id) {
                 $transaction = Transaction::findOrFail($request->pending_transaction_id);
-
-                // If there was a previous successful transaction, revert the balance
-                if ($transaction->status === 'success') {
-                    $this->revertTransactionBalance($transaction);
-                }
-
                 $transaction->items()->delete();
-
-                if ($request->status === 'success') {
-                    $transactionData['status'] = 'success';
-                }
-
                 $transaction->update($transactionData);
             } else {
-                $transactionData['invoice_number'] = $request->invoice_number;
-                $transactionData['status'] = $request->status;
-
                 $transaction = Transaction::create($transactionData);
             }
 
-            // Create transaction items
+            // Create transaction items and handle stock movements
             foreach ($request->items as $item) {
                 $product = Product::find($item['product_id']);
                 $unit_price = $product->getPrice($item['quantity'], $item['unit_id']);
                 $discount = $product->getDiscountAmount($unit_price);
                 $subtotal = $unit_price * $item['quantity'];
 
-                $transaction->items()->create([
+                $transactionItem = $transaction->items()->create([
                     'product_id' => $item['product_id'],
                     'unit_id' => $item['unit_id'],
                     'quantity' => $item['quantity'],
@@ -188,34 +239,21 @@ class POSController extends Controller
                     'discount' => $discount
                 ]);
 
-                // Update inventory only for completed transactions
+                // Handle stock movement only for completed transactions
                 if ($transaction->status === 'success') {
                     $productUnit = ProductUnit::where('product_id', $item['product_id'])
                         ->where('unit_id', $item['unit_id'])
                         ->first();
 
                     if ($productUnit) {
-                        if ($productUnit->stock < $item['quantity']) {
-                            throw new \Exception('Stok tidak mencukupi untuk produk ' . $product->name);
-                        }
-
-                        $productUnit->decrement('stock', $item['quantity']);
-                    }
-                }
-            }
-
-            if ($request->status === 'success') {
-                foreach ($request->items as $item) {
-                    $productUnit = ProductUnit::where('product_id', $item['product_id'])
-                        ->where('unit_id', $item['unit_id'])
-                        ->first();
-
-                    if ($productUnit) {
-                        if ($productUnit->stock < $item['quantity']) {
-                            throw new \Exception('Stok tidak mencukupi untuk produk ' . $product->name);
-                        }
-
-                        $productUnit->decrement('stock', $item['quantity']);
+                        $this->handleStockMovement(
+                            $productUnit,
+                            $item['quantity'],
+                            'out',
+                            'transaction_items',
+                            $transactionItem->id,
+                            "Transaction sale: {$transaction->invoice_number}"
+                        );
                     }
                 }
             }

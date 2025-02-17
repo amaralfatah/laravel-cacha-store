@@ -1,12 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
-    <x-section-header
-        title="Data Produk"
-        :route="route('products.create')"
-        buttonText="Tambah Produk"
-        icon="bx-plus"
-    />
+    {{-- With custom actions --}}
+    <x-section-header title="Data Produk">
+        <x-slot:actions>
+            <a href="{{ route('products.import.form') }}" class="btn btn-success">
+                Import Excel
+            </a>
+            <a href="{{ route('products.create') }}" class="btn btn-primary">
+                Tambah Produk
+            </a>
+        </x-slot:actions>
+    </x-section-header>
 
     <div class="card mb-4">
         <div class="card-body">
@@ -89,6 +94,40 @@
             </div>
         </div>
     </div>
+
+    <!-- Import Modal -->
+{{--    <div class="modal fade" id="importModal" tabindex="-1">--}}
+{{--        <div class="modal-dialog">--}}
+{{--            <div class="modal-content">--}}
+{{--                <div class="modal-header">--}}
+{{--                    <h5 class="modal-title">Import Data Produk</h5>--}}
+{{--                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>--}}
+{{--                </div>--}}
+{{--                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data">--}}
+{{--                    @csrf--}}
+{{--                    <div class="modal-body">--}}
+{{--                        <div class="mb-3">--}}
+{{--                            <label class="form-label">File Excel</label>--}}
+{{--                            <input type="file" class="form-control" name="file" accept=".xlsx,.xls" required>--}}
+{{--                        </div>--}}
+{{--                        <div class="alert alert-info">--}}
+{{--                            <h6 class="alert-heading">Petunjuk Import:</h6>--}}
+{{--                            <ol class="mb-0">--}}
+{{--                                <li>Download template Excel <a href="{{ route('products.import.template') }}">di sini</a></li>--}}
+{{--                                <li>Isi data sesuai template</li>--}}
+{{--                                <li>Upload file Excel yang sudah diisi</li>--}}
+{{--                                <li>Klik tombol Import</li>--}}
+{{--                            </ol>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="modal-footer">--}}
+{{--                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>--}}
+{{--                        <button type="submit" class="btn btn-primary">Import</button>--}}
+{{--                    </div>--}}
+{{--                </form>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    </div>--}}
 @endsection
 
 @push('scripts')

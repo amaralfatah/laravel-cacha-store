@@ -10,6 +10,7 @@ use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPriceController;
 use App\Http\Controllers\ProductUnitController;
+use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SupplierController;
@@ -63,11 +64,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('products.prices', ProductPriceController::class)->except(['index', 'show']);
 
-    Route::get('/api/groups/{group}/categories', function($group) {
-        return \App\Models\Category::where('group_id', $group)
-            ->where('is_active', true)
-            ->get();
-    });
+    // routes/web.php
+    Route::get('products-import', [ProductImportController::class, 'showImportForm'])->name('products.import.form');
+    Route::post('products-import', [ProductImportController::class, 'import'])->name('products.import');
+    Route::get('products-import/template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
 
     Route::get('pos', [POSController::class, 'index'])->name('pos.index');
     Route::get('pos/get-product', [POSController::class, 'getProduct'])->name('pos.get-product');

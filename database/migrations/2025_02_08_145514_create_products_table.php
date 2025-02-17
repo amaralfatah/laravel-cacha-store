@@ -18,10 +18,9 @@ return new class extends Migration
             $table->string('barcode', 100);
             $table->string('barcode_image')->nullable();
             $table->foreignId('store_id')->nullable()->index();
-            $table->foreignId('category_id')->constrained();
+            $table->foreignId('category_id')->nullable()->constrained();
             $table->foreignId('tax_id')->nullable()->constrained();
             $table->foreignId('discount_id')->nullable()->constrained();
-            $table->foreignId('default_unit_id')->nullable()->constrained('units');
             $table->foreignId('supplier_id')->nullable()->constrained('units');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
