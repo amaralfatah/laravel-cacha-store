@@ -41,7 +41,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = ['cashier']; // Role default untuk user biasa
+        $roles = ['user']; // Role default untuk user biasa
 
         // Jika super admin, tambahkan opsi role admin
         if (auth()->user()->role === 'admin') {
@@ -61,7 +61,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,cashier',
+            'role' => 'required|string|in:admin,user',
             'store_id' => 'required|exists:stores,id'  // Tambahkan validasi ini
         ]);
 
@@ -75,7 +75,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = ['cashier'];
+        $roles = ['user'];
         if (auth()->user()->role === 'admin') {
             $roles[] = 'admin';
         }
@@ -91,7 +91,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => 'required|string|in:admin,cashier',
+            'role' => 'required|string|in:admin,user',
             'store_id' => 'required|exists:stores,id'  // Tambahkan validasi ini
         ]);
 

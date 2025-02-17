@@ -312,7 +312,7 @@ class POSController extends Controller
         // Load relations yang diperlukan
         $transaction->load([
             'customer',
-            'cashier',
+            'user',
             'items.product',
             'items.unit'
         ]);

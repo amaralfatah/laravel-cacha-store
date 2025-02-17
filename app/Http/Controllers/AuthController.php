@@ -30,7 +30,7 @@ class AuthController extends Controller
             switch ($user->role) {
                 case 'admin':
                     return redirect()->intended('/dashboard')->with('success', 'Welcome back, Admin! You have successfully logged in.');
-                case 'cashier':
+                case 'user':
                     return redirect()->intended('/dashboard')->with('success', 'Welcome back, Cashier! You have successfully logged in.');
                 default:
                     return redirect()->intended('/dashboard')->with('success', 'Welcome back! You have successfully logged in.');

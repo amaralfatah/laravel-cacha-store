@@ -114,7 +114,7 @@
                     {data: 'invoice_number', name: 'invoice_number'},
                     {data: 'invoice_date', name: 'invoice_date'},
                     {data: 'customer.name', name: 'customer.name'},
-                    {data: 'cashier.name', name: 'cashier.name'},
+                    {data: 'user.name', name: 'user.name'},
                     {data: 'total_items', name: 'total_items'},
                     {data: 'total_amount', name: 'total_amount'},
                     {data: 'discount_amount', name: 'discount_amount'},

@@ -91,7 +91,7 @@ class DashboardController extends Controller
             ->get();
 
         // Recent transactions
-        $recentTransactions = Transaction::with(['customer', 'cashier'])
+        $recentTransactions = Transaction::with(['customer', 'user'])
             ->where('status', 'success')
             ->orderBy('created_at', 'desc')
             ->limit(6)
@@ -103,7 +103,7 @@ class DashboardController extends Controller
                     'amount' => $transaction->final_amount,
                     'payment_type' => $transaction->payment_type,
                     'customer' => $transaction->customer ? $transaction->customer->name : 'Guest',
-                    'cashier' => $transaction->cashier ? $transaction->cashier->name : 'System',
+                    'user' => $transaction->user ? $transaction->user->name : 'System',
                     'date' => $transaction->created_at->format('Y-m-d H:i:s')
                 ];
             });

@@ -31,7 +31,7 @@ class Transaction extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function cashier()
+    public function user()
     {
         return $this->belongsTo(User::class, 'cashier_id');
     }

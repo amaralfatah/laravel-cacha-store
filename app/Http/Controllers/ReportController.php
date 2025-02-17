@@ -30,7 +30,7 @@ class ReportController extends Controller
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
         if ($request->ajax()) {
-            $query = Transaction::with(['customer', 'cashier', 'items.product', 'items.unit'])
+            $query = Transaction::with(['customer', 'user', 'items.product', 'items.unit'])
                 ->whereBetween('invoice_date', [$startDate, $endDate])
                 ->where('status', 'success');
 
@@ -45,8 +45,8 @@ class ReportController extends Controller
                 ->editColumn('customer.name', function($sale) {
                     return $sale->customer->name;
                 })
-                ->editColumn('cashier.name', function($sale) {
-                    return $sale->cashier->name;
+                ->editColumn('user.name', function($sale) {
+                    return $sale->user->name;
                 })
                 ->editColumn('total_amount', function($sale) {
                     return 'Rp ' . number_format($sale->total_amount, 0, ',', '.');

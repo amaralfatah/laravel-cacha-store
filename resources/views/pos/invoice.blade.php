@@ -104,7 +104,7 @@
             </div>
             <div class="info-row">
                 <span>Kasir:</span>
-                <span>{{ $transaction->cashier->name }}</span>
+                <span>{{ $transaction->user->name }}</span>
             </div>
             <div class="info-row">
                 <span>Customer:</span>
