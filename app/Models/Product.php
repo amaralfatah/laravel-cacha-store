@@ -16,6 +16,7 @@ class Product extends Model
         'category_id',
         'tax_id',
         'discount_id',
+        'supplier_id',
         'is_active'
     ];
 

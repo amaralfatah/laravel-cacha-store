@@ -10,12 +10,10 @@ class Unit extends Model
         'store_id',
         'name',
         'code',
-        'is_base_unit',
         'is_active'
     ];
 
     protected $casts = [
-        'is_base_unit' => 'boolean',
         'is_active' => 'boolean'
     ];
 

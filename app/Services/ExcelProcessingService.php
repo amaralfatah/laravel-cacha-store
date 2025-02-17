@@ -42,7 +42,24 @@ class ExcelProcessingService
     protected $store_id;
     protected $chunkSize = 1000;
     protected $readFilter;
-    protected $requiredHeaders = ['kode', 'nama', 'satuan', 'hrgbeli', 'hrgjual', 'stokawal', 'stokmin'];
+
+    // Mapping header dari Excel ke field yang dibutuhkan
+    protected $headerMapping = [
+        'kode' => 'kode',
+        'nama' => 'nama',
+        'barcode' => 'barcode',
+        'kelompok' => 'group_code',
+        'kategori' => 'kategori',
+        'supplier' => 'supplier',
+        'satuan' => 'satuan',
+        'hrgbeli' => 'hrgbeli',
+        'hrgjual' => 'hrgjual',
+        'stokawal' => 'stokawal',
+        'stokmin' => 'stokmin'
+    ];
+
+    protected $requiredHeaders = ['kode', 'nama', 'satuan', 'hrgbeli', 'hrgjual'];
+
 
     public function __construct()
     {
@@ -60,40 +77,23 @@ class ExcelProcessingService
 
         // Save file to storage
         $path = $file->storeAs('imports', $filename);
+        $fullPath = Storage::path($path);
 
-        // Create lightweight reader for row counting
-        $reader = IOFactory::createReader('Xlsx');
-        $reader->setReadDataOnly(true);
-
-        // Validate headers first
-        $this->readFilter->setRows(1, 1);
-        $reader->setReadFilter($this->readFilter);
-        $spreadsheet = $reader->load($file->getRealPath());
-        $worksheet = $spreadsheet->getActiveSheet();
-        $headers = $this->getHeaders($worksheet);
-
-        // Validate required headers
-        $missingHeaders = array_diff($this->requiredHeaders, $headers);
-        if (!empty($missingHeaders)) {
-            throw new \Exception('Kolom wajib tidak ditemukan: ' . implode(', ', $missingHeaders));
-        }
-
-        $totalRows = $worksheet->getHighestRow() - 1;
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
+        // Validate Excel file first
+        $fileInfo = $this->validateExcelFile($fullPath);
 
         // Create import log
         $importLog = ImportLog::create([
             'filename' => $filename,
             'status' => 'pending',
-            'total_rows' => $totalRows
+            'total_rows' => $fileInfo['total_rows']
         ]);
 
         return [
             'import_log_id' => $importLog->id,
             'file_path' => $path,
             'store_id' => $store_id,
-            'total_rows' => $totalRows
+            'total_rows' => $fileInfo['total_rows']
         ];
     }
 
@@ -263,85 +263,186 @@ class ExcelProcessingService
     protected function processRow($headers, $rowData)
     {
         try {
+            // Log raw data untuk debugging
+            Log::info("Processing row with data:", [
+                'headers_count' => count($headers),
+                'values_count' => count($rowData),
+                'headers' => $headers,
+                'values' => $rowData
+            ]);
+
+            // Pastikan jumlah kolom sama
+            if (count($rowData) < count($headers)) {
+                $rowData = array_pad($rowData, count($headers), null);
+            } else if (count($rowData) > count($headers)) {
+                $rowData = array_slice($rowData, 0, count($headers));
+            }
+
+            // Combine headers dengan data
             $data = array_combine($headers, $rowData);
             $data = $this->cleanData($data);
 
-            Log::info("Processing data:", ['data' => $data]);
+            // Skip jika kode kosong
+            if (empty($data['kode'])) {
+                Log::info("Skipping row with empty code");
+                return false;
+            }
+
+            Log::info("Mapped row data:", ['data' => $data]);
 
             // Validate required data
             $this->validateRowData($data);
 
             DB::beginTransaction();
             try {
-                // Get or create the unit first
+                // Get or create the unit
                 $unit = $this->getOrCreateUnit($data['satuan']);
+                Log::info("Unit processed:", ['unit' => $unit->toArray()]);
 
                 // Create or update product
+                $productData = [
+                    'name' => $data['nama'],
+                    'barcode' => $data['barcode'] ?? null,
+                    'is_active' => true,
+                    'store_id' => $this->store_id
+                ];
+
+                // Add category if exists
+                if (!empty($data['kategori'])) {
+                    $productData['category_id'] = $this->categories[$data['kategori']] ?? null;
+                }
+
+                // Add supplier if exists
+                if (!empty($data['supplier'])) {
+                    $productData['supplier_id'] = $this->suppliers[$data['supplier']] ?? null;
+                }
+
+                Log::info("Creating/updating product with data:", [
+                    'code' => $data['kode'],
+                    'data' => $productData
+                ]);
+
                 $product = Product::updateOrCreate(
                     [
                         'code' => $data['kode'],
                         'store_id' => $this->store_id
                     ],
-                    [
-                        'name' => $data['nama'],
-                        'barcode' => $data['barcode'] ?? null,
-                        'category_id' => $this->categories[$data['kategori']] ?? null,
-                        'supplier_id' => $this->suppliers[$data['supplier']] ?? null,
-                        'is_active' => true,
-                        'default_unit_id' => $unit->id // Set default unit ID langsung di produk
-                    ]
+                    $productData
                 );
 
-                // Check if product already has units
-                $existingUnits = $product->productUnits;
-                $isFirstUnit = $existingUnits->isEmpty();
+                Log::info("Product processed:", ['product' => $product->toArray()]);
 
                 // Create or update product unit
+                $productUnitData = [
+                    'unit_id' => $unit->id,
+                    'store_id' => $this->store_id,
+                    'conversion_factor' => 1,
+                    'purchase_price' => $this->parseNumber($data['hrgbeli']),
+                    'selling_price' => $this->parseNumber($data['hrgjual']),
+                    'stock' => $this->parseNumber($data['stokawal'] ?? 0),
+                    'min_stock' => $this->parseNumber($data['stokmin'] ?? 0),
+                    'is_default' => true
+                ];
+
+                Log::info("Creating/updating product unit with data:", ['data' => $productUnitData]);
+
                 $productUnit = $product->productUnits()->updateOrCreate(
                     [
                         'unit_id' => $unit->id,
                         'store_id' => $this->store_id
                     ],
-                    [
-                        'conversion_factor' => 1.0000, // Selalu 1 untuk unit default
-                        'purchase_price' => $this->parseNumber($data['hrgbeli']),
-                        'selling_price' => $this->parseNumber($data['hrgjual']),
-                        'stock' => $this->parseNumber($data['stokawal']),
-                        'min_stock' => $this->parseNumber($data['stokmin']),
-                        'is_default' => true
-                    ]
+                    $productUnitData
                 );
 
-                // If this is not the first unit, we need to handle conversions for other units
-                if (!$isFirstUnit) {
-                    $this->updateOtherUnits(
-                        $product,
-                        $productUnit,
-                        $this->parseNumber($data['hrgbeli']),
-                        $this->parseNumber($data['hrgjual']),
-                        $this->parseNumber($data['stokawal'])
-                    );
-                }
-
-                // Make sure other units are set to non-default
-                $product->productUnits()
-                    ->where('id', '!=', $productUnit->id)
-                    ->update(['is_default' => false]);
+                Log::info("Product unit processed:", ['product_unit' => $productUnit->toArray()]);
 
                 DB::commit();
                 return true;
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                Log::error("Database transaction failed:", [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 throw $e;
             }
 
         } catch (\Exception $e) {
-            Log::error("Error processing row:", [
+            Log::error("Row processing failed:", [
                 'data' => $data ?? [],
-                'error' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             throw $e;
+        }
+    }
+
+    protected function cleanData($data)
+    {
+        $cleaned = [];
+        foreach ($data as $key => $value) {
+            // Bersihkan whitespace jika string
+            if (is_string($value)) {
+                $value = trim($value);
+            }
+
+            // Handle null atau empty string
+            if ($value === '' || $value === null) {
+                $cleaned[$key] = null;
+                continue;
+            }
+
+            // Hapus karakter khusus dari kode
+            if ($key === 'kode') {
+                $value = preg_replace('/[^A-Za-z0-9-_]/', '', $value);
+            }
+
+            $cleaned[$key] = $value;
+        }
+        return $cleaned;
+    }
+
+    protected function parseNumber($value)
+    {
+        if (empty($value) || $value === null || $value === '') {
+            return 0;
+        }
+
+        // Jika value adalah string, bersihkan format
+        if (is_string($value)) {
+            // Hapus semua karakter kecuali angka dan tanda desimal
+            $value = preg_replace('/[^0-9.]/', '', $value);
+        }
+
+        return (float) $value;
+    }
+
+    protected function updateOtherUnits($product, $defaultUnit, $purchasePrice, $sellingPrice, $stock)
+    {
+        $otherUnits = $product->productUnits()
+            ->where('id', '!=', $defaultUnit->id)
+            ->get();
+
+        Log::info("Updating other units:", [
+            'product_id' => $product->id,
+            'default_unit_id' => $defaultUnit->id,
+            'other_units_count' => $otherUnits->count()
+        ]);
+
+        foreach ($otherUnits as $otherUnit) {
+            $updateData = [
+                'purchase_price' => $purchasePrice * $otherUnit->conversion_factor,
+                'selling_price' => $sellingPrice * $otherUnit->conversion_factor,
+                'stock' => $this->convertStock($stock, 1, $otherUnit->conversion_factor)
+            ];
+
+            Log::info("Updating unit:", [
+                'unit_id' => $otherUnit->id,
+                'update_data' => $updateData
+            ]);
+
+            $otherUnit->update($updateData);
         }
     }
 
@@ -390,65 +491,108 @@ class ExcelProcessingService
     {
         $errors = [];
 
-        if (empty($data['kode'])) {
-            $errors[] = "Kode produk harus diisi";
+        // Validasi field wajib
+        foreach ($this->requiredHeaders as $field) {
+            if (empty($data[$field])) {
+                $errors[] = "Field {$field} harus diisi";
+            }
         }
 
-        if (empty($data['nama'])) {
-            $errors[] = "Nama produk harus diisi";
-        }
-
-        if (empty($data['satuan'])) {
-            $errors[] = "Satuan harus diisi";
-        } elseif (!isset($this->units[$data['satuan']])) {
+        // Validasi referensi ke data master
+        if (!empty($data['satuan']) && !isset($this->units[$data['satuan']])) {
             $errors[] = "Satuan '{$data['satuan']}' tidak ditemukan";
         }
 
-        // Validasi format data
-        if (empty($data['hrgbeli']) || !is_numeric($this->parseNumber($data['hrgbeli']))) {
+        if (!empty($data['kategori']) && !isset($this->categories[$data['kategori']])) {
+            $errors[] = "Kategori '{$data['kategori']}' tidak ditemukan";
+        }
+
+        if (!empty($data['supplier']) && !isset($this->suppliers[$data['supplier']])) {
+            $errors[] = "Supplier '{$data['supplier']}' tidak ditemukan";
+        }
+
+        // Validasi format numerik
+        if (!empty($data['hrgbeli']) && !is_numeric($this->parseNumber($data['hrgbeli']))) {
             $errors[] = "Harga beli harus berupa angka";
         }
 
-        if (empty($data['hrgjual']) || !is_numeric($this->parseNumber($data['hrgjual']))) {
+        if (!empty($data['hrgjual']) && !is_numeric($this->parseNumber($data['hrgjual']))) {
             $errors[] = "Harga jual harus berupa angka";
         }
 
+        if (!empty($data['stokawal']) && !is_numeric($this->parseNumber($data['stokawal']))) {
+            $errors[] = "Stok awal harus berupa angka";
+        }
+
+        if (!empty($data['stokmin']) && !is_numeric($this->parseNumber($data['stokmin']))) {
+            $errors[] = "Stok minimal harus berupa angka";
+        }
+
         if (!empty($errors)) {
+            Log::error("Validation errors:", ['errors' => $errors]);
             throw new \Exception(implode(", ", $errors));
         }
     }
 
-    protected function cleanData($data)
+    protected function validateExcelFile($filePath)
     {
-        $cleaned = [];
-        foreach ($data as $key => $value) {
-            // Bersihkan whitespace
-            $value = trim($value);
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
 
-            // Konversi ke string jika bukan null
-            if ($value !== null) {
-                $value = (string) $value;
+        try {
+            // Validasi file bisa dibaca
+            $spreadsheet = $reader->load($filePath);
+            $worksheet = $spreadsheet->getActiveSheet();
+
+            // Cek jumlah baris
+            $totalRows = $worksheet->getHighestRow();
+            Log::info("Validating Excel file:", [
+                'total_rows' => $totalRows,
+                'highest_column' => $worksheet->getHighestColumn()
+            ]);
+
+            if ($totalRows <= 1) {
+                throw new \Exception("File Excel tidak memiliki data");
             }
 
-            // Hapus karakter khusus dari kode
-            if ($key === 'kode') {
-                $value = preg_replace('/[^A-Za-z0-9]/', '', $value);
+            // Cek header
+            $headers = $this->getHeaders($worksheet);
+            $missingHeaders = array_diff($this->requiredHeaders, $headers);
+
+            if (!empty($missingHeaders)) {
+                throw new \Exception('Kolom wajib tidak ditemukan: ' . implode(', ', $missingHeaders));
             }
 
-            $cleaned[$key] = $value;
-        }
-        return $cleaned;
-    }
+            // Cek sample data baris pertama
+            $row = $worksheet->getRowIterator(2)->current();
+            $cellIterator = $row->getCellIterator();
+            $cellIterator->setIterateOnlyExistingCells(false);
 
-    protected function parseNumber($value)
-    {
-        if (empty($value)) {
-            return 0;
-        }
+            $firstRowData = [];
+            foreach ($cellIterator as $cell) {
+                $firstRowData[] = $cell->getValue();
+            }
 
-        // Bersihkan format angka
-        $value = str_replace([',', '.'], '', $value);
-        return floatval($value);
+            Log::info("Sample first row data:", ['data' => $firstRowData]);
+
+            return [
+                'total_rows' => $totalRows - 1, // Kurangi 1 untuk header
+                'headers' => $headers
+            ];
+
+        } catch (\Exception $e) {
+            Log::error("Excel validation failed:", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        } finally {
+            if (isset($spreadsheet)) {
+                $spreadsheet->disconnectWorksheets();
+                unset($spreadsheet);
+                unset($worksheet);
+            }
+        }
     }
 
     protected function getOrCreateUnit($unitCode)
@@ -468,20 +612,6 @@ class ExcelProcessingService
         return Unit::find($this->units[$unitCode]);
     }
 
-    protected function updateOtherUnits($product, $defaultUnit, $purchasePrice, $sellingPrice, $stock)
-    {
-        $otherUnits = $product->productUnits()
-            ->where('id', '!=', $defaultUnit->id)
-            ->get();
-
-        foreach ($otherUnits as $otherUnit) {
-            $otherUnit->update([
-                'purchase_price' => $purchasePrice * $otherUnit->conversion_factor,
-                'selling_price' => $sellingPrice * $otherUnit->conversion_factor,
-                'stock' => $this->convertStock($stock, 1, $otherUnit->conversion_factor)
-            ]);
-        }
-    }
 
     protected function convertStock($quantity, $fromFactor, $toFactor)
     {
