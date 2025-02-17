@@ -23,6 +23,8 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\User\StoreController as UserStoreController;
+use App\Http\Controllers\User\StoreBalanceController as UserStoreBalanceController;
+use App\Http\Controllers\StoreBalanceController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -46,9 +48,22 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:user')->prefix('user')->name('user.')->group(function () {
-        Route::get('/store', [UserStoreController::class, 'show'])->name('store.show');
-        Route::get('/store/edit', [UserStoreController::class, 'edit'])->name('store.edit');
-        Route::put('/store', [UserStoreController::class, 'update'])->name('store.update');
+
+        Route::prefix('store')->name('store.')->group(function () {
+
+            Route::get('/', [UserStoreController::class, 'show'])->name('show');
+            Route::get('/edit', [UserStoreController::class, 'edit'])->name('edit');
+            Route::put('/', [UserStoreController::class, 'update'])->name('update');
+
+            Route::prefix('balance')->name('balance.')->group(function () {
+                Route::get('/', [UserStoreBalanceController::class, 'show'])
+                    ->name('show');
+                Route::get('/history', [UserStoreBalanceController::class, 'history'])
+                    ->name('history');
+                Route::post('/adjustment', [UserStoreBalanceController::class, 'adjustment'])
+                    ->name('adjustment');
+            });
+        });
     });
 
     // Dashboard & Misc Routes
@@ -112,6 +127,18 @@ Route::middleware('auth')->group(function () {
     });
 
     // Store Routes
-    Route::resource('stores', StoreController::class);
-    Route::patch('stores/{store}/toggle-status', [StoreController::class, 'toggleStatus'])->name('stores.toggle-status');
+    Route::prefix('stores')->name('stores.')->group(function () {
+
+        Route::prefix('balance')->name('balance.')->group(function () {
+            Route::get('/{store}', [StoreBalanceController::class, 'show'])
+                ->name('show');
+            Route::get('/{store}/history', [StoreBalanceController::class, 'history'])
+                ->name('history');
+            Route::post('/{store}/adjustment', [StoreBalanceController::class, 'adjustment'])
+                ->name('adjustment');
+        });
+
+        Route::resource('/', StoreController::class);
+        Route::patch('/{store}/toggle-status', [StoreController::class, 'toggleStatus'])->name('toggle-status');
+    });
 });

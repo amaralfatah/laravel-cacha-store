@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Store;
+use App\Models\StoreBalance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -47,6 +49,9 @@ class StoreController extends Controller
     /**
      * Store a newly created store.
      */
+    /**
+     * Store a newly created store.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -65,18 +70,44 @@ class StoreController extends Controller
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $filename = 'store-' . Str::random(20) . '.' . $file->getClientOriginalExtension();
-            // Store directly in public/images/stores directory
             $file->move(public_path('images/stores'), $filename);
             $validated['logo'] = '/images/stores/' . $filename;
         }
 
-        $validated['is_active'] = $request->has('is_active');
+        DB::beginTransaction();
+        try {
+            // Create store
+            $store = Store::create($validated);
 
-        Store::create($validated);
+            // Create initial store balance
+            StoreBalance::create([
+                'store_id' => $store->id,
+                'cash_amount' => 0,
+                'non_cash_amount' => 0,
+                'last_updated_by' => auth()->id()
+            ]);
 
-        return redirect()
-            ->route('stores.index')
-            ->with('success', 'Store created successfully.');
+            DB::commit();
+
+            return redirect()
+                ->route('stores.index')
+                ->with('success', 'Store created successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // If logo was uploaded, delete it
+            if (isset($validated['logo'])) {
+                $logoPath = public_path($validated['logo']);
+                if (file_exists($logoPath)) {
+                    unlink($logoPath);
+                }
+            }
+
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to create store. ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function edit(Store $store)

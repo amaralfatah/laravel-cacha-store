@@ -1,10 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+    <x-section-header title="Store Details"/>
+
     <div class="card">
-        <div class="card-header py-3">
-            <h5 class="mb-0">Store Details</h5>
-        </div>
 
         <!-- Store Logo & Basic Info -->
         <div class="card-body">
@@ -31,8 +30,11 @@
                                     </span>
                         </div>
                         <div class="mt-3 mt-sm-0">
-                            <a href="{{ route('user.store.edit') }}" class="btn btn-primary">
+                            <a href="{{ route('user.store.edit') }}" class="btn btn-primary me-2">
                                 <i class='bx bx-edit me-1 d-none d-sm-inline-block'></i> Edit Store
+                            </a>
+                            <a href="{{ route('user.store.balance.show') }}" class="btn btn-info">
+                                <i class='bx bx-money me-1 d-none d-sm-inline-block'></i> Store Balance
                             </a>
                         </div>
                     </div>

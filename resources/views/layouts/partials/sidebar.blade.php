@@ -195,13 +195,13 @@
         <li class="menu-item {{ setActive('reports.stock-movement') }}">
             <a href="{{ route('reports.stock-movement') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cabinet"></i>
-                <div data-i18n="Stock Report">Stok</div>
+                <div data-i18n="Stock Report">Mutasi Stok</div>
             </a>
         </li>
         <li class="menu-item {{ setActive('reports.inventory') }}">
             <a href="{{ route('reports.inventory') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-crown"></i>
-                <div data-i18n="Inventory">Produk</div>
+                <div data-i18n="Inventory">Stok</div>
             </a>
         </li>
         <li class="menu-item {{ setActive('reports.financial') }}">
