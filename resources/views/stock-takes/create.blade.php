@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-
     <h2 class="mb-4">New Stock Take</h2>
 
-    <form action="{{ route('stock-takes.store') }}" method="POST">
+    <form action="{{ route('stock-takes.store') }}" method="POST" id="stockTakeForm">
         @csrf
+        <!-- Header card remains the same -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row">
@@ -20,7 +20,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="store_id" class="form-label">Store</label>
-                                <select class="form-control" id="store_id" name="store_id" required>
+                                <select class="form-select" id="store_id" name="store_id" required>
                                     <option value="">Select Store</option>
                                     @foreach($stores as $store)
                                         <option value="{{ $store->id }}" {{ old('store_id') == $store->id ? 'selected' : '' }}>
@@ -34,33 +34,28 @@
                     <div class="col-md-12">
                         <div class="mb-3">
                             <label for="notes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes" name="notes"
-                                      rows="2">{{ old('notes') }}</textarea>
+                            <textarea class="form-control" id="notes" name="notes" rows="2">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Products card -->
         <div class="card">
             <div class="card-body">
                 <!-- Filter Section -->
-                <div class="row mb-3">
+                <div class="row mb-4 align-items-end">
                     <div class="col-md-4">
-                        <input type="text"
-                               id="searchInput"
-                               class="form-control"
-                               placeholder="Search product...">
-                    </div>
-                    <div class="col-md-3">
-                        <select id="categoryFilter" class="form-control">
+                        <label for="categoryFilter" class="form-label">Category</label>
+                        <select id="categoryFilter" class="form-select">
                             <option value="">All Categories</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="showZeroStock">
                             <label class="form-check-label" for="showZeroStock">
@@ -68,62 +63,27 @@
                             </label>
                         </div>
                     </div>
+                    <div class="col-md-4 text-end">
+                        <button type="button" class="btn btn-outline-primary" id="scanBarcodeBtn">
+                            <i class="bi bi-upc-scan"></i> Scan Barcode
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Table with fixed header -->
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table class="table table-striped" id="products-table">
-                        <thead style="position: sticky; top: 0; background: white;">
+                <!-- Products Table -->
+                <div class="table-responsive">
+                    <table class="table table-striped" id="products-table" width="100%">
+                        <thead>
                         <tr>
                             <th>Product</th>
                             <th>Category</th>
                             <th>Unit</th>
                             <th>Current Stock</th>
                             <th>Actual Stock</th>
-                            <th>Scan</th>
+                            <th>Difference</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        @foreach($products as $product)
-                            @foreach($product->productUnits as $productUnit)
-                                <tr class="product-row"
-                                    data-product="{{ strtolower($product->name) }}"
-                                    data-category="{{ $product->category_id }}"
-                                    data-stock="{{ $productUnit->stock }}">
-                                    <td>
-                                        {{ $product->name }}
-                                        @if($product->barcode)
-                                            <br><small class="text-muted barcode-text">{{ $product->barcode }}</small>
-                                        @endif
-                                    </td>
-                                    <td>{{ $product->category->name }}</td>
-                                    <td>
-                                        {{ $productUnit->unit->name }}
-                                        <input type="hidden"
-                                               name="items[{{ $loop->parent->index }}_{{ $loop->index }}][product_id]"
-                                               value="{{ $product->id }}">
-                                        <input type="hidden"
-                                               name="items[{{ $loop->parent->index }}_{{ $loop->index }}][unit_id]"
-                                               value="{{ $productUnit->unit_id }}">
-                                    </td>
-                                    <td>{{ number_format($productUnit->stock, 2) }}</td>
-                                    <td>
-                                        <input type="number"
-                                               name="items[{{ $loop->parent->index }}_{{ $loop->index }}][actual_qty]"
-                                               class="form-control actual-qty"
-                                               step="0.01">
-                                    </td>
-                                    <td>
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary scan-btn"
-                                                data-row-index="{{ $loop->parent->index }}_{{ $loop->index }}">
-                                            <i class="bi bi-upc-scan"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @endforeach
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -135,17 +95,6 @@
         </div>
     </form>
 
-    @if ($errors->any())
-        <div class="alert alert-danger mt-3">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-
     <!-- Barcode Scanner Modal -->
     <div class="modal fade" id="scannerModal" tabindex="-1">
         <div class="modal-dialog">
@@ -155,111 +104,193 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text"
-                           id="barcodeInput"
-                           class="form-control"
-                           placeholder="Scan or type barcode"
-                           autofocus>
-                    <input type="hidden" id="currentRowIndex">
+                    <input type="text" id="barcodeInput" class="form-control" placeholder="Scan or type barcode" autofocus>
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
+@push('styles')
+    <style>
+        .actual-stock-input {
+            width: 100px;
+        }
+        .difference-cell {
+            width: 100px;
+        }
+        .difference-positive {
+            color: green;
+        }
+        .difference-negative {
+            color: red;
+        }
+        .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+    </style>
+@endpush
+
 @push('scripts')
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
+            let table = $('#products-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route("stock-takes.products") }}',
+                    data: function(d) {
+                        d.category_id = $('#categoryFilter').val();
+                        d.zero_stock = $('#showZeroStock').is(':checked');
+                        @if(auth()->user()->role === 'admin')
+                            d.store_id = $('#store_id').val();
+                        @endif
+                    }
+                },
+                columns: [
+                    {
+                        data: 'name',
+                        render: function(data, type, row) {
+                            let html = data;
+                            if (row.barcode) {
+                                html += '<br><small class="text-muted">' + row.barcode + '</small>';
+                            }
+                            return html;
+                        }
+                    },
+                    { data: 'category.name' },
+                    {
+                        data: 'units',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            if (!Array.isArray(data)) return '';
+
+                            let html = '';
+                            data.forEach(function(unit) {
+                                html += `
+                        <div class="mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="me-2">${unit.unit_name}</span>
+                                <input type="number"
+                                       name="items[${unit.product_id}_${unit.unit_id}][actual_qty]"
+                                       class="form-control form-control-sm actual-stock-input"
+                                       data-current-stock="${unit.stock}"
+                                       data-conversion="${unit.conversion_factor}"
+                                       step="0.01"
+                                       min="0">
+                                <input type="hidden"
+                                       name="items[${unit.product_id}_${unit.unit_id}][product_id]"
+                                       value="${unit.product_id}">
+                                <input type="hidden"
+                                       name="items[${unit.product_id}_${unit.unit_id}][unit_id]"
+                                       value="${unit.unit_id}">
+                                <span class="difference-cell ms-2"></span>
+                            </div>
+                        </div>`;
+                            });
+                            return html;
+                        }
+                    },
+                    {
+                        data: 'units',
+                        orderable: false,
+                        render: function(data) {
+                            if (!Array.isArray(data)) return '';
+
+                            let html = '';
+                            data.forEach(function(unit) {
+                                html += `
+                        <div class="mb-2">
+                            <strong>${unit.stock}</strong> ${unit.unit_name}
+                            ${unit.conversion_factor > 1 ?
+                                    `<small class="text-muted d-block">1 ${unit.unit_name} = ${unit.conversion_factor} unit</small>`
+                                    : ''}
+                        </div>`;
+                            });
+                            return html;
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        defaultContent: '',
+                        className: 'text-center'
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        defaultContent: '',
+                        className: 'text-center'
+                    }
+                ],
+                pageLength: 25,
+                order: [[0, 'asc']],
+                createdRow: function(row, data, dataIndex) {
+                    $(row).find('.actual-stock-input').on('input', function() {
+                        let currentStock = parseFloat($(this).data('current-stock')) || 0;
+                        let actualStock = parseFloat($(this).val()) || 0;
+                        let difference = actualStock - currentStock;
+
+                        let differenceCell = $(this).closest('.d-flex').find('.difference-cell');
+                        differenceCell.text(difference.toFixed(2))
+                            .removeClass('difference-positive difference-negative')
+                            .addClass(difference >= 0 ? 'difference-positive' : 'difference-negative');
+                    });
+                }
+            });
+
+            @if(auth()->user()->role === 'admin')
+            $('#store_id').on('change', function() {
+                table.ajax.reload();
+            });
+            @endif
+
+            // Filter handlers
+            $('#categoryFilter, #showZeroStock').on('change', function() {
+                table.ajax.reload();
+            });
+
+            // Barcode scanning
+            $('#scanBarcodeBtn').on('click', function() {
+                $('#scannerModal').modal('show');
+                setTimeout(() => $('#barcodeInput').focus(), 500);
+            });
+
+            $('#barcodeInput').on('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    let barcode = $(this).val();
+                    table.search(barcode).draw();
+                    $(this).val('');
+                    $('#scannerModal').modal('hide');
+                }
+            });
+
+            // Input handlers
+            $('#products-table').on('input', '.actual-stock-input', function() {
+                let currentStock = parseFloat($(this).data('current-stock'));
+                let actualStock = parseFloat($(this).val()) || 0;
+                let difference = actualStock - currentStock;
+
+                let differenceCell = $(this).closest('.d-flex').find('.difference-cell');
+                differenceCell.text(difference.toFixed(2))
+                    .removeClass('difference-positive difference-negative')
+                    .addClass(difference >= 0 ? 'difference-positive' : 'difference-negative');
+            });
+
             // Form validation
-            $('form').on('submit', function (e) {
+            $('#stockTakeForm').on('submit', function(e) {
                 let hasQuantity = false;
-                $('.actual-qty').each(function () {
-                    if ($(this).val() !== '' && $(this).val() !== null) {
+                $('.actual-stock-input').each(function() {
+                    if ($(this).val() !== '') {
                         hasQuantity = true;
-                        return false; // break loop
+                        return false;
                     }
                 });
 
                 if (!hasQuantity) {
                     e.preventDefault();
                     alert('Please fill actual quantity for at least one item');
-                    return false;
                 }
-            });
-            // Search functionality
-            $('#searchInput').on('keyup', function () {
-                filterProducts();
-            });
-
-            // Category filter
-            $('#categoryFilter').on('change', function () {
-                filterProducts();
-            });
-
-            // Zero stock filter
-            $('#showZeroStock').on('change', function () {
-                filterProducts();
-            });
-
-            function filterProducts() {
-                let searchValue = $('#searchInput').val().toLowerCase();
-                let categoryValue = $('#categoryFilter').val();
-                let showZeroStock = $('#showZeroStock').is(':checked');
-
-                $('.product-row').each(function () {
-                    let productName = $(this).data('product');
-                    let category = $(this).data('category');
-                    let stock = parseFloat($(this).data('stock'));
-
-                    let showBySearch = productName.includes(searchValue);
-                    let showByCategory = !categoryValue || category == categoryValue;
-                    let showByStock = !showZeroStock || stock === 0;
-
-                    $(this).toggle(showBySearch && showByCategory && showByStock);
-                });
-            }
-
-            // Barcode scanning
-            $('.scan-btn').on('click', function () {
-                $('#currentRowIndex').val($(this).data('row-index'));
-                $('#scannerModal').modal('show');
-                setTimeout(() => $('#barcodeInput').focus(), 500);
-            });
-
-            $('#barcodeInput').on('keyup', function (e) {
-                if (e.key === 'Enter') {
-                    let barcode = $(this).val();
-                    let rowIndex = $('#currentRowIndex').val();
-
-                    // Find product by barcode
-                    let found = false;
-                    $('.product-row').each(function () {
-                        if ($(this).find('.barcode-text').text() === barcode) {
-                            // Auto-fill quantity (example: set to 1)
-                            $(`input[name="items[${rowIndex}][actual_qty]"]`).val(1);
-                            found = true;
-                            return false;
-                        }
-                    });
-
-                    if (!found) {
-                        alert('Product not found!');
-                    }
-
-                    // Clear and close
-                    $(this).val('');
-                    $('#scannerModal').modal('hide');
-                }
-            });
-
-            // Auto-scroll to input when clicking quantity field
-            $('.actual-qty').on('focus', function () {
-                let container = $(this).closest('.card-body');
-                let scrollTo = $(this).closest('tr');
-
-                container.animate({
-                    scrollTop: scrollTo.offset().top - container.offset().top + container.scrollTop()
-                });
             });
         });
     </script>

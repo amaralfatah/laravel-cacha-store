@@ -30,21 +30,56 @@ class StockTakeController extends Controller
 
     public function create()
     {
-        // Filter products by store for non-admin users
-        $productsQuery = Product::where('is_active', true)
-            ->with(['productUnits.unit', 'category']);
-
-        if (auth()->user()->role !== 'admin') {
-            $productsQuery->where('store_id', auth()->user()->store_id);
-        }
-
-        $products = $productsQuery->get();
         $categories = Category::where('is_active', true)->get();
-
-        // Get stores for admin users
         $stores = auth()->user()->role === 'admin' ? Store::all() : [];
 
-        return view('stock-takes.create', compact('products', 'categories', 'stores'));
+        return view('stock-takes.create', compact('categories', 'stores'));
+    }
+
+    public function getProducts(Request $request)
+    {
+        $query = Product::with(['productUnits.unit', 'category'])
+            ->where('is_active', true);
+
+        // Filter by store for non-admin users
+        if (auth()->user()->role !== 'admin') {
+            $query->where('store_id', auth()->user()->store_id);
+        }
+
+        // Filter by store for admin users if store is selected
+        if (auth()->user()->role === 'admin' && $request->filled('store_id')) {
+            $query->where('store_id', $request->store_id);
+        }
+
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter zero stock
+        if ($request->boolean('zero_stock')) {
+            $query->whereHas('productUnits', function($q) {
+                $q->where('stock', 0);
+            });
+        }
+
+        return DataTables::of($query)
+            ->editColumn('barcode', function ($product) {
+                return $product->barcode ?? '-';
+            })
+            ->addColumn('units', function ($product) {
+                // Langsung return array, tidak perlu di-JSON encode
+                return $product->productUnits->map(function ($productUnit) {
+                    return [
+                        'product_id' => $productUnit->product_id,
+                        'unit_id' => $productUnit->unit_id,
+                        'unit_name' => $productUnit->unit->name,
+                        'stock' => $productUnit->stock,
+                        'conversion_factor' => $productUnit->conversion_factor
+                    ];
+                })->toArray();
+            })
+            ->make(true);
     }
 
     public function store(Request $request)
@@ -64,23 +99,6 @@ class StockTakeController extends Controller
             ? $request->store_id
             : auth()->user()->store_id;
 
-        // Validate at least one item has actual_qty
-        $hasQuantity = false;
-        foreach ($validated['items'] as $item) {
-            if (isset($item['actual_qty']) && $item['actual_qty'] !== null && $item['actual_qty'] !== '') {
-                $hasQuantity = true;
-                break;
-            }
-        }
-
-        if (!$hasQuantity) {
-            throw ValidationException::withMessages([
-                'items' => 'At least one item must have actual quantity filled'
-            ]);
-        }
-
-        $this->validateUniqueUnits($validated['items']);
-
         try {
             DB::beginTransaction();
 
@@ -92,24 +110,23 @@ class StockTakeController extends Controller
                 'created_by' => auth()->id(),
             ]);
 
-            // Filter hanya item yang memiliki actual_qty
-            foreach ($validated['items'] as $item) {
-                // Skip jika actual_qty kosong
-                if (!isset($item['actual_qty']) || $item['actual_qty'] === '' || $item['actual_qty'] === null) {
+            foreach ($validated['items'] as $key => $item) {
+                if (!isset($item['actual_qty']) || $item['actual_qty'] === '') {
                     continue;
                 }
 
-                // Get current stock from product_units table
-                $productUnit = ProductUnit::where('product_id', $item['product_id'])
+                $productUnit = \App\Models\ProductUnit::where('product_id', $item['product_id'])
                     ->where('unit_id', $item['unit_id'])
                     ->first();
 
-                $systemQty = $productUnit ? $productUnit->stock : 0;
+                if (!$productUnit) {
+                    continue;
+                }
 
                 $stockTake->items()->create([
                     'product_id' => $item['product_id'],
                     'unit_id' => $item['unit_id'],
-                    'system_qty' => $systemQty,
+                    'system_qty' => $productUnit->stock,
                     'actual_qty' => $item['actual_qty'],
                 ]);
             }
@@ -119,9 +136,10 @@ class StockTakeController extends Controller
             return redirect()
                 ->route('stock-takes.show', $stockTake)
                 ->with('success', 'Stock take created successfully');
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to create stock take: ' . $e->getMessage());
+            return back()->with('error', 'Error creating stock take: ' . $e->getMessage());
         }
     }
 

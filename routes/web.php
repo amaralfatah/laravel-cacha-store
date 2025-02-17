@@ -94,11 +94,18 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/search', [SearchController::class, 'search'])->name('search');
 
-    // Pastikan route data berada sebelum resource route
-    Route::get('/stock-takes/data', [StockTakeController::class, 'data'])->name('stock-takes.data');
-    Route::resource('stock-takes', StockTakeController::class);
+    // Route khusus harus didefinisikan sebelum resource route
+    Route::get('stock-takes/data', [StockTakeController::class, 'data'])
+        ->name('stock-takes.data');
+
+    Route::get('stock-takes/get-products', [StockTakeController::class, 'getProducts'])
+        ->name('stock-takes.products');
+
     Route::patch('stock-takes/{stock_take}/complete', [StockTakeController::class, 'complete'])
         ->name('stock-takes.complete');
+
+// Resource route di posisi terakhir
+    Route::resource('stock-takes', StockTakeController::class);
 
     Route::prefix('stock')->name('stock.')->group(function () {
         Route::resource('adjustments', StockAdjustmentController::class)->except(['show','edit', 'update', 'delete']);
