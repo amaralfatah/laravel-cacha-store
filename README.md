@@ -19,6 +19,10 @@ Fitur:
 - Konversi multi-unit
 - Manajemen kategori
 - Pengaturan harga dasar
+- Multiple product images dengan primary image
+- Landing page support dengan SEO optimization
+- Deskripsi produk lengkap dan singkat
+- Featured products untuk highlight di landing page
 
 Alur Input Produk:
 1. Masuk ke menu produk
@@ -26,9 +30,16 @@ Alur Input Produk:
 3. Isi informasi produk:
     - Data dasar (nama, kategori)
     - Generate/upload barcode
+    - Upload multiple images
     - Set unit dasar dan konversi
     - Tentukan harga per unit
-4. Simpan data produk
+    - Isi deskripsi untuk landing page
+    - Set featured status
+4. Sistem otomatis:
+    - Generate slug untuk URL
+    - Optimize SEO metadata
+    - Set primary image
+5. Simpan data produk
 
 ## 3. Manajemen Inventori
 Fitur:
@@ -155,6 +166,64 @@ Alur Pencarian:
 3. Tampilkan hasil dengan kategori
 4. Klik hasil untuk navigasi ke detail
 
+## 10. Landing Page & SEO
+Fitur:
+- Multiple product images
+- Primary image management
+- SEO optimization otomatis:
+    - Meta title
+    - Meta description
+    - Meta keywords
+    - Canonical URLs
+- OpenGraph support untuk social media
+- Schema.org markup untuk produk
+- Featured products showcase
+- Responsive image gallery
+- Image alt text untuk SEO
+- Slug otomatis untuk URL yang SEO-friendly
+
+Alur Manajemen Landing Page:
+1. Input produk dengan informasi lengkap:
+    - Upload multiple images
+    - Set featured status
+    - Isi deskripsi lengkap dan singkat
+2. Sistem otomatis generate:
+    - SEO metadata
+    - OpenGraph tags
+    - Schema.org markup
+3. Atur tampilan produk:
+    - Set primary image
+    - Atur urutan gambar
+    - Manage featured status
+4. Preview dan publikasi
+
+## 11. Image Management
+Fitur:
+- Multiple image upload
+- Primary image selection
+- Image ordering
+- Automatic image resizing
+- Alt text management
+- Gallery view
+- Image deletion with reorganization
+- Dukungan format: JPG, PNG, GIF
+- Validasi ukuran dan tipe file
+- Responsive image display
+
+Alur Image Management:
+1. Upload gambar:
+    - Single atau multiple upload
+    - Set primary image
+    - Atur urutan gambar
+2. Edit gambar:
+    - Update alt text
+    - Ubah urutan
+    - Ganti primary image
+3. Hapus gambar:
+    - Konfirmasi penghapusan
+    - Reorganisasi otomatis
+    - Update primary image jika perlu
+   
 ## Keamanan dan Pemeliharaan
 Fitur Keamanan:
 - Proteksi CSRF
