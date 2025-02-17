@@ -8,6 +8,7 @@ use App\Models\StockHistory;
 use App\Models\BalanceMutation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -19,8 +20,10 @@ class ReportController extends Controller
 
     // ReportController.php
 
-    public function sales(Request $request)
+    public function storeSales(Request $request)  // Menggantikan sales()
     {
+        $storeId = Auth::user()->store_id;
+
         $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -31,6 +34,9 @@ class ReportController extends Controller
 
         if ($request->ajax()) {
             $query = Transaction::with(['customer', 'user', 'items.product', 'items.unit'])
+                ->when($storeId, function($query) use ($storeId) {
+                    $query->where('store_id', $storeId);
+                })
                 ->whereBetween('invoice_date', [$startDate, $endDate])
                 ->where('status', 'success');
 
@@ -68,7 +74,11 @@ class ReportController extends Controller
         }
 
         // Get summary data
-        $salesQuery = Transaction::whereBetween('invoice_date', [$startDate, $endDate])
+        // Get summary data
+        $salesQuery = Transaction::when($storeId, function($query) use ($storeId) {
+            $query->where('store_id', $storeId);
+        })
+            ->whereBetween('invoice_date', [$startDate, $endDate])
             ->where('status', 'success');
 
         $summary = [
@@ -84,10 +94,15 @@ class ReportController extends Controller
         return view('reports.sales', compact('summary', 'startDate', 'endDate'));
     }
 
-    public function inventory(Request $request)
+    public function storeInventory(Request $request)  // Menggantikan inventory()
     {
+        $storeId = Auth::user()->store_id;
+
         if ($request->ajax()) {
             $query = Product::with(['category', 'productUnits.unit'])
+                ->when($storeId, function($query) use ($storeId) {
+                    $query->where('store_id', $storeId);
+                })
                 ->where('is_active', true);
 
             return datatables()->of($query)
@@ -128,6 +143,9 @@ class ReportController extends Controller
 
         // Get summary data
         $products = Product::with(['category', 'productUnits.unit'])
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            })
             ->where('is_active', true)
             ->get()
             ->map(function ($product) {
@@ -152,8 +170,10 @@ class ReportController extends Controller
         return view('reports.inventory', compact('summary'));
     }
 
-    public function stockMovement(Request $request)
+    public function storeStockMovement(Request $request)
     {
+        $storeId = Auth::user()->store_id;
+
         $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -165,6 +185,11 @@ class ReportController extends Controller
 
         if ($request->ajax()) {
             $query = StockHistory::with(['productUnit.product', 'productUnit.unit'])
+                ->when($storeId, function($query) use ($storeId) {
+                    $query->whereHas('productUnit', function($q) use ($storeId) {
+                        $q->where('store_id', $storeId);
+                    });
+                })
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
             if ($request->product_id) {
@@ -210,13 +235,19 @@ class ReportController extends Controller
                 ->make(true);
         }
 
-        $products = Product::where('is_active', true)->get();
+        $products = Product::when($storeId, function($query) use ($storeId) {
+            $query->where('store_id', $storeId);
+        })
+            ->where('is_active', true)
+            ->get();
 
         return view('reports.stock-movement', compact('products', 'startDate', 'endDate'));
     }
 
-    public function financial(Request $request)
+    public function storeFinancial(Request $request)  // Menggantikan financial()
     {
+        $storeId = Auth::user()->store_id;
+
         $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -227,6 +258,9 @@ class ReportController extends Controller
 
         if ($request->ajax()) {
             $query = BalanceMutation::with('createdBy')
+                ->when($storeId, function($query) use ($storeId) {
+                    $query->where('store_id', $storeId);
+                })
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
             return datatables()->of($query)
@@ -280,7 +314,10 @@ class ReportController extends Controller
         }
 
         // Get summary data
-        $summaryQuery = BalanceMutation::whereBetween('created_at', [$startDate, $endDate]);
+        $summaryQuery = BalanceMutation::when($storeId, function($query) use ($storeId) {
+            $query->where('store_id', $storeId);
+        })
+            ->whereBetween('created_at', [$startDate, $endDate]);
 
         $totalIn = $summaryQuery->clone()->where('type', 'in')->sum('amount');
         $totalOut = $summaryQuery->clone()->where('type', 'out')->sum('amount');
@@ -293,20 +330,5 @@ class ReportController extends Controller
         ];
 
         return view('reports.financial', compact('summary', 'startDate', 'endDate'));
-    }
-
-    public function exportSales(Request $request)
-    {
-        // Implementation for exporting sales report to Excel/PDF
-    }
-
-    public function exportInventory(Request $request)
-    {
-        // Implementation for exporting inventory report to Excel/PDF
-    }
-
-    public function exportFinancial(Request $request)
-    {
-        // Implementation for exporting financial report to Excel/PDF
     }
 }

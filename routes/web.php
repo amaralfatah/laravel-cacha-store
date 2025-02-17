@@ -86,10 +86,10 @@ Route::middleware('auth')->group(function () {
     // Report Routes
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
-        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
-        Route::get('/stock-movement', [ReportController::class, 'stockMovement'])->name('stock-movement');
-        Route::get('/financial', [ReportController::class, 'financial'])->name('financial');
+        Route::get('/sales', [ReportController::class, 'storeSales'])->name('sales');
+        Route::get('/inventory', [ReportController::class, 'storeInventory'])->name('inventory');
+        Route::get('/stock-movement', [ReportController::class, 'storeStockMovement'])->name('stock-movement');
+        Route::get('/financial', [ReportController::class, 'storeFinancial'])->name('financial');
 
     });
 
