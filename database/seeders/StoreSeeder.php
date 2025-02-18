@@ -19,5 +19,16 @@ class StoreSeeder extends Seeder
                 'is_active' => true
             ]
         );
+
+        Store::firstOrCreate(
+            ['code' => 'CMR'],
+            [
+                'name' => 'Cimara Jaya',
+                'address' => 'Pananjung, Pangandaran, Pangandaran',
+                'phone' => '081234567892',
+                'email' => 'cimara@example.com',
+                'is_active' => true
+            ]
+        );
     }
 }

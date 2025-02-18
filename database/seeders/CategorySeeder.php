@@ -166,6 +166,12 @@ class CategorySeeder extends Seeder
                 'name' => 'LAIN-LAIN',
                 'group_id' => 1, // 1 MAKANAN
             ],
+            [
+                'store_id' => 2,
+                'code' => 'CAT01',
+                'name' => 'PAKAN KUCING',
+                'group_id' => 10,
+            ],
         ];
 
         foreach ($categories as $category) {

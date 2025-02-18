@@ -170,6 +170,16 @@ class UnitSeeder extends Seeder
                 'code' => '10',
                 'name' => 'Undefined10'
             ],
+            [
+                'store_id' => 2,
+                'code' => 'PCS',
+                'name' => 'PICIES'
+            ],
+            [
+                'store_id' => 2,
+                'code' => 'BOX',
+                'name' => 'BOX'
+            ],
         ];
 
         foreach ($units as $unit) {

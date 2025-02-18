@@ -67,6 +67,35 @@ class ProductSeeder extends Seeder
                     ]
                 ]
             ],
+            [
+                'code' => 'C001',
+                'name' => 'Kapanl Api',
+                'barcode' => '8995757212312',
+                'store_id' => 2,
+                'category_id' => 27,
+                'supplier_id' => 2,
+                'is_active' => true,
+                'units' => [
+                    [
+                        'unit_id' => 33,
+                        'conversion_factor' => 1,
+                        'purchase_price' => 2800,
+                        'selling_price' => 3500,
+                        'stock' => 100,
+                        'min_stock' => 50,
+                        'is_default' => true
+                    ],
+                    [
+                        'unit_id' => 34,
+                        'conversion_factor' => 40,
+                        'purchase_price' => 110000,
+                        'selling_price' => 135000,
+                        'stock' => 10,
+                        'min_stock' => 2,
+                        'is_default' => false
+                    ]
+                ]
+            ],
             // ... produk lainnya
         ];
 
