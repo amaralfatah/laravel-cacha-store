@@ -135,4 +135,38 @@ class StockAdjustmentController extends Controller
             ->rawColumns(['type'])
             ->make(true);
     }
+
+    public function getProducts(Request $request)
+    {
+        $search = $request->search;
+
+        $query = Product::query()
+            ->with(['productUnits.unit'])
+            ->where('is_active', true);
+
+        if ($search) {
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+
+        if (auth()->user()->role !== 'admin') {
+            $query->where('store_id', auth()->user()->store_id);
+        }
+
+        $products = $query->limit(10)->get();
+
+        $formattedProducts = [];
+        foreach ($products as $product) {
+            foreach ($product->productUnits as $productUnit) {
+                $formattedProducts[] = [
+                    'id' => $productUnit->id,
+                    'text' => $product->name . ' - ' . $productUnit->unit->name . ' (Current Stock: ' . $productUnit->stock . ')',
+                    'stock' => $productUnit->stock
+                ];
+            }
+        }
+
+        return response()->json([
+            'results' => $formattedProducts
+        ]);
+    }
 }

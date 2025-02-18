@@ -134,6 +134,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('stock-takes', StockTakeController::class);
 
     // Stock Routes
+    Route::get('/stock/adjustments/get-products', [StockAdjustmentController::class, 'getProducts'])
+        ->name('stock.adjustments.getProducts');
     Route::prefix('stock')->name('stock.')->group(function () {
         Route::resource('adjustments', StockAdjustmentController::class)->except(['show','edit', 'update', 'delete']);
         Route::get('adjustments/data', [StockAdjustmentController::class, 'data'])->name('adjustments.data');

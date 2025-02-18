@@ -27,25 +27,13 @@
                         </div>
                     @endif
 
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="product_unit_id" class="form-label">Product & Unit</label>
-                            <select name="product_unit_id" id="product_unit_id" class="form-control" required>
-                                <option value="">Select Product & Unit</option>
-                                @foreach($products as $product)
-                                    <optgroup label="{{ $product->name }}">
-                                        @foreach($product->productUnits as $productUnit)
-                                            <option value="{{ $productUnit->id }}"
-                                                    data-stock="{{ $productUnit->stock }}">
-                                                {{ $product->name }} - {{ $productUnit->unit->name }}
-                                                (Current Stock: {{ $productUnit->stock }})
-                                            </option>
-                                        @endforeach
-                                    </optgroup>
-                                @endforeach
-                            </select>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="product_unit_id" class="form-label">Product & Unit</label>
+                                <select name="product_unit_id" id="product_unit_id" class="form-control" required>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
                     <div class="col-md-3">
                         <div class="mb-3">
@@ -86,37 +74,56 @@
             </form>
         </div>
     </div>
-
-
-    @push('scripts')
-        <script>
-            $(document).ready(function () {
-                $('#type, #product_unit_id').on('change', function () {
-                    validateQuantity();
-                });
-
-                $('#quantity').on('input', function () {
-                    validateQuantity();
-                });
-
-                function validateQuantity() {
-                    let type = $('#type').val();
-                    let quantity = parseFloat($('#quantity').val()) || 0;
-                    let option = $('#product_unit_id option:selected');
-                    let currentStock = parseFloat(option.data('stock')) || 0;
-
-                    if (type === 'out' && quantity > currentStock) {
-                        $('#quantity').addClass('is-invalid');
-                        $('.quantity-feedback').remove();
-                        $('#quantity').after(`<div class="invalid-feedback quantity-feedback">
-                    Quantity cannot exceed current stock (${currentStock})
-                </div>`);
-                    } else {
-                        $('#quantity').removeClass('is-invalid');
-                        $('.quantity-feedback').remove();
-                    }
-                }
-            });
-        </script>
-    @endpush
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#product_unit_id').select2({
+                placeholder: 'Search for a product',
+                allowClear: true,
+                ajax: {
+                    url: '{{ route("stock.adjustments.getProducts") }}',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search: params.term,
+                            page: params.page
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.results
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 2
+            }).on('select2:select', function(e) {
+                const data = e.params.data;
+                $(this).find(`option[value="${data.id}"]`).attr('data-stock', data.stock);
+                validateQuantity();
+            });
+
+            // Update the existing validateQuantity function
+            function validateQuantity() {
+                let type = $('#type').val();
+                let quantity = parseFloat($('#quantity').val()) || 0;
+                let selectedOption = $('#product_unit_id').select2('data')[0];
+                let currentStock = selectedOption ? parseFloat(selectedOption.stock) || 0 : 0;
+
+                if (type === 'out' && quantity > currentStock) {
+                    $('#quantity').addClass('is-invalid');
+                    $('.quantity-feedback').remove();
+                    $('#quantity').after(`<div class="invalid-feedback quantity-feedback">
+                Quantity cannot exceed current stock (${currentStock})
+            </div>`);
+                } else {
+                    $('#quantity').removeClass('is-invalid');
+                    $('.quantity-feedback').remove();
+                }
+            }
+        });
+    </script>
+@endpush
