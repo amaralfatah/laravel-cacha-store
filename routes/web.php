@@ -98,6 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::get('pos/search-product', [POSController::class, 'searchProduct'])->name('pos.search-product');
     Route::post('pos', [POSController::class, 'store'])->name('pos.store');
     Route::get('pos/invoice/{transaction}', [POSController::class, 'printInvoice'])->name('pos.print-invoice');
+    Route::post('/pos/clear-pending', [PosController::class, 'clearPending'])->name('pos.clear-pending');
 
     // Transaction Routes
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');

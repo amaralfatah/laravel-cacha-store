@@ -12,6 +12,7 @@ use App\Traits\StockMovementHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class POSController extends Controller
@@ -109,10 +110,8 @@ class POSController extends Controller
             })
                 ->where('is_active', true)
                 ->with([
-                    'productUnits' => function ($query) {
-                        $query->where('is_default', true);
-                    },
                     'productUnits.unit',
+                    'productUnits.prices',
                     'tax',
                     'discount'
                 ])
@@ -120,19 +119,43 @@ class POSController extends Controller
                 ->get();
 
             $formattedProducts = $products->map(function ($product) {
-                $defaultUnit = $product->productUnits->first();
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
+                    'code' => $product->code,
                     'barcode' => $product->barcode,
-                    'default_unit' => $defaultUnit ? [
-                        'id' => $defaultUnit->unit_id,
-                        'name' => $defaultUnit->unit->name,
-                        'stock' => $defaultUnit->stock,
-                        'selling_price' => $defaultUnit->selling_price
+                    'description' => $product->description,
+                    'short_description' => $product->short_description,
+                    'available_units' => $product->productUnits->map(function ($pu) {
+                        return [
+                            'product_unit_id' => $pu->id,
+                            'unit_id' => $pu->unit_id,
+                            'unit_name' => $pu->unit->name,
+                            'unit_code' => $pu->unit->code,
+                            'selling_price' => $pu->selling_price,
+                            'stock' => $pu->stock,
+                            'min_stock' => $pu->min_stock,
+                            'is_default' => $pu->is_default,
+                            'conversion_factor' => $pu->conversion_factor,
+                            'prices' => $pu->prices->map(function ($price) {
+                                return [
+                                    'min_quantity' => $price->min_quantity,
+                                    'price' => $price->price
+                                ];
+                            })
+                        ];
+                    }),
+                    'tax' => $product->tax ? [
+                        'id' => $product->tax->id,
+                        'name' => $product->tax->name,
+                        'rate' => $product->tax->rate
                     ] : null,
-                    'tax' => $product->tax,
-                    'discount' => $product->discount
+                    'discount' => $product->discount ? [
+                        'id' => $product->discount->id,
+                        'name' => $product->discount->name,
+                        'type' => $product->discount->type,
+                        'value' => $product->discount->value
+                    ] : null
                 ];
             });
 
@@ -329,4 +352,49 @@ class POSController extends Controller
 
         return view('pos.invoice', $data);
     }
+
+    public function clearPending(Request $request)
+    {
+        try {
+            $transactionId = $request->input('transaction_id');
+
+            if ($transactionId) {
+                // Find the pending transaction
+                $transaction = Transaction::where('id', $transactionId)
+                    ->where('status', 'pending')
+                    ->first();
+
+                if ($transaction) {
+                    // Check user authorization
+                    if (auth()->user()->role !== 'admin' &&
+                        $transaction->store_id !== auth()->user()->store_id) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Unauthorized to clear this transaction'
+                        ], 403);
+                    }
+
+                    // Delete transaction items first
+                    $transaction->items()->delete();
+                    // Then delete the transaction
+                    $transaction->delete();
+                }
+            }
+
+            // Clear the cart data from session
+            session()->forget('cart_data');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pending transaction cleared successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error clearing pending transaction: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to clear pending transaction: ' . $e->getMessage()
+            ]);
+        }
+    }
+
 }

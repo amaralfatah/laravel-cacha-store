@@ -13,13 +13,15 @@
                         <!-- Product Image -->
                         <div class="text-center">
                             @if($product->images->where('is_primary', true)->first())
-                                <img src="{{ asset('storage/' . $product->images->where('is_primary', true)->first()->image_path) }}"
-                                     alt="{{ $product->name }}"
-                                     class="d-block rounded object-fit-cover"
-                                     style="width: 120px; height: 120px;"/>
+                                <img
+                                    src="{{ asset('storage/' . $product->images->where('is_primary', true)->first()->image_path) }}"
+                                    alt="{{ $product->name }}"
+                                    class="d-block rounded object-fit-cover"
+                                    style="width: 120px; height: 120px;"/>
                             @else
-                                <div class="d-block rounded bg-label-primary d-flex align-items-center justify-content-center"
-                                     style="width: 120px; height: 120px;">
+                                <div
+                                    class="d-block rounded bg-label-primary d-flex align-items-center justify-content-center"
+                                    style="width: 120px; height: 120px;">
                                     <i class='bx bx-package fs-1'></i>
                                 </div>
                             @endif
@@ -270,7 +272,7 @@
                                 <div class="position-relative">
                                     <img src="{{ asset('storage/' . $image->image_path) }}"
                                          alt="{{ $image->alt_text }}"
-                                         class="d-block rounded w-100 h-100 object-fit-cover" />
+                                         class="d-block rounded w-100 h-100 object-fit-cover"/>
                                     @if($image->is_primary)
                                         <span class="badge bg-primary position-absolute top-0 end-0 m-2">Primary</span>
                                     @endif
@@ -302,7 +304,7 @@
                         <div class="barcode-print-area mb-3">
                             <img src="{{ Storage::url($product->barcode_image) }}"
                                  alt="Product Barcode"
-                                 class="img-fluid mb-2" />
+                                 class="img-fluid mb-2"/>
                             <div class="mt-2">
                                 <h6 class="mb-1">{{ $product->name }}</h6>
                                 <small class="text-muted">{{ $product->barcode }}</small>
@@ -363,7 +365,8 @@
                                 <td>Rp {{ number_format($unit->purchase_price) }}</td>
                                 <td>Rp {{ number_format($unit->selling_price) }}</td>
                                 <td>
-                                    <span class="badge bg-label-{{ $unit->stock <= $unit->min_stock ? 'danger' : 'success' }}">
+                                    <span
+                                        class="badge bg-label-{{ $unit->stock <= $unit->min_stock ? 'danger' : 'success' }}">
                                         {{ number_format($unit->stock) }}
                                     </span>
                                 </td>
@@ -374,36 +377,28 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="dropdown">
-                                        <button type="button" class="btn btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
-                                                data-bs-toggle="dropdown">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="javascript:void(0);"
-                                               data-bs-toggle="modal"
-                                               data-bs-target="#adjustStockModal{{ $unit->id }}">
-                                                <i class="bx bx-plus me-1"></i> Adjust Stock
-                                            </a>
-                                            <a class="dropdown-item"
-                                               href="{{ route('products.units.edit', [$product, $unit]) }}">
-                                                <i class="bx bx-edit-alt me-1"></i> Edit
-                                            </a>
-                                            @if(!$unit->is_default)
-                                                <a class="dropdown-item text-danger"
-                                                   href="javascript:void(0);"
-                                                   onclick="event.preventDefault(); document.getElementById('delete-unit-{{ $unit->id }}').submit();">
-                                                    <i class="bx bx-trash me-1"></i> Delete
-                                                </a>
-                                                <form id="delete-unit-{{ $unit->id }}"
-                                                      action="{{ route('products.units.destroy', [$product, $unit]) }}"
-                                                      method="POST" class="d-none">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </div>
+                                    <a class="btn btn-outline-info" href="javascript:void(0);"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#adjustStockModal{{ $unit->id }}">
+                                        <i class="bx bx-plus"></i>
+                                    </a>
+                                    <a class="btn btn-outline-warning"
+                                       href="{{ route('products.units.edit', [$product, $unit]) }}">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                    @if(!$unit->is_default)
+                                        <a class="btn btn-outline-danger "
+                                           href="javascript:void(0);"
+                                           onclick="event.preventDefault(); document.getElementById('delete-unit-{{ $unit->id }}').submit();">
+                                            <i class="bx bx-trash"></i>
+                                        </a>
+                                        <form id="delete-unit-{{ $unit->id }}"
+                                              action="{{ route('products.units.destroy', [$product, $unit]) }}"
+                                              method="POST" class="d-none">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
 
@@ -443,7 +438,9 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="button" class="btn btn-label-secondary"
+                                                        data-bs-dismiss="modal">Cancel
+                                                </button>
                                                 <button type="submit" class="btn btn-primary">Save</button>
                                             </div>
                                         </form>
@@ -496,29 +493,19 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="dropdown">
-                                                <button type="button" class="btn btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
-                                                        data-bs-toggle="dropdown">
-                                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item"
-                                                       href="{{ route('products.prices.edit', [$product, $price]) }}">
-                                                        <i class="bx bx-edit-alt me-1"></i> Edit
-                                                    </a>
-                                                    <a class="dropdown-item text-danger"
-                                                       href="javascript:void(0);"
-                                                       onclick="event.preventDefault(); document.getElementById('delete-price-{{ $price->id }}').submit();">
-                                                        <i class="bx bx-trash me-1"></i> Delete
-                                                    </a>
-                                                    <form id="delete-price-{{ $price->id }}"
-                                                          action="{{ route('products.prices.destroy', [$product, $price]) }}"
-                                                          method="POST" class="d-none">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                    </form>
-                                                </div>
-                                            </div>
+                                            <a href="{{ route('products.prices.edit', [$product, $price]) }}"
+                                               class="btn btn-outline-warning"><i class="bx bx-edit-alt"></i></a>
+                                            <a class="btn btn-outline-danger"
+                                               href="javascript:void(0);"
+                                               onclick="event.preventDefault(); document.getElementById('delete-price-{{ $price->id }}').submit();">
+                                                <i class="bx bx-trash"></i>
+                                            </a>
+                                            <form id="delete-price-{{ $price->id }}"
+                                                  action="{{ route('products.prices.destroy', [$product, $price]) }}"
+                                                  method="POST" class="d-none">
+                                                @csrf
+                                                @method('DELETE')
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -603,7 +590,8 @@
                                     <td>{{ $history->created_at->format('d/m/Y H:i') }}</td>
                                     <td>{{ $history->productUnit->unit->code }}</td>
                                     <td>
-                                        <span class="badge bg-label-{{ $history->type === 'in' ? 'success' : ($history->type === 'out' ? 'danger' : 'warning') }}">
+                                        <span
+                                            class="badge bg-label-{{ $history->type === 'in' ? 'success' : ($history->type === 'out' ? 'danger' : 'warning') }}">
                                             {{ $history->type === 'in' ? 'In' : ($history->type === 'out' ? 'Out' : 'Adjustment') }}
                                         </span>
                                     </td>
@@ -628,7 +616,8 @@
                     <h5 class="modal-title">Upload Product Images</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ route('products.images.store', $product) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('products.images.store', $product) }}" method="POST"
+                      enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
@@ -652,9 +641,11 @@
                 body * {
                     visibility: hidden;
                 }
+
                 .barcode-print-area, .barcode-print-area * {
                     visibility: visible;
                 }
+
                 .barcode-print-area {
                     position: absolute;
                     left: 50%;

@@ -1,3 +1,22 @@
+<!-- Core JS -->
+<!-- build:js assets/vendor/js/core.js -->
+<script src="{{ asset('sneat/assets/vendor/libs/jquery/jquery.js') }}"></script>
+<script src="{{ asset('sneat/assets/vendor/libs/popper/popper.js') }}"></script>
+<script src="{{ asset('sneat/assets/vendor/js/bootstrap.js') }}"></script>
+<script src="{{ asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+
+<script src="{{ asset('sneat/assets/vendor/js/menu.js') }}"></script>
+<!-- endbuild -->
+
+<!-- Vendors JS -->
+<script src="{{ asset('sneat/assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+
+<!-- Main JS -->
+<script src="{{ asset('sneat/assets/js/main.js') }}"></script>
+
+<!-- Page JS -->
+<script src="{{ asset('sneat/assets/js/dashboards-analytics.js') }}"></script>
+
 <script>
     let cart = [];
     let productDetails = {};
@@ -485,20 +504,12 @@
     }
 
     function addProductFromSearch(product) {
-        // Format the product data to match the expected structure
+        // Format the product data
         const formattedProduct = {
             id: product.id,
             name: product.name,
             barcode: product.barcode,
-            available_units: [{
-                unit_id: product.default_unit.id,
-                unit_name: product.default_unit.name,
-                selling_price: parseFloat(product.default_unit.selling_price),
-                stock: product.default_unit.stock,
-                is_default: true,
-                conversion_factor: 1,
-                prices: []
-            }],
+            available_units: product.available_units,
             tax: product.tax,
             discount: product.discount
         };
@@ -506,41 +517,53 @@
         // Store product details for later use
         productDetails[product.id] = formattedProduct;
 
-        // Create cart item
+        // Create cart item with all necessary properties
         const newItem = {
             product_id: product.id,
             product_name: product.name,
-            unit_id: product.default_unit.id,
-            unit_name: product.default_unit.name,
-            available_units: formattedProduct.available_units,
-            quantity: 1,
-            unit_price: parseFloat(product.default_unit.selling_price),
+            available_units: product.available_units,
             tax_rate: product.tax ? parseFloat(product.tax.rate) : 0,
             discount: product.discount ? calculateDiscount(formattedProduct) : 0
         };
 
-        // Check stock
-        if (product.default_unit.stock <= 0) {
-            showErrorModal('Stok produk tidak tersedia!');
-            return;
-        }
+        // Show unit selection modal immediately after creating the item
+        showUnitSelectionModal(newItem, (selectedUnitId) => {
+            const selectedUnit = product.available_units.find(u => u.unit_id === parseInt(selectedUnitId));
 
-        // Add to cart
-        const existingItemIndex = cart.findIndex(item =>
-            item.product_id === product.id &&
-            item.unit_id === product.default_unit.id
-        );
+            if (!selectedUnit) {
+                showErrorModal('Unit tidak ditemukan!');
+                return;
+            }
 
-        if (existingItemIndex !== -1) {
-            cart[existingItemIndex].quantity += 1;
-            calculateItemSubtotal(cart[existingItemIndex]);
-        } else {
-            calculateItemSubtotal(newItem);
-            cart.push(newItem);
-        }
+            // Check stock
+            if (selectedUnit.stock <= 0) {
+                showErrorModal('Stok produk tidak tersedia!');
+                return;
+            }
 
-        updateCartTable();
-        calculateTotals();
+            // Update item with selected unit details
+            newItem.unit_id = parseInt(selectedUnitId);
+            newItem.unit_name = selectedUnit.unit_name;
+            newItem.unit_price = parseFloat(selectedUnit.selling_price);
+            newItem.quantity = 1;
+
+            // Check for existing item with same product and unit
+            const existingItemIndex = cart.findIndex(item =>
+                item.product_id === product.id &&
+                item.unit_id === parseInt(selectedUnitId)
+            );
+
+            if (existingItemIndex !== -1) {
+                cart[existingItemIndex].quantity += 1;
+                calculateItemSubtotal(cart[existingItemIndex]);
+            } else {
+                calculateItemSubtotal(newItem);
+                cart.push(newItem);
+            }
+
+            updateCartTable();
+            calculateTotals();
+        });
     }
 
     // Add CSS for keyboard navigation
@@ -601,22 +624,25 @@
                     productList.style.display = 'block';
 
                     result.data.forEach(product => {
-                        const div = document.createElement('div');
-                        div.className = 'product-item';
-                        div.innerHTML = `
-                        ${product.name}
-                        <br>
-                        <small class="text-muted">
-                            ${product.barcode || 'No Barcode'} - Stock: ${product.default_unit.stock}
-                            - ${formatCurrency(product.default_unit.selling_price)}
-                        </small>
-                    `;
-                        div.onclick = () => {
-                            addProductFromSearch(product);
-                            productList.style.display = 'none';
-                            this.value = '';
-                        };
-                        productList.appendChild(div);
+                        const defaultUnit = product.available_units.find(unit => unit.is_default === 1);
+                        if (defaultUnit) {
+                            const div = document.createElement('div');
+                            div.className = 'product-item';
+                            div.innerHTML = `
+            ${product.name}
+            <br>
+            <small class="text-muted">
+                ${product.barcode || 'No Barcode'} - Stock: ${defaultUnit.stock}
+                - ${formatCurrency(defaultUnit.selling_price)}
+            </small>
+        `;
+                            div.onclick = () => {
+                                addProductFromSearch(product);
+                                productList.style.display = 'none';
+                                this.value = '';
+                            };
+                            productList.appendChild(div);
+                        }
                     });
                 } else {
                     productList.style.display = 'none';
@@ -818,4 +844,122 @@
             }
         });
     });
+
+    document.getElementById('btn-clear-cart').addEventListener('click', async function() {
+        if (cart.length === 0) {
+            showErrorModal('Keranjang sudah kosong!');
+            return;
+        }
+
+        const confirmClear = confirm('Apakah Anda yakin ingin membersihkan keranjang?');
+        if (!confirmClear) return;
+
+        try {
+            // If there's a pending transaction, clear it from the server
+            if (pendingTransactionId) {
+                const response = await fetch(`{{ route('pos.clear-pending') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        transaction_id: pendingTransactionId
+                    })
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    showErrorModal('Gagal membersihkan data pending!');
+                    return;
+                }
+            }
+
+            // Clear local cart data
+            cart = [];
+            productDetails = {};
+            pendingTransactionId = null;
+
+            // Reset form fields
+            document.getElementById('pos_invoice_number').value = '{{ $invoiceNumber }}';
+            document.getElementById('pos_customer_id').value = '1'; // Reset to default customer
+            document.getElementById('pos_payment_type').value = 'cash';
+            document.getElementById('pos_reference_number').value = '';
+            document.getElementById('pos_reference_number_container').style.display = 'none';
+
+            // Update UI
+            updateCartTable();
+            calculateTotals();
+
+            showSuccessModal('Keranjang berhasil dibersihkan!');
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorModal('Terjadi kesalahan saat membersihkan keranjang');
+        }
+    });
+
+
+
+    //======================
+
+
+
+    // Add fullscreen functionality
+    const fullscreenButton = document.getElementById('btn-fullscreen');
+    const fullscreenIcon = fullscreenButton.querySelector('i');
+    const sidebar = document.querySelector('.sidebar'); // Adjust selector based on your sidebar class
+    const mainContent = document.querySelector('.main-content'); // Adjust selector based on your main content class
+
+    function toggleFullscreenMode(isFullscreen) {
+        if (isFullscreen) {
+            // Enter fullscreen
+            if (sidebar) {
+                sidebar.style.display = 'none';
+            }
+            if (mainContent) {
+                mainContent.style.marginLeft = '0';
+                mainContent.style.width = '100%';
+            }
+            fullscreenIcon.classList.remove('fa-expand');
+            fullscreenIcon.classList.add('fa-compress');
+        } else {
+            // Exit fullscreen
+            if (sidebar) {
+                sidebar.style.display = '';
+            }
+            if (mainContent) {
+                mainContent.style.marginLeft = '';
+                mainContent.style.width = '';
+            }
+            fullscreenIcon.classList.remove('fa-compress');
+            fullscreenIcon.classList.add('fa-expand');
+        }
+    }
+
+    fullscreenButton.addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                showErrorModal(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+            toggleFullscreenMode(true);
+        } else {
+            document.exitFullscreen().catch(err => {
+                showErrorModal(`Error attempting to exit fullscreen: ${err.message}`);
+            });
+            toggleFullscreenMode(false);
+        }
+    });
+
+    // Update icon and sidebar when fullscreen changes through other means (like Esc key)
+    document.addEventListener('fullscreenchange', function() {
+        toggleFullscreenMode(!!document.fullscreenElement);
+    });
+
+    style.textContent += `
+.sidebar,
+.main-content {
+    transition: all 0.3s ease;
+}
+`;
+    document.head.appendChild(style);
 </script>
