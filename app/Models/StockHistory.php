@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockHistory extends Model
 {
     protected $fillable = [
+        'store_id',
         'product_unit_id',
         'reference_type',
         'reference_id',
@@ -35,6 +36,7 @@ class StockHistory extends Model
         }
 
         return self::create([
+            'store_id' => $productUnit->store_id,
             'product_unit_id' => $productUnit->id,
             'reference_type' => $referenceType,
             'reference_id' => $referenceId,

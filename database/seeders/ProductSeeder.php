@@ -48,6 +48,7 @@ class ProductSeeder extends Seeder
                 'is_active' => true,
                 'units' => [
                     [
+                        'store_id' => 1,
                         'unit_id' => $pcsUnit->id,
                         'conversion_factor' => 1,
                         'purchase_price' => 2800,
@@ -57,6 +58,7 @@ class ProductSeeder extends Seeder
                         'is_default' => true
                     ],
                     [
+                        'store_id' => 1,
                         'unit_id' => $boxUnit->id,
                         'conversion_factor' => 40,
                         'purchase_price' => 110000,
@@ -77,6 +79,7 @@ class ProductSeeder extends Seeder
                 'is_active' => true,
                 'units' => [
                     [
+                        'store_id' => 2,
                         'unit_id' => 33,
                         'conversion_factor' => 1,
                         'purchase_price' => 2800,
@@ -86,6 +89,7 @@ class ProductSeeder extends Seeder
                         'is_default' => true
                     ],
                     [
+                        'store_id' => 2,
                         'unit_id' => 34,
                         'conversion_factor' => 40,
                         'purchase_price' => 110000,
@@ -115,6 +119,7 @@ class ProductSeeder extends Seeder
                 // Create product units
                 foreach ($productData['units'] as $unitData) {
                     ProductUnit::create([
+                        'store_id' => $unitData['store_id'],
                         'product_id' => $product->id,
                         'unit_id' => $unitData['unit_id'],
                         'conversion_factor' => $unitData['conversion_factor'],
