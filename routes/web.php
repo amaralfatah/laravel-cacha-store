@@ -25,12 +25,14 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\User\StoreController as UserStoreController;
 use App\Http\Controllers\User\StoreBalanceController as UserStoreBalanceController;
 use App\Http\Controllers\StoreBalanceController;
+use App\Http\Controllers\GuestController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', [GuestController::class, 'index'])->name('guest.home');
+Route::get('/shop', [GuestController::class, 'shop'])->name('guest.shop');
+Route::get('/product-details', [GuestController::class, 'productDetails'])->name('guest.product-details');
+Route::get('/contact-us', [GuestController::class, 'contactUs'])->name('guest.contact-us');
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
