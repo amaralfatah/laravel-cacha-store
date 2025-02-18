@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     // Admin Routes
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::resource('users', UserController::class);
+        Route::resource('stores', StoreController::class);
     });
 
     Route::middleware('role:user')->prefix('user')->name('user.')->group(function () {
@@ -144,7 +145,8 @@ Route::middleware('auth')->group(function () {
                 ->name('adjustment');
         });
 
-        Route::resource('/', StoreController::class);
+
         Route::patch('/{store}/toggle-status', [StoreController::class, 'toggleStatus'])->name('toggle-status');
     });
+
 });

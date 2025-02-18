@@ -147,7 +147,7 @@ class StoreController extends Controller
 
         $store->update($validated);
 
-        return redirect()->route('stores.edit', $store)
+        return redirect()->route('stores.index', $store)
             ->with('success', 'Store updated successfully');
     }
 
