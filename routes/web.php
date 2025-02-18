@@ -106,6 +106,10 @@ Route::middleware('auth')->group(function () {
     // Transaction Routes
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/{transaction}/continue', [TransactionController::class, 'continue'])->name('transactions.continue');
+    Route::post('transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])
+        ->name('transactions.cancel');
+    Route::post('transactions/{transaction}/return', [TransactionController::class, 'return'])
+        ->name('transactions.return');
 
     // Report Routes
     Route::prefix('reports')->name('reports.')->group(function () {

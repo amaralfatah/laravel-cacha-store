@@ -27,6 +27,8 @@
                             <option value="pending">Draft</option>
                             <option value="success">Selesai</option>
                             <option value="failed">Gagal</option>
+                            <option value="cancelled">Dibatalkan</option>
+                            <option value="returned">Dikembalikan</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -68,6 +70,35 @@
                     </tr>
                     </thead>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="returnModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pengembalian Transaksi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="returnForm" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p>Anda yakin ingin mengembalikan transaksi ini?</p>
+                        <div class="mb-3">
+                            <label class="form-label">Alasan Pengembalian</label>
+                            <textarea name="reason" class="form-control" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Catatan Tambahan</label>
+                            <textarea name="notes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Ya, Kembalikan</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -148,6 +179,82 @@
                     $(this).attr('title', $(this).text());
                 }
             });
+
+
+
+            const returnForm = document.getElementById('returnForm');
+            returnForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Gunakan value dari input hidden _token
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    },
+                    body: JSON.stringify({
+                        reason: this.querySelector('[name="reason"]').value,
+                        notes: this.querySelector('[name="notes"]').value
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Sembunyikan modal
+                        const returnModal = document.getElementById('returnModal');
+                        bootstrap.Modal.getInstance(returnModal).hide();
+
+                        // Reset form
+                        this.reset();
+
+                        // Tampilkan notifikasi sederhana
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-success alert-dismissible fade show';
+                        alert.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                        document.querySelector('.card-body').prepend(alert);
+
+                        // Reload table
+                        table.ajax.reload();
+
+                        // Hapus alert setelah 3 detik
+                        setTimeout(() => alert.remove(), 3000);
+                    })
+                    .catch(error => {
+                        const message = error.response?.data?.message || 'Terjadi kesalahan';
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-danger alert-dismissible fade show';
+                        alert.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                        document.querySelector('.modal-body').prepend(alert);
+                    });
+            });
         });
+
+        // Fungsi global untuk membuka modal return
+        function returnTransaction(id) {
+            const returnModal = document.getElementById('returnModal');
+            const form = document.getElementById('returnForm');
+            form.action = `/transactions/${id}/return`;
+
+            // Bersihkan alert error sebelumnya jika ada
+            const existingAlert = form.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+
+            // Reset form
+            form.reset();
+
+            // Tampilkan modal
+            const modal = new bootstrap.Modal(returnModal);
+            modal.show();
+        }
+
+
     </script>
 @endpush

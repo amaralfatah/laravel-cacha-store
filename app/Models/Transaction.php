@@ -19,7 +19,12 @@ class Transaction extends Model
         'payment_type',
         'reference_number',
         'status',
-        'invoice_date'
+        'invoice_date',
+
+        'returned_at',
+        'returned_by',
+        'return_reason',
+        'return_notes'
     ];
 
     protected $casts = [

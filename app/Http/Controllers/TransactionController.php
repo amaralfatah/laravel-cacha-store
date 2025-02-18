@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TransactionStatus;
+use App\Models\BalanceMutation;
+use App\Models\StockHistory;
+use App\Models\StoreBalance;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\DataTables;
 
 class TransactionController extends Controller
@@ -87,28 +92,48 @@ class TransactionController extends Controller
                     return $badges[$transaction->status] ?? '-';
                 })
                 ->addColumn('action', function ($transaction) {
-
                     if (auth()->user()->role !== 'admin' &&
                         $transaction->store_id !== auth()->user()->store_id) {
                         return '';
                     }
 
-                    if ($transaction->status == 'pending') {
-                        return sprintf(
+                    $actions = [];
+
+                    if ($transaction->status == TransactionStatus::PENDING->value) {
+                        $actions[] = sprintf(
                             '<a href="%s" class="btn btn-primary btn-sm">Lanjutkan</a>',
                             route('transactions.continue', $transaction->id)
                         );
+
+//                        $actions[] = sprintf(
+//                            '<button type="button" class="btn btn-danger btn-sm"
+//                                             onclick="cancelTransaction(%d)">
+//                                        Batalkan
+//                                    </button>',
+//                            $transaction->id
+//                        );
+                    } elseif ($transaction->status == TransactionStatus::SUCCESS->value) {
+                        $actions[] = sprintf(
+                            '<a href="%s" class="btn btn-info btn-sm" target="_blank">Detail</a>',
+                            route('pos.print-invoice', $transaction->id)
+                        );
+
+                        $actions[] = sprintf(
+                            '<button type="button" class="btn btn-danger btn-sm"
+                     onclick="returnTransaction(%d)">
+                Kembalikan
+            </button>',
+                            $transaction->id
+                        );
                     }
-                    return sprintf(
-                        '<a href="%s" class="btn btn-info btn-sm" target="_blank">Detail</a>',
-                        route('pos.print-invoice', $transaction->id)
-                    );
+
+                    return implode(' ', $actions);
                 })
-                ->filterColumn('invoice_date', function($query, $keyword) {
+                ->filterColumn('invoice_date', function ($query, $keyword) {
                     $query->whereRaw("DATE_FORMAT(invoice_date,'%d/%m/%Y %H:%i') like ?", ["%$keyword%"]);
                 })
-                ->filterColumn('customer_name', function($query, $keyword) {
-                    $query->whereHas('customer', function($q) use ($keyword) {
+                ->filterColumn('customer_name', function ($query, $keyword) {
+                    $query->whereHas('customer', function ($q) use ($keyword) {
                         $q->where('name', 'like', "%$keyword%");
                     });
                 })
@@ -134,7 +159,7 @@ class TransactionController extends Controller
         try {
             // Load the transaction with all necessary relationships based on database schema
             $transaction->load([
-                'items.product.productUnits' => function($query) {
+                'items.product.productUnits' => function ($query) {
                     $query->with(['unit', 'prices']); // Include prices table
                 },
                 'items.product.tax',
@@ -200,4 +225,151 @@ class TransactionController extends Controller
                 ->with('error', 'Terjadi kesalahan saat melanjutkan transaksi: ' . $e->getMessage());
         }
     }
+
+    public function return(Transaction $transaction)
+    {
+        if (auth()->user()->role !== 'admin' &&
+            $transaction->store_id !== auth()->user()->store_id) {
+            abort(403);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Cek status transaksi
+            if ($transaction->status !== TransactionStatus::SUCCESS->value) {
+                throw new \Exception('Hanya transaksi selesai yang dapat dikembalikan');
+            }
+
+            // Update status transaksi
+            $transaction->update([
+                'status' => TransactionStatus::RETURNED->value,
+                'returned_at' => now(),
+                'returned_by' => auth()->id(),
+                'return_reason' => request('reason'),
+                'return_notes' => request('notes')
+            ]);
+
+            // Kembalikan stok
+            foreach ($transaction->items as $item) {
+                $productUnit = $item->product->productUnits()
+                    ->where('unit_id', $item->unit_id)
+                    ->first();
+
+                if ($productUnit) {
+                    // Kembalikan stok
+                    $productUnit->increment('stock', $item->quantity);
+
+                    // Catat history stok
+                    StockHistory::create([
+                        'store_id' => $transaction->store_id,
+                        'product_unit_id' => $productUnit->id,
+                        'reference_type' => Transaction::class,
+                        'reference_id' => $transaction->id,
+                        'type' => 'in',
+                        'quantity' => $item->quantity,
+                        'remaining_stock' => $productUnit->stock,
+                        'notes' => 'Pengembalian transaksi #' . $transaction->invoice_number
+                    ]);
+                }
+            }
+
+            // Jika transaksi menggunakan cash, kurangi saldo toko
+            if ($transaction->payment_type === 'cash') {
+                $storeBalance = StoreBalance::where('store_id', $transaction->store_id)
+                    ->first();
+
+                if ($storeBalance) {
+                    $storeBalance->decrement('cash_amount', $transaction->final_amount);
+
+                    // Catat mutasi saldo
+                    BalanceMutation::create([
+                        'store_id' => $transaction->store_id,
+                        'type' => 'out',
+                        'payment_method' => 'cash',
+                        'amount' => $transaction->final_amount,
+                        'previous_balance' => $storeBalance->cash_amount + $transaction->final_amount,
+                        'current_balance' => $storeBalance->cash_amount,
+                        'source_type' => Transaction::class,
+                        'source_id' => $transaction->id,
+                        'notes' => 'Pengembalian transaksi #' . $transaction->invoice_number,
+                        'created_by' => auth()->id()
+                    ]);
+                }
+            }
+
+            Log::info('Transaction returned', [
+                'transaction' => $transaction->id,
+                'user' => auth()->id(),
+                'status' => TransactionStatus::RETURNED->value,
+                'reason' => request('reason'),
+                'notes' => request('notes'),
+                'previous_status' => $transaction->getOriginal('status')
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Transaksi berhasil dikembalikan'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal mengembalikan transaksi: ' . $e->getMessage()
+            ], 422);
+        }
+    }
+
+//    public function cancel(Transaction $transaction)
+//    {
+//        if (auth()->user()->role !== 'admin' &&
+//            $transaction->store_id !== auth()->user()->store_id) {
+//            abort(403);
+//        }
+//
+//        DB::beginTransaction();
+//        try {
+//            // Cek apakah transaksi masih dalam status pending
+//            if ($transaction->status !== TransactionStatus::PENDING->value) {
+//                throw new \Exception('Hanya transaksi draft yang dapat dibatalkan');
+//            }
+//
+//            // Update status transaksi
+//            $transaction->update([
+//                'status' => TransactionStatus::CANCELLED->value,
+//                'cancelled_at' => now(),
+//                'cancelled_by' => auth()->id(),
+//                'cancellation_reason' => request('reason')
+//            ]);
+//
+//            // Catat ke history
+////            activity()
+////                ->performedOn($transaction)
+////                ->causedBy(auth()->user())
+////                ->withProperties([
+////                    'status' => TransactionStatus::CANCELLED->value,
+////                    'reason' => request('reason')
+////                ])
+////                ->log('cancelled_transaction');
+//
+//            Log::info('Transaction returned', [
+//                'transaction' => $transaction->id,
+//                'user' => auth()->id(),
+//                'status' => TransactionStatus::CANCELLED->value,
+//                'reason' => request('reason'),
+//                'notes' => request('notes'),
+//                'previous_status' => $transaction->getOriginal('status')
+//            ]);
+//
+//            DB::commit();
+//
+//            return response()->json([
+//                'message' => 'Transaksi berhasil dibatalkan'
+//            ]);
+//        } catch (\Exception $e) {
+//            DB::rollBack();
+//            return response()->json([
+//                'message' => 'Gagal membatalkan transaksi: ' . $e->getMessage()
+//            ], 422);
+//        }
+//    }
 }
