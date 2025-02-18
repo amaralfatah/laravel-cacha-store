@@ -3,6 +3,9 @@
     <div class="mb-1">
         {{ $unit->unit->name }}: {{ $unit->stock }}
         @if($unit->stock <= $unit->min_stock)
+            <span class="badge bg-warning">Stok Menipis</span>
+        @endif
+        @if($unit->stock <= 0)
             <span class="badge bg-danger">Stok Menipis</span>
         @endif
     </div>

@@ -15,8 +15,16 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    protected function getStoreId()
+    {
+        $user = Auth::user();
+        return $user->role === 'admin' ? null : $user->store_id;
+    }
+
     public function index()
     {
+        $storeId = $this->getStoreId();
+
         // Initialize date variables
         $today = Carbon::now()->toDateString();
         $currentYear = Carbon::now()->year;
@@ -27,7 +35,10 @@ class DashboardController extends Controller
         $endOfLastWeek = Carbon::now()->subWeek()->endOfWeek();
 
         // Base query for successful transactions
-        $successfulTransactions = Transaction::where('status', 'success');
+        $successfulTransactions = Transaction::where('status', 'success')
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            });
 
         // Daily sales calculations
         $todaySales = clone $successfulTransactions;
@@ -39,22 +50,15 @@ class DashboardController extends Controller
         $salesPercentage = $yesterdaySales != 0 ?
             round((($todaySales - $yesterdaySales) / $yesterdaySales) * 100, 2) : 100;
 
-        // Yearly calculations
-        $currentYearTransactions = clone $successfulTransactions;
-        $currentYearRevenue = $currentYearTransactions->whereYear('created_at', $currentYear)->sum('final_amount');
-
-        $previousYearTransactions = clone $successfulTransactions;
-        $previousYearRevenue = $previousYearTransactions->whereYear('created_at', $previousYear)->sum('final_amount');
-
-        $companyGrowth = $previousYearRevenue != 0 ?
-            round((($currentYearRevenue - $previousYearRevenue) / $previousYearRevenue) * 100, 2) : 100;
-
         // Total profit calculation
         $totalProfit = DB::table('transactions as t')
             ->join('transaction_items as ti', 't.id', '=', 'ti.transaction_id')
             ->join('product_units as pu', function($join) {
                 $join->on('ti.product_id', '=', 'pu.product_id')
                     ->on('ti.unit_id', '=', 'pu.unit_id');
+            })
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('t.store_id', $storeId);
             })
             ->where('t.status', 'success')
             ->whereYear('t.created_at', $currentYear)
@@ -63,7 +67,8 @@ class DashboardController extends Controller
 
         // Monthly revenue data
         $monthlyRevenue = clone $successfulTransactions;
-        $monthlyRevenue = $monthlyRevenue->whereYear('created_at', $currentYear)
+        $monthlyRevenue = $monthlyRevenue
+            ->whereYear('created_at', $currentYear)
             ->select(
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('SUM(final_amount) as revenue'),
@@ -73,12 +78,25 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('month');
 
+        // Yearly revenue calculations
+        $currentYearRevenue = clone $successfulTransactions;
+        $currentYearRevenue = $currentYearRevenue->whereYear('created_at', $currentYear)->sum('final_amount');
+
+        $previousYearRevenue = clone $successfulTransactions;
+        $previousYearRevenue = $previousYearRevenue->whereYear('created_at', $previousYear)->sum('final_amount');
+
+        $companyGrowth = $previousYearRevenue != 0 ?
+            round((($currentYearRevenue - $previousYearRevenue) / $previousYearRevenue) * 100, 2) : 100;
+
         // Order statistics by category and group
         $orderStats = DB::table('transaction_items as ti')
             ->join('products as p', 'ti.product_id', '=', 'p.id')
             ->join('categories as c', 'p.category_id', '=', 'c.id')
             ->join('groups as g', 'c.group_id', '=', 'g.id')
             ->join('transactions as t', 'ti.transaction_id', '=', 't.id')
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('t.store_id', $storeId);
+            })
             ->where('t.status', 'success')
             ->select(
                 'g.name as group_name',
@@ -92,6 +110,9 @@ class DashboardController extends Controller
 
         // Recent transactions
         $recentTransactions = Transaction::with(['customer', 'user'])
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            })
             ->where('status', 'success')
             ->orderBy('created_at', 'desc')
             ->limit(6)
@@ -129,6 +150,9 @@ class DashboardController extends Controller
             ->join('products as p', 'ti.product_id', '=', 'p.id')
             ->join('units as u', 'ti.unit_id', '=', 'u.id')
             ->join('transactions as t', 'ti.transaction_id', '=', 't.id')
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('t.store_id', $storeId);
+            })
             ->where('t.status', 'success')
             ->whereMonth('t.created_at', Carbon::now()->month)
             ->select(
@@ -165,16 +189,19 @@ class DashboardController extends Controller
 
         // Profile report calculations
         $profileReportRevenue = clone $successfulTransactions;
-        $profileReportRevenue = $profileReportRevenue->whereYear('created_at', 2021)->sum('final_amount');
+        $profileReportRevenue = $profileReportRevenue->whereYear('created_at', $currentYear)->sum('final_amount');
 
         $previousProfileRevenue = clone $successfulTransactions;
-        $previousProfileRevenue = $previousProfileRevenue->whereYear('created_at', 2020)->sum('final_amount');
+        $previousProfileRevenue = $previousProfileRevenue->whereYear('created_at', $previousYear)->sum('final_amount');
 
         $profileReportChangePercentage = $previousProfileRevenue != 0 ?
             round((($profileReportRevenue - $previousProfileRevenue) / $previousProfileRevenue) * 100, 2) : 100;
 
         // Store Balance Summary
         $storeBalance = DB::table('store_balances')
+            ->when($storeId, function($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            })
             ->select(
                 DB::raw('SUM(cash_amount) as total_cash'),
                 DB::raw('SUM(non_cash_amount) as total_non_cash')
@@ -182,7 +209,10 @@ class DashboardController extends Controller
             ->first();
 
         // Stock Status Summary
-        $stockStatus = ProductUnit::where('stock', '<=', DB::raw('min_stock'))
+        $stockStatus = ProductUnit::when($storeId, function($query) use ($storeId) {
+            $query->where('store_id', $storeId);
+        })
+            ->where('stock', '<=', DB::raw('min_stock'))
             ->with(['product', 'unit'])
             ->get()
             ->map(function ($productUnit) {
@@ -195,7 +225,10 @@ class DashboardController extends Controller
             });
 
         // Balance Mutations Chart
-        $balanceMutations = BalanceMutation::whereMonth('created_at', Carbon::now()->month)
+        $balanceMutations = BalanceMutation::when($storeId, function($query) use ($storeId) {
+            $query->where('store_id', $storeId);
+        })
+            ->whereMonth('created_at', Carbon::now()->month)
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(CASE WHEN type = "in" THEN amount ELSE 0 END) as income'),
@@ -205,12 +238,11 @@ class DashboardController extends Controller
             ->orderBy('date')
             ->get();
 
-        // Income and expense summary
-        $totalIncome = $totalPayments;
+        // Additional calculations for return values
         $expensesThisWeek = $currentWeekExpenses;
         $expensesLastWeek = $lastWeekExpenses;
+        $totalIncome = $totalPayments;
 
-        // Chart data
         $chartData = [
             'income' => $totalIncome,
             'expenses' => $expensesThisWeek,

@@ -27,14 +27,14 @@ trait POSBalanceHandler
         try {
             DB::beginTransaction();
 
-            // Get default store
+            // Get store
             $store = $transaction->store_id ?
                 Store::findOrFail($transaction->store_id) :
                 $this->getDefaultStore();
 
-            // Get or create store balance
+            // Get or create store balance with correct store_id
             $storeBalance = StoreBalance::firstOrCreate(
-                [],
+                ['store_id' => $store->id], // Tambahkan kondisi store_id
                 [
                     'cash_amount' => 0,
                     'non_cash_amount' => 0,
@@ -77,12 +77,14 @@ trait POSBalanceHandler
         try {
             DB::beginTransaction();
 
-            // Get default store
+            // Get store
             $store = $transaction->store_id ?
                 Store::findOrFail($transaction->store_id) :
                 $this->getDefaultStore();
 
-            $storeBalance = StoreBalance::firstOrFail();
+            // Find store balance with correct store_id
+            $storeBalance = StoreBalance::where('store_id', $store->id)->firstOrFail();
+
             $isDefaultPayment = $transaction->payment_type === 'cash';
             $balanceField = $isDefaultPayment ? 'cash_amount' : 'non_cash_amount';
             $currentBalance = $storeBalance->$balanceField;

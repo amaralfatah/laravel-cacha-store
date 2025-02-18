@@ -76,8 +76,7 @@
                     <textarea name="notes"
                               id="notes"
                               class="form-control"
-                              rows="3"
-                              required></textarea>
+                              rows="3"></textarea>
                 </div>
 
                 <div class="mt-4">

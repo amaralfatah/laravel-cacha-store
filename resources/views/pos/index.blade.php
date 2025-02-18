@@ -18,7 +18,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="d-flex action-buttons">
                         <a href="{{ url('/dashboard') }}" class="btn btn-success me-2">
-                            <i class="bx bx-arrow-back me-1"></i> Kembali ke Dashboard
+                            <i class="bx bx-arrow-back me-1"></i> Kembali
                         </a>
                         <button type="button" class="btn btn-danger" id="btn-clear-cart">
                             <i class="bx bx-trash me-1"></i> Kosongkan Keranjang

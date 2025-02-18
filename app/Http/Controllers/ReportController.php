@@ -13,16 +13,20 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    protected function getStoreId()
+    {
+        $user = Auth::user();
+        return $user->role === 'admin' ? null : $user->store_id;
+    }
+
     public function index()
     {
         return view('reports.index');
     }
 
-    // ReportController.php
-
-    public function storeSales(Request $request)  // Menggantikan sales()
+    public function storeSales(Request $request)
     {
-        $storeId = Auth::user()->store_id;
+        $storeId = $this->getStoreId();
 
         $request->validate([
             'start_date' => 'nullable|date',
@@ -94,9 +98,9 @@ class ReportController extends Controller
         return view('reports.sales', compact('summary', 'startDate', 'endDate'));
     }
 
-    public function storeInventory(Request $request)  // Menggantikan inventory()
+    public function storeInventory(Request $request)
     {
-        $storeId = Auth::user()->store_id;
+        $storeId = $this->getStoreId();
 
         if ($request->ajax()) {
             $query = Product::with(['category', 'productUnits.unit'])
@@ -104,6 +108,7 @@ class ReportController extends Controller
                     $query->where('store_id', $storeId);
                 })
                 ->where('is_active', true);
+
 
             return datatables()->of($query)
                 ->addIndexColumn()
@@ -141,30 +146,26 @@ class ReportController extends Controller
                 ->make(true);
         }
 
-        // Get summary data
         $products = Product::with(['category', 'productUnits.unit'])
             ->when($storeId, function($query) use ($storeId) {
                 $query->where('store_id', $storeId);
             })
             ->where('is_active', true)
-            ->get()
-            ->map(function ($product) {
-                $totalStock = $product->productUnits->sum('stock');
-                $lowStock = $product->productUnits->filter(function ($unit) {
-                        return $unit->stock <= $unit->min_stock;
-                    })->count() > 0;
-
-                return [
-                    'total_stock' => $totalStock,
-                    'low_stock' => $lowStock,
-                ];
-            });
+            ->get();
 
         $summary = [
             'total_products' => $products->count(),
-            'low_stock' => $products->where('low_stock', true)->count(),
-            'available' => $products->where('total_stock', '>', 0)->count(),
-            'out_of_stock' => $products->where('total_stock', 0)->count(),
+            'low_stock' => $products->filter(function($product) {
+                return $product->productUnits->contains(function($unit) {
+                    return $unit->stock <= $unit->min_stock;
+                });
+            })->count(),
+            'available' => $products->filter(function($product) {
+                return $product->productUnits->sum('stock') > 0;
+            })->count(),
+            'out_of_stock' => $products->filter(function($product) {
+                return $product->productUnits->sum('stock') <= 0;
+            })->count(),
         ];
 
         return view('reports.inventory', compact('summary'));
@@ -172,7 +173,7 @@ class ReportController extends Controller
 
     public function storeStockMovement(Request $request)
     {
-        $storeId = Auth::user()->store_id;
+        $storeId = $this->getStoreId();
 
         $request->validate([
             'start_date' => 'nullable|date',
@@ -186,15 +187,16 @@ class ReportController extends Controller
         if ($request->ajax()) {
             $query = StockHistory::with(['productUnit.product', 'productUnit.unit'])
                 ->when($storeId, function($query) use ($storeId) {
-                    $query->whereHas('productUnit', function($q) use ($storeId) {
-                        $q->where('store_id', $storeId);
-                    });
+                    $query->where('store_id', $storeId);
                 })
                 ->whereBetween('created_at', [$startDate, $endDate]);
 
             if ($request->product_id) {
-                $query->whereHas('productUnit', function($q) use ($request) {
-                    $q->where('product_id', $request->product_id);
+                $query->whereHas('productUnit', function($q) use ($request, $storeId) {
+                    $q->where('product_id', $request->product_id)
+                        ->when($storeId, function($q) use ($storeId) {
+                            $q->where('store_id', $storeId);
+                        });
                 });
             }
 
