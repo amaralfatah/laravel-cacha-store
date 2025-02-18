@@ -87,6 +87,12 @@ class Product extends Model
         return $this->hasMany(TransactionItem::class);
     }
 
+    public function units()
+    {
+        return $this->belongsToMany(Unit::class, 'product_units')
+            ->withPivot(['conversion_factor', 'purchase_price', 'selling_price', 'stock', 'min_stock', 'is_default']);
+    }
+
     public function images()
     {
         return $this->hasMany(ProductImage::class);

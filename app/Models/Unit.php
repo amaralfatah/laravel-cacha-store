@@ -26,4 +26,10 @@ class Unit extends Model
     {
         return $this->belongsTo(Store::class);
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_units')
+            ->withPivot(['conversion_factor', 'purchase_price', 'selling_price', 'stock', 'min_stock', 'is_default']);
+    }
 }

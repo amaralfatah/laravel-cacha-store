@@ -96,6 +96,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ setActive('purchases.*') }}">
+            <a href="{{ route('purchases.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-package"></i>
+                <div data-i18n="Purchases">Pembelian</div>
+            </a>
+        </li>
+
         <li class="menu-item {{ setActive('stock.adjustments.*') }}">
             <a href="{{ route('stock.adjustments.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-refresh"></i>
@@ -143,7 +150,7 @@
 
         <li class="menu-item {{ setActive('groups.*') }}">
             <a href="{{ route('groups.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-category"></i>
+                <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                 <div data-i18n="Groups">Kelompok</div>
             </a>
         </li>

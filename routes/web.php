@@ -26,6 +26,7 @@ use App\Http\Controllers\User\StoreController as UserStoreController;
 use App\Http\Controllers\User\StoreBalanceController as UserStoreBalanceController;
 use App\Http\Controllers\StoreBalanceController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\PurchaseOrderController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -153,6 +154,10 @@ Route::middleware('auth')->group(function () {
 
 
         Route::patch('/{store}/toggle-status', [StoreController::class, 'toggleStatus'])->name('toggle-status');
+
     });
+
+    Route::get('/purchases/search', [PurchaseOrderController::class, 'searchProducts'])->name('purchases.search');
+    Route::resource('purchases', PurchaseOrderController::class);
 
 });
