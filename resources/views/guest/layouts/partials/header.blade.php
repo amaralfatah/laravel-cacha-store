@@ -30,9 +30,15 @@
                     </div>
                     <div class="header__col header__right">
                         <div class="toolbar-item d-none d-lg-block">
-                            <a href="{{route('login')}}" class="toolbar-btn">
-                                <span>Login</span>
-                            </a>
+                            @if(Auth::user())
+                                <a href="{{route('dashboard')}}" class="toolbar-btn">
+                                    <span>Dashboard</span>
+                                </a>
+                            @else
+                                <a href="{{route('login')}}" class="toolbar-btn">
+                                    <span>Login</span>
+                                </a>
+                            @endif
                         </div>
                         <div class="toolbar-item d-block d-lg-none">
                             <a href="#offcanvasnav" class="hamburger-icon js-toolbar menu-btn">
