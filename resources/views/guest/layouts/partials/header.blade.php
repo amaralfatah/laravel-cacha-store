@@ -23,7 +23,7 @@
                                     <a href="{{route('guest.shop')}}" class="mainmenu__link">Shop</a>
                                 </li>
                                 <li class="mainmenu__item">
-                                    <a href="{{route('guest.contact-us')}}" class="mainmenu__link">Contact Us</a>
+                                    <a href="{{route('guest.contact')}}" class="mainmenu__link">Contact Us</a>
                                 </li>
                             </ul>
                         </nav>

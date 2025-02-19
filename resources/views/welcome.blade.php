@@ -331,7 +331,7 @@
                 <div class="col-xl-5 offset-xl-1 col-lg-6">
                     <div class="limited-product__info">
                         <h2 class="limited-product__name">
-                            <a href="{{ route('guest.product-details', $product->slug) }}">{{ $countdownProduct->name }}</a>
+                            <a href="#">{{ $countdownProduct->name }}</a>
                         </h2>
                         <p class="limited-product__desc">{{ $countdownProduct->short_description }}</p>
                         <div class="d-flex align-items-center">

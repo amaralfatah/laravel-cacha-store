@@ -17,7 +17,7 @@ trait POSBalanceHandler
             'name' => 'Toko Cacha',
             'address' => 'Emplak, Kalipucang, Pangandaran',
             'phone' => '081234567890',
-            'email' => 'tokocacha@example.com',
+            'email' => 'justlogin29@gmail.com',
             'is_active' => true
         ]);
     }

@@ -13,6 +13,8 @@ return new class extends Migration
             $table->string('code', 50)->unique();
             $table->string('name', 255);
             $table->text('address');
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
             $table->string('phone', 20);
             $table->string('email', 255);
             $table->string('logo')->nullable();

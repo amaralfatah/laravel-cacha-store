@@ -2,6 +2,16 @@
 
 @section('header-class', '')
 
+@push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        #map-container {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+@endpush
+
 @section('breadcrumb')
     <section class="page-title-area bg-color" data-bg-color="#f4f4f4">
         <div class="container">
@@ -17,6 +27,7 @@
         </div>
     </section>
 @endsection
+
 @section('content')
     <div class="page-content-inner pt--75 pt-md--55">
         <!-- Contact Area Start -->
@@ -31,15 +42,19 @@
                         <div class="contact-info mb--20">
                             <p>
                                 <i class="fa fa-map-marker"></i>
-                                <span>221b Baker St, Marylebone <br>London NW1 6XE, UK</span>
+                                <span>{{ $store->address }}</span>
                             </p>
                             <p>
                                 <i class="fa fa-phone"></i>
-                                <span>+1-202-242-8157</span>
+                                <span>{{ $store->phone }}</span>
                             </p>
                             <p>
-                                <i class="fa fa-fax"></i>
-                                <span>+1-202-501-1829</span>
+                                <i class="fa fa-envelope"></i>
+                                <span>{{ $store->email }}</span>
+                            </p>
+                            <p>
+                                <i class="fa fa-building"></i>
+                                <span>{{ $store->name }} ({{ $store->code }})</span>
                             </p>
                             <p>
                                 <i class="fa fa-clock-o"></i>
@@ -53,8 +68,8 @@
                             <a href="https://www.twitter.com" class="social__link">
                                 <i class="fa fa-twitter"></i>
                             </a>
-                            <a href="https://www.plus.google.com" class="social__link">
-                                <i class="fa fa-google-plus"></i>
+                            <a href="https://www.instagram.com" class="social__link">
+                                <i class="fa fa-instagram"></i>
                             </a>
                         </div>
                     </div>
@@ -63,12 +78,17 @@
                             <h2>Contact Us</h2>
                             <hr class="delimeter">
                         </div>
-                        <form action="mail.php" class="form" id="contact-form">
-                            <input type="email" name="con_email" id="con_email" class="form__input mb--30" placeholder="Email*">
-                            <input type="text" name="con_name" id="con_name" class="form__input mb--30" placeholder="Name*">
-                            <textarea class="form__input form__input--textarea mb--30" placeholder="Message" id="con_message" name="con_message"></textarea>
+                        <div id="email-status" class="mb--30"></div>
+                        <form id="contact-form" class="form">
+                            <input type="email" name="email" id="con_email" class="form__input mb--30" placeholder="Email*" required>
+                            <input type="text" name="name" id="con_name" class="form__input mb--30" placeholder="Name*" required>
+                            <textarea class="form__input form__input--textarea mb--30" placeholder="Message" id="con_message" name="message" required></textarea>
+                            <input type="hidden" name="store_id" value="{{ $store->id }}">
+                            <input type="hidden" name="store_name" value="{{ $store->name }}">
+                            <input type="hidden" name="store_email" value="{{ $store->email }}">
                             <button type="submit" class="btn btn-shape-round form__submit">Send Request</button>
-                            <div class="form__output"></div>
+
+                            <div id="email-status" class="mt-3"></div>
                         </form>
                     </div>
                 </div>
@@ -76,213 +96,82 @@
         </section>
         <!-- Contact Area End -->
 
-        <!-- Google Map Area Start -->
-        <div class="google-map-area">
-            <div id="google-map"></div>
+        <!-- Map Area Start -->
+        <div class="map-area">
+            <div id="map-container"></div>
         </div>
-        <!-- Google Map Area End -->
+        <!-- Map Area End -->
     </div>
 @endsection
 
 @push('scripts')
-    <!-- Google Map -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCxvP66_Xk1ts77oL2Z7EpDxhDD_jMg-D0"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script>
-        // When the window has finished loading create our google map below
-        google.maps.event.addDomListener(window, 'load', init);
+        // Initialize EmailJS
+        (function() {
+            // Replace with your EmailJS public key
+            emailjs.init("QdkV99AroXCn9Zeji");
+        })();
 
-        function init() {
-            // Basic options for a simple Google Map
-            // For more options see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
-            var mapOptions = {
-                // How zoomed in you want the map to start at (always required)
-                zoom: 12,
+        // Handle form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactForm = document.getElementById('contact-form');
+            const statusDiv = document.getElementById('email-status');
 
-                scrollwheel: false,
+            contactForm.addEventListener('submit', function(event) {
+                event.preventDefault();
 
-                // The latitude and longitude to center the map (always required)
-                center: new google.maps.LatLng(40.740610, -73.935242), // New York
+                // Show loading state
+                statusDiv.innerHTML = '<div class="alert alert-info">Sending your message...</div>';
 
-                // How you would like to style the map.
-                // This is where you would paste any style found on
+                // Prepare template parameters
+                const templateParams = {
+                    name: document.getElementById('con_name').value,
+                    email: document.getElementById('con_email').value,
+                    message: document.getElementById('con_message').value,
+                    site_name: contactForm.store_name.value,
+                    our_email: contactForm.store_email.value,
+                };
 
-                styles: [{
-                    "featureType": "water",
-                    "elementType": "geometry",
-                    "stylers": [{
-                        "color": "#e9e9e9"
-                    },
-                        {
-                            "lightness": 17
-                        }
-                    ]
-                },
-                    {
-                        "featureType": "landscape",
-                        "elementType": "geometry",
-                        "stylers": [{
-                            "color": "#f5f5f5"
-                        },
-                            {
-                                "lightness": 20
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.highway",
-                        "elementType": "geometry.fill",
-                        "stylers": [{
-                            "color": "#ffffff"
-                        },
-                            {
-                                "lightness": 17
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.highway",
-                        "elementType": "geometry.stroke",
-                        "stylers": [{
-                            "color": "#ffffff"
-                        },
-                            {
-                                "lightness": 29
-                            },
-                            {
-                                "weight": 0.2
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.arterial",
-                        "elementType": "geometry",
-                        "stylers": [{
-                            "color": "#ffffff"
-                        },
-                            {
-                                "lightness": 18
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.local",
-                        "elementType": "geometry",
-                        "stylers": [{
-                            "color": "#ffffff"
-                        },
-                            {
-                                "lightness": 16
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "poi",
-                        "elementType": "geometry",
-                        "stylers": [{
-                            "color": "#f5f5f5"
-                        },
-                            {
-                                "lightness": 21
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "poi.park",
-                        "elementType": "geometry",
-                        "stylers": [{
-                            "color": "#dedede"
-                        },
-                            {
-                                "lightness": 21
-                            }
-                        ]
-                    },
-                    {
-                        "elementType": "labels.text.stroke",
-                        "stylers": [{
-                            "visibility": "on"
-                        },
-                            {
-                                "color": "#ffffff"
-                            },
-                            {
-                                "lightness": 16
-                            }
-                        ]
-                    },
-                    {
-                        "elementType": "labels.text.fill",
-                        "stylers": [{
-                            "saturation": 36
-                        },
-                            {
-                                "color": "#333333"
-                            },
-                            {
-                                "lightness": 40
-                            }
-                        ]
-                    },
-                    {
-                        "elementType": "labels.icon",
-                        "stylers": [{
-                            "visibility": "off"
-                        }]
-                    },
-                    {
-                        "featureType": "transit",
-                        "elementType": "geometry",
-                        "stylers": [{
-                            "color": "#f2f2f2"
-                        },
-                            {
-                                "lightness": 19
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "administrative",
-                        "elementType": "geometry.fill",
-                        "stylers": [{
-                            "color": "#fefefe"
-                        },
-                            {
-                                "lightness": 20
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "administrative",
-                        "elementType": "geometry.stroke",
-                        "stylers": [{
-                            "color": "#fefefe"
-                        },
-                            {
-                                "lightness": 17
-                            },
-                            {
-                                "weight": 1.2
-                            }
-                        ]
-                    }
-                ]
-            };
-
-            // Get the HTML DOM element that will contain your map
-            // We are using a div with id="map" seen below in the <body>
-            var mapElement = document.getElementById('google-map');
-
-            // Create the Google Map using our element and options defined above
-            var map = new google.maps.Map(mapElement, mapOptions);
-
-            // Let's also add a marker while we're at it
-            var marker = new google.maps.Marker({
-                position: new google.maps.LatLng(40.740610, -73.935242),
-                map: map,
-                title: 'Contixs',
-                icon: "{{asset('payne/assets/img/icons/marker.png')}}",
-                animation: google.maps.Animation.BOUNCE
+                // Send email using EmailJS
+                // Replace with your EmailJS service ID and template ID
+                emailjs.send('service_6sfihlo', 'template_22525qd', templateParams)
+                    .then(function(response) {
+                        console.log('SUCCESS!', response.status, response.text);
+                        statusDiv.innerHTML = '<div class="alert alert-success">Thank you for your message. We will get back to you soon!</div>';
+                        contactForm.reset();
+                    }, function(error) {
+                        console.log('FAILED...', error);
+                        statusDiv.innerHTML = '<div class="alert alert-danger">Sorry, there was a problem sending your message. Please try again later.</div>';
+                    });
             });
-        }
+
+            // Map initialization
+            const defaultLat = -6.2088;
+            const defaultLng = 106.8456;
+
+            // Get coordinates from store
+            const lat = {{ $store->latitude ?? 'defaultLat' }};
+            const lng = {{ $store->longitude ?? 'defaultLng' }};
+
+            // Initialize the map
+            const map = L.map('map-container').setView([lat, lng], 15);
+
+            // Add OpenStreetMap tiles with default styling
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add default marker
+            const marker = L.marker([lat, lng]).addTo(map);
+
+            // Add popup with store name
+            marker.bindPopup('{{ $store->name }}').openPopup();
+        });
     </script>
 @endpush

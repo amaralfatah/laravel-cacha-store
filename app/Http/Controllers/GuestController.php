@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class GuestController extends Controller
 {
@@ -347,8 +348,50 @@ class GuestController extends Controller
         ]);
     }
 
-    public function contactUs()
+    public function contactPage()
     {
-        return view('guest.contact-us');
+        // Fetch store information for id = 1
+        $store = \App\Models\Store::findOrFail(1);
+
+        // Set default coordinates if missing (Jakarta coordinates)
+        if (!$store->latitude || !$store->longitude) {
+            $store->latitude = -6.2088;
+            $store->longitude = 106.8456;
+        }
+
+        return view('guest.contact-us', compact('store'));
+    }
+
+    public function submitContactForm(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'message' => 'required|string',
+            'store_id' => 'required|exists:stores,id'
+        ]);
+
+        try {
+            // Get store information
+            $store = \App\Models\Store::findOrFail($validated['store_id']);
+
+            // Send email to store admin
+            \Mail::to($store->email)
+                ->cc(config('mail.admin_email', 'justlogin29@gmail.com'))
+                ->send(new \App\Mail\ContactFormMail($validated, $store));
+
+            // Save message to database
+            \App\Models\ContactMessage::create($validated);
+
+            return redirect()->back()->with('success', 'Thank you for your message. We will get back to you soon!');
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Contact form error: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'Sorry, there was a problem sending your message. Please try again later.')
+                ->withInput();
+        }
     }
 }
+

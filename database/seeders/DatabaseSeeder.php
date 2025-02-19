@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             DiscountSeeder::class,
             TaxSeeder::class,
             ProductSeeder::class,
+            StoreCoordinatesSeeder::class
         ]);
 
 

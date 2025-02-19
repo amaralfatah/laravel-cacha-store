@@ -18,6 +18,8 @@ class Store extends Model
         'code',
         'name',
         'address',
+        'latitude',
+        'longitude',
         'phone',
         'email',
         'logo',
@@ -31,6 +33,8 @@ class Store extends Model
      */
     protected $casts = [
         'is_active' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function categories()

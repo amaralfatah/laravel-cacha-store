@@ -1,4 +1,3 @@
-// database/migrations/2024_02_19_create_purchase_orders_table.php
 <?php
 
 use Illuminate\Database\Migrations\Migration;

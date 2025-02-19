@@ -21,6 +21,9 @@
 
     <!-- style css -->
     <link rel="stylesheet" href="{{asset('payne/assets/css/main.css')}}">
+
+
+    @stack('styles')
 </head>
 
 <body style="background-color:#fff !important;">
@@ -198,12 +201,14 @@
     <a class="scroll-to-top" href=""><i class="fa fa-angle-double-up"></i></a>
     <!-- Scroll To Top End -->
 </div>
+
+
 <!-- Main Wrapper End -->
 
 
 <!-- ************************* JS Files ************************* -->
 
-@yield('scripts')
+@stack('scripts')
 
 <!-- jQuery JS -->
 <script src="{{asset('payne/assets/js/vendor.js')}}"></script>

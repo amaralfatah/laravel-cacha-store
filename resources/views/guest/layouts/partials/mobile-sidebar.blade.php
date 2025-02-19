@@ -17,7 +17,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{route('guest.contact-us')}}">
+                    <a href="{{route('guest.contact')}}">
                         <span class="mm-text">Contact Us</span>
                     </a>
                 </li>

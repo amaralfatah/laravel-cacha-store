@@ -33,8 +33,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [GuestController::class, 'index'])->name('guest.home');
 Route::get('/shop', [GuestController::class, 'shop'])->name('guest.shop');
 Route::get('product-details/{slug}', [GuestController::class, 'productDetails'])->name('guest.product-details');
-Route::get('/contact-us', [GuestController::class, 'contactUs'])->name('guest.contact-us');
 Route::get('products/{id}', [GuestController::class, 'show']);
+// Route to display the contact form
+Route::get('/contact-us', [App\Http\Controllers\GuestController::class, 'contactPage'])->name('guest.contact');
+
+// Route to process the form submission (you already have this)
+Route::post('/contact-us/submit', [App\Http\Controllers\GuestController::class, 'submitContactForm'])->name('guest.contact.submit');
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
