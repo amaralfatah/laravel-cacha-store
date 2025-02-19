@@ -53,25 +53,29 @@ class POSController extends Controller
 
             if (!$product) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Produk tidak ditemukan'
-                ], 404);
+                    'results' => [],
+                    'pagination' => ['more' => false]
+                ]);
             }
 
-            // Check for default unit
-            $defaultUnit = $product->productUnits->where('is_default', true)->first();
+            // Check for default unit - handle both boolean true and integer 1
+            $defaultUnit = $product->productUnits->first(function($unit) {
+                // This handles both cases: is_default is true OR is_default is 1
+                return $unit->is_default == true;
+            });
+
             if (!$defaultUnit) {
                 return response()->json([
-                    'success' => false,
                     'message' => 'Produk tidak memiliki unit default'
                 ], 400);
             }
 
+            // Format available units
             $availableUnits = $product->productUnits->map(function ($productUnit) {
                 return [
+                    'product_unit_id' => $productUnit->id,
                     'unit_id' => $productUnit->unit_id,
                     'unit_name' => $productUnit->unit->name,
-                    'conversion_factor' => $productUnit->conversion_factor,
                     'selling_price' => $productUnit->selling_price,
                     'stock' => $productUnit->stock,
                     'is_default' => $productUnit->is_default,
@@ -84,11 +88,36 @@ class POSController extends Controller
                 ];
             });
 
+            // Format product data to match searchProduct structure
+            $formattedProduct = [
+                'id' => $product->barcode,
+                'text' => $product->name . ' - ' . $product->barcode,
+                'product_data' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'barcode' => $product->barcode,
+                    'description' => $product->description,
+                    'default_unit' => [
+                        'product_unit_id' => $defaultUnit->id,
+                        'unit_id' => $defaultUnit->unit_id,
+                        'unit_name' => $defaultUnit->unit->name,
+                        'selling_price' => $defaultUnit->selling_price,
+                        'stock' => $defaultUnit->stock
+                    ],
+                    'available_units' => $availableUnits,
+                    'tax' => $product->tax ? [
+                        'rate' => $product->tax->rate
+                    ] : null,
+                    'discount' => $product->discount ? [
+                        'type' => $product->discount->type,
+                        'value' => $product->discount->value
+                    ] : null
+                ]
+            ];
+
             return response()->json([
-                'success' => true,
-                'data' => array_merge($product->toArray(), [
-                    'available_units' => $availableUnits
-                ])
+                'results' => [$formattedProduct],
+                'pagination' => ['more' => false]
             ]);
 
         } catch (\Exception $e) {
@@ -98,8 +127,6 @@ class POSController extends Controller
             ], 500);
         }
     }
-
-    // In POSController.php, modify the searchProduct method:
 
     public function searchProduct(Request $request)
     {

@@ -262,71 +262,111 @@
     }
 
     // Product search and handling
+    // Product search and handling
     async function getProduct(barcode) {
         try {
             const response = await fetch(`{{ route('pos.get-product') }}?barcode=${barcode}`);
             const data = await response.json();
 
-            if (response.ok) {
-                productDetails[data.id] = data;
-                addToCart(data);
-            } else {
-                showErrorModal(data.message);
+            if (!response.ok) {
+                showErrorModal(data.message || 'Failed to retrieve product data');
+                return;
             }
+
+            // Check if results exist and are not empty
+            if (!data.results || data.results.length === 0) {
+                showErrorModal('Product not found');
+                return;
+            }
+
+            // Extract product data from results array
+            const productResult = data.results[0];
+            const product = productResult.product_data;
+
+            // Store product details for later use
+            productDetails[product.id] = product;
+
+            // Add product to cart using the appropriate data structure
+            addToCart(product);
+
         } catch (error) {
             console.error('Error:', error);
-            showErrorModal('Terjadi kesalahan saat mengambil data produk');
+            showErrorModal('An error occurred while fetching product data');
         }
     }
 
     // Cart handling functions
+    // Cart handling functions
     function addToCart(product) {
-        // Ubah pencarian default unit menggunakan is_default
-        const defaultUnit = product.available_units.find(unit => unit.is_default === true);
+        let defaultUnit;
+
+        // First try to get default unit from the default_unit property
+        if (product.default_unit) {
+            defaultUnit = product.default_unit;
+        } else {
+            // Fall back to finding unit with is_default flag
+            defaultUnit = product.available_units.find(unit => unit.is_default == true);
+        }
 
         if (!defaultUnit) {
             showErrorModal('Produk tidak memiliki unit default!');
             return;
         }
 
-        // Tambah pengecekan stock
+        // Check stock
         if (defaultUnit.stock <= 0) {
             showErrorModal('Stok produk tidak tersedia!');
             return;
         }
 
+        // Create new cart item with default unit info
         const newItem = {
             product_id: product.id,
             product_name: product.name,
-            unit_id: defaultUnit.unit_id, // Gunakan unit_id dari defaultUnit
+            unit_id: defaultUnit.unit_id || defaultUnit.product_unit_id,
             unit_name: defaultUnit.unit_name,
             available_units: product.available_units,
             quantity: 1,
             unit_price: parseFloat(defaultUnit.selling_price),
             tax_rate: product.tax ? parseFloat(product.tax.rate) : 0,
-            discount: product.discount ? calculateDiscount(product, defaultUnit.selling_price) : 0
+            discount: product.discount ? calculateDiscount(product) : 0
         };
 
-        // Sisanya sama seperti sebelumnya
-        showUnitSelectionModal(newItem, (selectedUnit) => {
-            const selectedUnitId = parseInt(selectedUnit);
-            const existingItemWithUnit = cart.find(item =>
+        // Show unit selection modal with item data
+        showUnitSelectionModal(newItem, function(selectedUnitId) {
+            // Convert to integer
+            selectedUnitId = parseInt(selectedUnitId);
+
+            // Check for existing item with same product and unit
+            const existingItemIndex = cart.findIndex(item =>
                 item.product_id === product.id &&
                 item.unit_id === selectedUnitId
             );
 
-            if (existingItemWithUnit) {
-                existingItemWithUnit.quantity = parseFloat(existingItemWithUnit.quantity) + 1;
-                calculateItemSubtotal(existingItemWithUnit);
+            if (existingItemIndex !== -1) {
+                // If item already exists, update quantity
+                cart[existingItemIndex].quantity += 1;
+                calculateItemSubtotal(cart[existingItemIndex]);
             } else {
+                // Otherwise create new item
+                const selectedUnit = product.available_units.find(u =>
+                    u.unit_id === selectedUnitId || u.product_unit_id === selectedUnitId
+                );
+
+                if (!selectedUnit) {
+                    showErrorModal('Unit tidak ditemukan!');
+                    return;
+                }
+
                 newItem.unit_id = selectedUnitId;
-                const unit = product.available_units.find(u => u.unit_id === selectedUnitId);
-                newItem.unit_name = unit.unit_name;
-                newItem.unit_price = parseFloat(unit.selling_price);
+                newItem.unit_name = selectedUnit.unit_name;
+                newItem.unit_price = parseFloat(selectedUnit.selling_price);
+
                 calculateItemSubtotal(newItem);
                 cart.push(newItem);
             }
 
+            // Update UI
             updateCartTable();
             calculateTotals();
         });
