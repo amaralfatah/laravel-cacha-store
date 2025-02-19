@@ -40,7 +40,7 @@
                 <a class="nav-link dropdown-toggle hide-arrow p-2 rounded-circle hover:bg-light transition-all"
                     href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                     <div class="avatar avatar-online">
-                        <img src="{{ asset('sneat/assets/img/avatars/1.png') }}" alt="Profile"
+                        <img src="{{Auth::user()->store->logo ?? asset('sneat/assets/img/avatars/1.png') }}" alt="Profile"
                             class="w-px-40 h-auto rounded-circle shadow-sm hover:shadow-md transition-all" />
                     </div>
                 </a>
@@ -50,7 +50,7 @@
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ asset('sneat/assets/img/avatars/1.png') }}" alt="Profile"
+                                        <img src="{{Auth::user()->store->logo ?? asset('sneat/assets/img/avatars/1.png') }}" alt="Profile"
                                             class="w-px-40 h-auto rounded-circle" />
                                     </div>
                                 </div>

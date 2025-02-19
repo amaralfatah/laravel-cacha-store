@@ -5,7 +5,7 @@
                 }'>
         <div class="item">
             <div class="single-slide height-2 d-flex align-items-center bg-image"
-                 data-bg-image="#">
+                 data-bg-image="{{asset('payne/assets/img/slider/slider-bg-02.jpg')}}">
                 <div class="container">
                     <div class="row align-items-center g-0 w-100">
                         <div class="col-lg-6 col-md-8">
