@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="{{asset('payne/assets/css/main.css')}}">
 </head>
 
-<body>
+<body style="background-color:#fff !important;">
 
 <!-- Preloader Start -->
 <div class="ft-preloader active">

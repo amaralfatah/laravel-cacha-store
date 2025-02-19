@@ -220,4 +220,42 @@ class Product extends Model
             ]
         ];
     }
+
+
+    /**
+     * Product has many images
+     */
+    public function productImages()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    /**
+     * Get the primary image
+     */
+    public function getPrimaryImageAttribute()
+    {
+        $primaryImage = $this->productImages()->where('is_primary', true)->first();
+
+        if ($primaryImage) {
+            return $primaryImage->image_path;
+        }
+
+        // Return default image if no primary image found
+        return 'payne/assets/img/products/product-03-270x300.jpg';
+    }
+
+    /**
+     * Get the default price
+     */
+    public function getDefaultPriceAttribute()
+    {
+        $defaultUnit = $this->productUnits()->where('is_default', true)->first();
+
+        if ($defaultUnit) {
+            return $defaultUnit->selling_price;
+        }
+
+        return 0.00;
+    }
 }
