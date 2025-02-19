@@ -94,6 +94,9 @@ class ProductController extends Controller
                 });
             }
 
+            // Default ordering by created_at in descending order (newest first)
+            $products->orderBy('products.created_at', 'desc');
+
             return DataTables::of($products)
                 ->addColumn('store_name', function ($product) {
                     return $product->store->name ?? '-';
