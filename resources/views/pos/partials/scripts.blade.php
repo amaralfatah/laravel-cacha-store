@@ -18,6 +18,82 @@
 <script src="{{ asset('sneat/assets/js/dashboards-analytics.js') }}"></script>
 
 <script>
+    async function updateTransactionSummary() {
+        try {
+            const response = await fetch('/pos/today-summary', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            // Update all values
+            document.getElementById('today_total').textContent = formatCurrency(data.total_amount);
+            document.getElementById('today_count').textContent = data.transaction_count;
+            document.getElementById('cash_total').textContent = formatCurrency(data.cash_amount);
+            document.getElementById('transfer_total').textContent = formatCurrency(data.transfer_amount);
+            document.getElementById('average_transaction').textContent = formatCurrency(data.average_transaction);
+
+            document.getElementById('today_date').textContent = new Date().toLocaleDateString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
+
+            document.getElementById('last_update').textContent = data.last_updated;
+
+            // Optional: Add tooltip with more details
+            const tickerContent = document.querySelector('.ticker-content');
+            tickerContent.title = `
+            Transaksi Tunai: ${data.cash_transactions}
+            Transaksi Transfer: ${data.transfer_transactions}
+            Total Pajak: ${formatCurrency(data.total_tax)}
+            Total Diskon: ${formatCurrency(data.total_discount)}
+            Transaksi Terakhir: ${data.latest_transaction}
+            ${data.peak_hour ? `Jam Tersibuk: ${data.peak_hour.hour}:00 (${data.peak_hour.count} transaksi)` : ''}
+        `;
+        } catch (error) {
+            console.error('Error fetching transaction summary:', error);
+        }
+    }
+
+    // Adjust animation speed based on content width
+    function adjustTickerAnimation() {
+        const tickerContent = document.querySelector('.ticker-content');
+        const contentWidth = tickerContent.scrollWidth;
+        const containerWidth = document.querySelector('.transaction-ticker').offsetWidth;
+
+        if (contentWidth > containerWidth) {
+            const duration = Math.max(20, contentWidth / containerWidth * 10);
+            tickerContent.style.animationDuration = `${duration}s`;
+        } else {
+            tickerContent.style.animation = 'none';
+        }
+    }
+
+    // Format currency function
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(amount);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateTransactionSummary();
+        setInterval(updateTransactionSummary, 300000); // 5 minutes
+
+        // Initial animation adjustment
+        adjustTickerAnimation();
+
+        // Adjust animation on window resize
+        window.addEventListener('resize', adjustTickerAnimation);
+    });
+</script>
+
+<script>
     let cart = [];
     let productDetails = {};
     let pendingTransactionId = null;
@@ -47,6 +123,71 @@
         updateCartTable();
         calculateTotals();
     }
+
+    // Initialize Select2
+    $(document).ready(function() {
+        $('#pos_search_product').select2({
+            placeholder: 'Cari produk berdasarkan nama atau barcode',
+            allowClear: true,
+            minimumInputLength: 2,
+            ajax: {
+                url: '{{ route("pos.search-product") }}',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        search: params.term,
+                        page: params.page
+                    };
+                },
+                processResults: function(data) {
+                    // Now correctly accessing the results array from the response
+                    return {
+                        results: data.results.map(function(item) {
+                            return {
+                                id: item.id,
+                                text: item.text,
+                                product: item.product_data
+                            };
+                        }),
+                        pagination: data.pagination
+                    };
+                },
+                cache: true
+            },
+            templateResult: formatProduct,
+            templateSelection: formatProductSelection
+        }).on('select2:select', function(e) {
+            const data = e.params.data;
+            if (data && data.product) {
+                addProductFromSearch(data.product);
+                $(this).val(null).trigger('change');
+            }
+        });
+
+        function formatProduct(product) {
+            if (!product.id) return product.text;
+
+            if (!product.product || !product.product.default_unit) return product.text;
+
+            const defaultUnit = product.product.default_unit;
+
+            return $(`
+            <div class="product-info">
+                <span class="product-name">${product.product.name}</span>
+                <span class="product-details">
+                    ${product.product.barcode || 'No Barcode'} -
+                    Stock: ${defaultUnit.stock} -
+                    ${formatCurrency(defaultUnit.selling_price)}
+                </span>
+            </div>
+        `);
+        }
+
+        function formatProductSelection(product) {
+            return product.text || 'Cari produk';
+        }
+    });
 
     // Keyboard navigation functions
     function handleProductListNavigation(e, productList) {

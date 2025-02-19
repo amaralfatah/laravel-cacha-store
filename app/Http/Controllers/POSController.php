@@ -99,12 +99,14 @@ class POSController extends Controller
         }
     }
 
+    // In POSController.php, modify the searchProduct method:
+
     public function searchProduct(Request $request)
     {
         try {
             $search = $request->search;
 
-            $products = Product::where(function ($query) use ($search) {
+            $query = Product::where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('barcode', 'like', "%{$search}%");
             })
@@ -114,54 +116,66 @@ class POSController extends Controller
                     'productUnits.prices',
                     'tax',
                     'discount'
-                ])
-                ->limit(10)
-                ->get();
+                ]);
+
+            // Add store filtering if not admin
+            if (Auth::user()->role !== 'admin') {
+                $query->where('store_id', Auth::user()->store_id);
+            }
+
+            $products = $query->limit(10)->get();
 
             $formattedProducts = $products->map(function ($product) {
+                // Get default unit for initial display
+                $defaultUnit = $product->productUnits->where('is_default', true)->first();
+
                 return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'code' => $product->code,
-                    'barcode' => $product->barcode,
-                    'description' => $product->description,
-                    'short_description' => $product->short_description,
-                    'available_units' => $product->productUnits->map(function ($pu) {
-                        return [
-                            'product_unit_id' => $pu->id,
-                            'unit_id' => $pu->unit_id,
-                            'unit_name' => $pu->unit->name,
-                            'unit_code' => $pu->unit->code,
-                            'selling_price' => $pu->selling_price,
-                            'stock' => $pu->stock,
-                            'min_stock' => $pu->min_stock,
-                            'is_default' => $pu->is_default,
-                            'conversion_factor' => $pu->conversion_factor,
-                            'prices' => $pu->prices->map(function ($price) {
-                                return [
-                                    'min_quantity' => $price->min_quantity,
-                                    'price' => $price->price
-                                ];
-                            })
-                        ];
-                    }),
-                    'tax' => $product->tax ? [
-                        'id' => $product->tax->id,
-                        'name' => $product->tax->name,
-                        'rate' => $product->tax->rate
-                    ] : null,
-                    'discount' => $product->discount ? [
-                        'id' => $product->discount->id,
-                        'name' => $product->discount->name,
-                        'type' => $product->discount->type,
-                        'value' => $product->discount->value
-                    ] : null
+                    'id' => $product->barcode, // Using barcode as ID for Select2
+                    'text' => $product->name . ' - ' . $product->barcode,
+                    'product_data' => [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'barcode' => $product->barcode,
+                        'description' => $product->description,
+                        'default_unit' => $defaultUnit ? [
+                            'product_unit_id' => $defaultUnit->id,
+                            'unit_id' => $defaultUnit->unit_id,
+                            'unit_name' => $defaultUnit->unit->name,
+                            'selling_price' => $defaultUnit->selling_price,
+                            'stock' => $defaultUnit->stock
+                        ] : null,
+                        'available_units' => $product->productUnits->map(function ($pu) {
+                            return [
+                                'product_unit_id' => $pu->id,
+                                'unit_id' => $pu->unit_id,
+                                'unit_name' => $pu->unit->name,
+                                'selling_price' => $pu->selling_price,
+                                'stock' => $pu->stock,
+                                'is_default' => $pu->is_default,
+                                'prices' => $pu->prices->map(function ($price) {
+                                    return [
+                                        'min_quantity' => $price->min_quantity,
+                                        'price' => $price->price
+                                    ];
+                                })
+                            ];
+                        }),
+                        'tax' => $product->tax ? [
+                            'rate' => $product->tax->rate
+                        ] : null,
+                        'discount' => $product->discount ? [
+                            'type' => $product->discount->type,
+                            'value' => $product->discount->value
+                        ] : null
+                    ]
                 ];
             });
 
             return response()->json([
-                'success' => true,
-                'data' => $formattedProducts
+                'results' => $formattedProducts,
+                'pagination' => [
+                    'more' => false
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -393,6 +407,76 @@ class POSController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to clear pending transaction: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getTodaySummary()
+    {
+        try {
+            $today = now()->today();
+
+            // Create base query
+            $baseQuery = Transaction::where('status', 'success')
+                ->whereDate('created_at', $today);
+
+            // Add store filtering for non-admin users
+            if (auth()->user()->role !== 'admin') {
+                $baseQuery->where('store_id', auth()->user()->store_id);
+            }
+
+            // Get basic transaction statistics using cloned queries
+            $summary = [
+                'total_amount' => (clone $baseQuery)->sum('final_amount'),
+                'transaction_count' => (clone $baseQuery)->count(),
+                'cash_transactions' => (clone $baseQuery)->where('payment_type', 'cash')->count(),
+                'transfer_transactions' => (clone $baseQuery)->where('payment_type', 'transfer')->count(),
+                'cash_amount' => (clone $baseQuery)->where('payment_type', 'cash')->sum('final_amount'),
+                'transfer_amount' => (clone $baseQuery)->where('payment_type', 'transfer')->sum('final_amount'),
+                'average_transaction' => (clone $baseQuery)->avg('final_amount') ?? 0,
+                'total_tax' => (clone $baseQuery)->sum('tax_amount'),
+                'total_discount' => (clone $baseQuery)->sum('discount_amount'),
+                'latest_transaction' => (clone $baseQuery)->latest()->first()?->created_at?->format('H:i'),
+                'last_updated' => now()->format('H:i'),
+
+                // Get transactions by hour (for peak hours analysis)
+                'hourly_transactions' => Transaction::where('status', 'success')
+                    ->whereDate('created_at', $today)
+                    ->selectRaw('HOUR(created_at) as hour, COUNT(*) as count, SUM(final_amount) as amount')
+                    ->groupBy('hour')
+                    ->get()
+                    ->map(function($item) {
+                        return [
+                            'hour' => $item->hour,
+                            'count' => $item->count,
+                            'amount' => $item->amount
+                        ];
+                    })
+            ];
+
+            $summary['peak_hour'] = $summary['hourly_transactions']
+                ->sortByDesc('count')
+                ->first();
+
+            return response()->json($summary);
+
+        } catch (\Exception $e) {
+            Log::error('Error in getTodaySummary: ' . $e->getMessage());
+
+            return response()->json([
+                'total_amount' => 0,
+                'transaction_count' => 0,
+                'cash_transactions' => 0,
+                'transfer_transactions' => 0,
+                'cash_amount' => 0,
+                'transfer_amount' => 0,
+                'average_transaction' => 0,
+                'total_tax' => 0,
+                'total_discount' => 0,
+                'latest_transaction' => '-',
+                'last_updated' => now()->format('H:i'),
+                'hourly_transactions' => [],
+                'peak_hour' => null
             ]);
         }
     }

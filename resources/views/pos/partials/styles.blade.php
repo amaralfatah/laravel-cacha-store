@@ -33,88 +33,58 @@
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-
 <style>
-    .pos-container {
-        background: #f5f5f9;
-        min-height: 100vh;
-    }
-    .product-search-container {
+    .transaction-ticker {
+        background: #696cff;
+        height: 35px;
+        overflow: hidden;
         position: relative;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        padding: 1.5rem;
+        color: white;
         margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .cart-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        padding: 1.5rem;
-        margin-bottom: 1rem;
+
+    .ticker-content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding: 0 15px;
+        font-size: 0.875rem;
     }
-    .payment-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        padding: 1.5rem;
-        position: sticky;
-        top: 1rem;
+
+    .ticker-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 10px;
+        white-space: nowrap;
     }
-    .action-buttons {
-        gap: 0.5rem;
+
+    .ticker-item i {
+        font-size: 1rem;
     }
-    .cart-table {
-        margin-top: 1rem;
+
+    .ticker-divider {
+        width: 1px;
+        height: 15px;
+        background-color: rgba(255, 255, 255, 0.3);
+        margin: 0 5px;
     }
-    .cart-table th {
-        background: #f8f9fa;
-        padding: 0.75rem;
-    }
-    .cart-table td {
-        vertical-align: middle;
-        padding: 0.75rem;
-    }
-    .form-control, .form-select {
-        border-radius: 6px;
-        padding: 0.5rem 0.75rem;
-    }
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: #566a7f;
-    }
-    .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 500;
-    }
-    .btn-icon {
-        padding: 0.5rem;
-        line-height: 1;
-    }
-    #pos_product_list {
-        border-radius: 6px;
-        padding: 0.5rem 0;
-    }
-    .product-item {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #eee;
-        transition: background-color 0.2s;
-    }
-    .product-item:hover, .product-item.active {
-        background-color: #f8f9fa;
-    }
-    .amount-field {
-        font-size: 1.25rem;
+
+    #today_total {
         font-weight: 600;
-        text-align: right;
-        background-color: #f8f9fa;
     }
-    #pos_final_amount {
-        font-size: 1.5rem;
-        color: #696cff;
-        background-color: #eef1ff;
+
+    @media (max-width: 768px) {
+        .ticker-content {
+            animation: ticker 20s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
     }
 </style>
+
+
