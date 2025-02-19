@@ -296,7 +296,6 @@
     }
 
     // Cart handling functions
-    // Cart handling functions
     function addToCart(product) {
         let defaultUnit;
 
@@ -1143,4 +1142,330 @@
 }
 `;
     document.head.appendChild(style);
+</script>
+
+<script>
+    // POS System Keyboard Shortcuts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize keyboard shortcut system
+        initializeKeyboardShortcuts();
+
+        // Add info about shortcuts
+        addShortcutInfo();
+    });
+
+    function initializeKeyboardShortcuts() {
+        document.addEventListener('keydown', function(e) {
+            // Ignore keypress events in input fields, except specific allowed keys
+            if (isInputField(e.target) && !isAllowedInputKey(e)) {
+                return;
+            }
+
+            // Handle shortcuts
+            switch (e.key) {
+                // Navigation shortcuts
+                case 'F1': // Focus barcode field (already implemented)
+                    e.preventDefault();
+                    focusField('pos_barcode');
+                    break;
+
+                case 'F2': // Quick product search
+                    e.preventDefault();
+                    focusField('pos_search_product');
+                    break;
+
+                case 'F3': // Customer selection
+                    e.preventDefault();
+                    focusField('pos_customer_id');
+                    break;
+
+                case 'F4': // Payment type
+                    e.preventDefault();
+                    focusField('pos_payment_type');
+                    break;
+
+                // Transaction shortcuts
+                case 'F8': // Complete sale (Selesaikan Transaksi)
+                    e.preventDefault();
+                    document.getElementById('btn-save').click();
+                    break;
+
+                case 'F7': // Hold transaction (Simpan Sebagai Pending)
+                    e.preventDefault();
+                    document.getElementById('btn-pending').click();
+                    break;
+
+                case 'F9': // Show pending transactions
+                    e.preventDefault();
+                    document.getElementById('btn-show-pending').click();
+                    break;
+
+                case 'F11': // Toggle fullscreen
+                    e.preventDefault();
+                    document.getElementById('btn-fullscreen').click();
+                    break;
+
+                case 'Escape': // Cancel operation/close modal
+                    // Modal closing is handled by Bootstrap
+                    break;
+            }
+
+            // Handle Control key combinations
+            if (e.ctrlKey) {
+                switch (e.key) {
+                    case 'n': // New transaction (clear cart)
+                        e.preventDefault();
+                        document.getElementById('btn-clear-cart').click();
+                        break;
+
+                    case 'd': // Dashboard
+                        if (!isModalOpen()) {
+                            e.preventDefault();
+                            window.location.href = document.querySelector('a[href*="/dashboard"]').href;
+                        }
+                        break;
+                }
+            }
+
+            // Handle number key for quantity updates when cart has items
+            if (!isInputField(e.target) && !isNaN(parseInt(e.key)) && cart.length > 0) {
+                const num = parseInt(e.key);
+                if (num >= 1 && num <= Math.min(9, cart.length)) {
+                    e.preventDefault();
+                    // Focus quantity input for the nth item (1-based index)
+                    const inputs = document.querySelectorAll('.quantity-input');
+                    if (inputs[num-1]) {
+                        inputs[num-1].focus();
+                        inputs[num-1].select();
+                    }
+                }
+            }
+
+            // Plus and minus keys for quantity adjustment of selected item
+            if (!isInputField(e.target)) {
+                if (e.key === '+' || e.key === '=') { // = because + usually requires shift
+                    e.preventDefault();
+                    adjustSelectedItemQuantity(1);
+                } else if (e.key === '-') {
+                    e.preventDefault();
+                    adjustSelectedItemQuantity(-1);
+                }
+            }
+        });
+
+        // Add Tab index to important elements for keyboard navigation
+        setTabIndices();
+    }
+
+    // Helper functions
+    function isInputField(element) {
+        return element.tagName === 'INPUT' ||
+            element.tagName === 'TEXTAREA' ||
+            element.tagName === 'SELECT' ||
+            element.isContentEditable;
+    }
+
+    function isAllowedInputKey(e) {
+        // Allow function keys in inputs
+        return e.key.startsWith('F') || e.key === 'Escape' || e.key === 'Tab';
+    }
+
+    function isModalOpen() {
+        return document.querySelector('.modal.show') !== null;
+    }
+
+    function focusField(id) {
+        const field = document.getElementById(id);
+        if (field) {
+            field.focus();
+            if (field.tagName === 'INPUT') {
+                field.select();
+            }
+        }
+    }
+
+    function setTabIndices() {
+        // Set tabindex on major interactive elements for better keyboard navigation
+        const elements = [
+            'pos_barcode',
+            'pos_search_product',
+            'pos_customer_id',
+            'pos_payment_type',
+            'pos_reference_number',
+            'btn-clear-cart',
+            'btn-show-pending',
+            'btn-fullscreen',
+            'btn-pending',
+            'btn-save'
+        ];
+
+        elements.forEach((id, index) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.tabIndex = index + 1;
+            }
+        });
+    }
+
+    function adjustSelectedItemQuantity(change) {
+        // Find the focused quantity input or the first one if none is focused
+        let input = document.activeElement;
+        if (!input.classList.contains('quantity-input')) {
+            const inputs = document.querySelectorAll('.quantity-input');
+            if (inputs.length > 0) {
+                input = inputs[0];
+                input.focus();
+            } else {
+                return; // No items in cart
+            }
+        }
+
+        // Get current value and adjust
+        let currentVal = parseInt(input.value) || 1;
+        let newVal = Math.max(1, currentVal + change);
+
+        // Update value and trigger change event
+        input.value = newVal;
+
+        // Trigger the change event
+        const event = new Event('change', { bubbles: true });
+        input.dispatchEvent(event);
+    }
+
+    function addShortcutInfo() {
+        // Create help icon with tooltip containing shortcut info
+        const helpIcon = document.createElement('button');
+        helpIcon.className = 'btn btn-icon btn-outline-secondary ms-2';
+        helpIcon.innerHTML = '<i class="bx bx-help-circle"></i>';
+        helpIcon.id = 'shortcut-help';
+
+        // Add tooltip data
+        helpIcon.setAttribute('data-bs-toggle', 'tooltip');
+        helpIcon.setAttribute('data-bs-html', 'true');
+        helpIcon.setAttribute('data-bs-placement', 'bottom');
+        helpIcon.title = `
+        <div class="text-start">
+            <strong>Keyboard Shortcuts:</strong><br>
+            F1: Focus barcode field<br>
+            F2: Product search<br>
+            F3: Customer selection<br>
+            F4: Payment method<br>
+            F7: Save as pending<br>
+            F8: Complete transaction<br>
+            F9: Show pending<br>
+            F11: Toggle fullscreen<br>
+            Ctrl+N: Clear cart<br>
+            Ctrl+D: Dashboard<br>
+            1-9: Select cart item<br>
+            +/-: Adjust quantity
+        </div>
+    `;
+
+        // Add click event to show modal with more detailed info
+        helpIcon.addEventListener('click', showShortcutHelpModal);
+
+        // Insert into the action header
+        const actionHeader = document.querySelector('.action-header');
+        if (actionHeader) {
+            actionHeader.querySelector('div:last-child').prepend(helpIcon);
+
+            // Initialize the tooltip
+            new bootstrap.Tooltip(helpIcon);
+        }
+    }
+
+    function showShortcutHelpModal() {
+        const modalHtml = `
+    <div class="modal fade" id="shortcutHelpModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Keyboard Shortcuts</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Navigation</h6>
+                            <ul class="list-unstyled">
+                                <li><kbd>F1</kbd> - Focus barcode input</li>
+                                <li><kbd>F2</kbd> - Focus product search</li>
+                                <li><kbd>F3</kbd> - Focus customer selection</li>
+                                <li><kbd>F4</kbd> - Focus payment method</li>
+                                <li><kbd>Tab</kbd> - Navigate between fields</li>
+                                <li><kbd>Arrow Keys</kbd> - Navigate in dropdowns</li>
+                            </ul>
+
+                            <h6>Item Management</h6>
+                            <ul class="list-unstyled">
+                                <li><kbd>1</kbd>-<kbd>9</kbd> - Select cart item by position</li>
+                                <li><kbd>+</kbd> - Increase selected item quantity</li>
+                                <li><kbd>-</kbd> - Decrease selected item quantity</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Transactions</h6>
+                            <ul class="list-unstyled">
+                                <li><kbd>F7</kbd> - Save as pending</li>
+                                <li><kbd>F8</kbd> - Complete transaction</li>
+                                <li><kbd>F9</kbd> - Show pending transactions</li>
+                                <li><kbd>F11</kbd> - Toggle fullscreen</li>
+                                <li><kbd>Esc</kbd> - Close popup/modal</li>
+                            </ul>
+
+                            <h6>System</h6>
+                            <ul class="list-unstyled">
+                                <li><kbd>Ctrl</kbd>+<kbd>N</kbd> - Clear cart</li>
+                                <li><kbd>Ctrl</kbd>+<kbd>D</kbd> - Go to dashboard</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('shortcutHelpModal'));
+        modal.show();
+
+        // Remove modal from DOM when hidden
+        document.getElementById('shortcutHelpModal').addEventListener('hidden.bs.modal', function() {
+            this.remove();
+        });
+    }
+
+    // Add CSS for keyboard shortcut styling
+    const shortcutStyles = document.createElement('style');
+    shortcutStyles.textContent = `
+kbd {
+    display: inline-block;
+    padding: 0.2em 0.4em;
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background-color: #212529;
+    border-radius: 0.2rem;
+    vertical-align: middle;
+    white-space: nowrap;
+    margin: 0 0.1em;
+}
+
+#shortcut-help {
+    transition: all 0.2s;
+}
+
+#shortcut-help:hover {
+    transform: scale(1.1);
+}
+`;
+    document.head.appendChild(shortcutStyles);
 </script>

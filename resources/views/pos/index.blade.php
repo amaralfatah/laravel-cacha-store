@@ -6,6 +6,38 @@
     <title>Kasir | Toko Cacha</title>
     <meta name="description" content="" />
     @include('pos.partials.styles')
+    <!-- Minimal custom styles that Bootstrap doesn't provide -->
+    <style>
+        #keyboard-shortcuts-card {
+            transition: all 0.3s ease;
+        }
+
+        #keyboard-shortcuts-card.collapsed {
+            max-height: 45px;
+            overflow: hidden;
+        }
+
+        #shortcuts-container {
+            transition: max-height 0.3s ease;
+            max-height: 500px;
+        }
+
+        #keyboard-shortcuts-card.collapsed #shortcuts-container {
+            max-height: 0;
+        }
+
+        kbd {
+            display: inline-block;
+            padding: 0.2em 0.4em;
+            font-size: 0.85em;
+            font-weight: 600;
+            line-height: 1;
+            color: #fff;
+            background-color: #566a7f;
+            border-radius: 0.25rem;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+    </style>
 </head>
 
 <body>
@@ -50,12 +82,101 @@
         </div>
     </div>
 
+    <div class="card mb-3" id="keyboard-shortcuts-card" style="border: 0; border-radius: 0">
+        <div class="card-header d-flex justify-content-between align-items-center p-2">
+            <h5 class="mb-0">
+                <i class="bx bx-keyboard me-2"></i>TokoCacha
+            </h5>
+            <button class="btn btn-sm btn-icon btn-outline-secondary" id="toggle-shortcuts">
+                <i class="bx bx-chevron-up"></i>
+            </button>
+        </div>
+        <div class="card-body p-0 overflow-hidden" id="shortcuts-container">
+            <div class="shortcuts-content p-3">
+                <div class="row g-3">
+                    <!-- Transaction Column -->
+                    <div class="col-md-3 col-sm-6">
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Transaksi</h6>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F1</kbd></div>
+                            <span class="small">Fokus Barcode</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F8</kbd></div>
+                            <span class="small">Selesaikan Transaksi</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F7</kbd></div>
+                            <span class="small">Simpan Pending</span>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Column -->
+                    <div class="col-md-3 col-sm-6">
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Navigasi</h6>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F2</kbd></div>
+                            <span class="small">Cari Produk</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F3</kbd></div>
+                            <span class="small">Pilih Pelanggan</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F4</kbd></div>
+                            <span class="small">Metode Pembayaran</span>
+                        </div>
+                    </div>
+
+                    <!-- Cart Column -->
+                    <div class="col-md-3 col-sm-6">
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Keranjang</h6>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>1-9</kbd></div>
+                            <span class="small">Pilih Item</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>+</kbd></div>
+                            <span class="small">Tambah Qty</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>-</kbd></div>
+                            <span class="small">Kurangi Qty</span>
+                        </div>
+                    </div>
+
+                    <!-- System Column -->
+                    <div class="col-md-3 col-sm-6">
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Sistem</h6>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F9</kbd></div>
+                            <span class="small">Tampilkan Pending</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>F11</kbd></div>
+                            <span class="small">Layar Penuh</span>
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="text-end me-3" style="width: 70px;"><kbd>Ctrl+N</kbd></div>
+                            <span class="small">Transaksi Baru</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
     <div class="container-xxl flex-grow-1 mt-2">
         <div class="row">
             <!-- Kolom Kiri - Input Produk & Keranjang -->
             <div class="col-lg-8">
 
-{{--                action header--}}
+                {{--action header--}}
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="action-header d-flex justify-content-between align-items-center">
@@ -118,7 +239,7 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label" for="pos_barcode">Pindai Barcode</label>
+                            <label class="form-label" for="pos_barcode">Pindai Barcode [F1]</label>
                             <input type="text" class="form-control" id="pos_barcode" autofocus>
                         </div>
                         <div class="mb-3">
@@ -240,5 +361,36 @@
 
 @include('components.toast')
 @include('pos.partials.scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shortcutsCard = document.getElementById('keyboard-shortcuts-card');
+        const toggleButton = document.getElementById('toggle-shortcuts');
+
+        // Check if user preference is stored
+        const isCollapsed = localStorage.getItem('keyboard_shortcuts_collapsed') === 'true';
+
+        // Set initial state
+        if (isCollapsed) {
+            shortcutsCard.classList.add('collapsed');
+            toggleButton.querySelector('i').classList.replace('bx-chevron-up', 'bx-chevron-down');
+        }
+
+        // Toggle function
+        toggleButton.addEventListener('click', function() {
+            shortcutsCard.classList.toggle('collapsed');
+
+            const isNowCollapsed = shortcutsCard.classList.contains('collapsed');
+            localStorage.setItem('keyboard_shortcuts_collapsed', isNowCollapsed);
+
+            // Update icon
+            const icon = this.querySelector('i');
+            if (isNowCollapsed) {
+                icon.classList.replace('bx-chevron-up', 'bx-chevron-down');
+            } else {
+                icon.classList.replace('bx-chevron-down', 'bx-chevron-up');
+            }
+        });
+    });
+</script>
 </body>
 </html>
