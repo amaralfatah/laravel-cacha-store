@@ -6,10 +6,10 @@
                     <div class="header__col header__left">
                         <a href="{{route('guest.home')}}" class="logo">
                             <figure class="logo--normal">
-                                <img src="{{asset('payne/assets/img/logo/logo.png')}}" alt="Logo">
+                                <img src="{{asset('images/logo-cacha-119x48px.png')}}" alt="Logo">
                             </figure>
                             <figure class="logo--transparency">
-                                <img src="{{asset('payne/assets/img/logo/logo.png')}}" alt="Logo">
+                                <img src="{{asset('images/logo-cacha-119x48px.png')}}" alt="Logo">
                             </figure>
                         </a>
                     </div>
