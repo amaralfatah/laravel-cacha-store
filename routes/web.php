@@ -32,8 +32,9 @@ use Illuminate\Support\Facades\Route;
 // Public Routes
 Route::get('/', [GuestController::class, 'index'])->name('guest.home');
 Route::get('/shop', [GuestController::class, 'shop'])->name('guest.shop');
-Route::get('/product-details', [GuestController::class, 'productDetails'])->name('guest.product-details');
+Route::get('product-details/{slug}', [GuestController::class, 'productDetails'])->name('guest.product-details');
 Route::get('/contact-us', [GuestController::class, 'contactUs'])->name('guest.contact-us');
+Route::get('products/{id}', [GuestController::class, 'show']);
 
 // Guest Routes
 Route::middleware('guest')->group(function () {

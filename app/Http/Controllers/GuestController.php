@@ -294,6 +294,59 @@ class GuestController extends Controller
         return view('guest.product-details', compact('product', 'relatedProducts'));
     }
 
+    public function show($id)
+    {
+        $product = Product::with([
+            'productImages',
+            'productUnits.unit',
+            'category'
+        ])->findOrFail($id);
+
+        // Get primary image or default image
+        $primaryImage = $product->productImages->where('is_primary', true)->first();
+        $image = $primaryImage
+            ? asset('storage/' . $primaryImage->image_path)
+            : asset('assets/img/products/default-snack-270x300.jpg');
+
+        // Get default unit for pricing
+        $defaultUnit = $product->productUnits->where('is_default', true)->first();
+        $price = $defaultUnit ? $defaultUnit->selling_price : 0;
+
+        // Check if product has discount
+        $hasDiscount = $defaultUnit && $defaultUnit->discount_id;
+        $discountPrice = $hasDiscount ? ($price * 0.8) : null; // Assuming 20% discount
+
+        // Prepare variants for size selection
+        $variants = $product->productUnits->map(function($unit) {
+            return [
+                'id' => $unit->id,
+                'name' => $unit->unit->name,
+                'code' => $unit->unit->code,
+                'price' => $unit->selling_price,
+                'is_default' => $unit->is_default
+            ];
+        });
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'short_description' => $product->short_description,
+            'image' => $image,
+            'price' => $hasDiscount ? $discountPrice : $price,
+            'original_price' => $hasDiscount ? $price : null,
+            'discount_price' => $discountPrice,
+            'has_discount' => $hasDiscount,
+            'stock' => $defaultUnit ? $defaultUnit->stock : null,
+            'default_unit_id' => $defaultUnit ? $defaultUnit->id : null,
+            'variants' => $variants,
+            'category' => [
+                'id' => $product->category->id,
+                'name' => $product->category->name
+            ]
+        ]);
+    }
+
     public function contactUs()
     {
         return view('guest.contact-us');

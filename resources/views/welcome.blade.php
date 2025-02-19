@@ -93,7 +93,8 @@
                                      data-wow-duration=".8s">
                                     <div class="featured-product__info-inner rotated-info">
                                         <h4 class="featured-product__text font-size-14 text-light" >Produk Unggulan</h4>
-                                        <h2 class="featured-product__name font-size-34 text-light" >{{ $product->name }}</h2>
+                                        <h2 class="featured-product__name font-size-34 text-light" >
+                                            <a href="{{ route('guest.product-details', $product->slug) }}">{{ $product->name }}</a></h2>
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +147,7 @@
                                 <div class="product__info">
                                     <div class="product__info--left">
                                         <h3 class="product__title">
-                                            <a href="#">{{ $product->name }}</a>
+                                            <a href="{{ route('guest.product-details', $product->slug) }}">{{ $product->name }}</a>
                                         </h3>
                                         <div class="product__price">
                                             <span class="money">{{ number_format($product->price, 0, ',', '.') }}</span>
@@ -259,7 +260,7 @@
                                 <div class="product__info">
                                     <div class="product__info--left">
                                         <h3 class="product__title">
-                                            <a href="#">{{ $product->name }}</a>
+                                            <a href="{{ route('guest.product-details', $product->slug) }}">{{ $product->name }}</a>
                                         </h3>
                                         <div class="product__price">
                                             <span class="money">{{ number_format($product->price, 0, ',', '.') }}</span>
@@ -330,7 +331,7 @@
                 <div class="col-xl-5 offset-xl-1 col-lg-6">
                     <div class="limited-product__info">
                         <h2 class="limited-product__name">
-                            <a href="#">{{ $countdownProduct->name }}</a>
+                            <a href="{{ route('guest.product-details', $product->slug) }}">{{ $countdownProduct->name }}</a>
                         </h2>
                         <p class="limited-product__desc">{{ $countdownProduct->short_description }}</p>
                         <div class="d-flex align-items-center">
