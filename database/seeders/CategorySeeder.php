@@ -174,9 +174,9 @@ class CategorySeeder extends Seeder
             ],
             [
                 'store_id' => 1,
-                'code' => 'CACHASNACK',
-                'name' => 'Cacha Snack',
-                'group_id' => 1, // 1 MAKANAN
+                'code' => 'CACHA001',
+                'name' => 'Kripik',
+                'group_id' => 11, // 1 CACHASNACK
             ],
         ];
 

@@ -8,7 +8,7 @@
 
 <div class="card product-card h-100">
     <div class="product-image">
-        <a href="{{ route('products.show', $product->slug) }}">
+        <a href="{{ route('guest.show', $product->slug) }}">
             <img src="{{ $product->productImages->where('is_primary', true)->first()
                 ? asset('storage/' . $product->productImages->where('is_primary', true)->first()->image_path)
                 : asset('images/placeholder.png') }}"
@@ -60,7 +60,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <x-product-price :product="$product" />
-            <a href="#" @class([
+            <a href="{{$product->url}}" @class([
                 'btn btn-primary-cacha rounded-pill',
                 'btn-sm px-2' => $buttonSize === 'small',
                 'px-3' => $buttonSize === 'normal'

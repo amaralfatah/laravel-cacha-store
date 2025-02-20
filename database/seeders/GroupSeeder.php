@@ -60,6 +60,11 @@ class GroupSeeder extends Seeder
                 'code' => 'PET01',
                 'name' => 'HEWAN',
             ],
+            [
+                'store_id' => 1,
+                'code' => 'CACHASNACK',
+                'name' => 'CACHASNACK',
+            ],
         ];
 
         foreach ($groups as $group) {
