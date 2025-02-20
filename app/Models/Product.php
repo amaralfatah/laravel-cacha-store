@@ -39,7 +39,9 @@ class Product extends Model
         'schema_brand',
         'schema_sku',
         'schema_gtin',
-        'schema_mpn'
+        'schema_mpn',
+
+        'url'
     ];
 
     protected $casts = [

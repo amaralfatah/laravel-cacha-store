@@ -218,6 +218,7 @@ class ProductController extends Controller
             'is_active' => 'boolean',
             'featured' => 'boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'url' => 'nullable|url'
         ]);
 
         try {
@@ -274,7 +275,9 @@ class ProductController extends Controller
                 'schema_brand' => $store->name,
                 'schema_sku' => $validated['code'],
                 'schema_gtin' => $validated['barcode'],
-                'schema_mpn' => $validated['code']
+                'schema_mpn' => $validated['code'],
+
+                'url' => $validated['url']
             ]);
 
             // Create product unit
@@ -431,7 +434,8 @@ class ProductController extends Controller
             'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
             'is_active' => 'boolean',
             'featured' => 'boolean',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'url' => 'nullable|url'
         ]);
 
         try {
@@ -475,7 +479,9 @@ class ProductController extends Controller
 
                 // OpenGraph fields
                 'og_title' => $seoData['og_title'],
-                'og_description' => $seoData['og_description']
+                'og_description' => $seoData['og_description'],
+
+                'url' => $validated['url']
             ]);
 
             // Update default unit

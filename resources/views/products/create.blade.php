@@ -187,6 +187,28 @@
             </div>
         </div>
 
+        <!-- Link Card -->
+        <div class="card border mb-4">
+            <div class="card-header bg-transparent">
+                <h6 class="card-title mb-0">
+                    <i class='bx bx-link me-2 text-primary'></i>
+                    Product Link
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="url" class="form-label">Link Shopee, Tokopedia, dll</label>
+                        <input type="text" class="form-control @error('url') is-invalid @enderror"
+                               id="url" name="url" value="{{ old('url') }}">
+                        @error('url')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Status Card -->
         <div class="card border mb-4">
             <div class="card-header bg-transparent">

@@ -45,6 +45,8 @@ return new class extends Migration
             $table->string('schema_gtin')->nullable();
             $table->string('schema_mpn')->nullable();
 
+            $table->string('url')->nullable();
+
             $table->timestamps();
         });
     }
