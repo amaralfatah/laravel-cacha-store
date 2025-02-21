@@ -1,8 +1,10 @@
 @if(app()->environment('local'))
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 @else
-    <!-- File CSS dan JS yang sudah di-build -->
-    <link rel="stylesheet" href="{{ asset('build/assets/app-wIOcQJrJ.css') }}">
-    <link rel="stylesheet" href="{{ asset('build/assets/app-DcDb03eT.css') }}">
-    <script src="{{ asset('build/assets/app-BKFiQ_FA.js') }}" defer></script>
+    @php
+        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+    @endphp
+
+    <link rel="stylesheet" href="{{ asset('build/'.$manifest['resources/css/app.css']['file']) }}">
+    <script src="{{ asset('build/'.$manifest['resources/js/app.js']['file']) }}" defer></script>
 @endif
