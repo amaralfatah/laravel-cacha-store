@@ -71,7 +71,14 @@ class Product extends Model
 
     public function prices()
     {
-        return $this->hasMany(Price::class);
+        return $this->hasManyThrough(
+            \App\Models\Price::class,
+            \App\Models\ProductUnit::class,
+            'product_id',     // Foreign key pada product_units table
+            'product_unit_id', // Foreign key pada prices table
+            'id',             // Local key pada products table
+            'id'              // Local key pada product_units table
+        );
     }
 
     public function supplier(): BelongsTo
