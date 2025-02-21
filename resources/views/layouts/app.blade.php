@@ -70,12 +70,11 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('sneat/assets/js/config.js') }}"></script>
 
-      @if (app()->environment('local'))
+      @if(app()->environment('local'))
           @vite(['resources/css/app.css', 'resources/js/app.js'])
       @else
-          <!-- Include your built CSS and JS files directly for production -->
-          <link rel="stylesheet" href="{{ mix('css/app.css') }}">
-          <script src="{{ mix('js/app.js') }}" defer></script>
+          <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+          <script src="{{ asset('js/app.js') }}" defer></script>
       @endif
 
 
