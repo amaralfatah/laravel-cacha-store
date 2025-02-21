@@ -72,6 +72,19 @@
 
       @if(app()->environment('local'))
           @vite(['resources/css/app.css', 'resources/js/app.js'])
+      @elseif(file_exists(public_path('build/manifest.json')))
+          @php
+              $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+          @endphp
+          @foreach(['resources/css/app.css', 'resources/js/app.js'] as $key)
+              @if(isset($manifest[$key]))
+                  @if(Str::endsWith($key, '.css'))
+                      <link rel="stylesheet" href="{{ asset('build/'.$manifest[$key]['file']) }}">
+                  @elseif(Str::endsWith($key, '.js'))
+                      <script src="{{ asset('build/'.$manifest[$key]['file']) }}" defer></script>
+                  @endif
+              @endif
+          @endforeach
       @else
           <link rel="stylesheet" href="{{ asset('css/app.css') }}">
           <script src="{{ asset('js/app.js') }}" defer></script>
