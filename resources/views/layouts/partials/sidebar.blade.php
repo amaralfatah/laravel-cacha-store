@@ -47,7 +47,7 @@
 {{--                </svg>--}}
 {{--                <img src="{{asset('images/logo-cacha-119x48px.png')}}" alt="toko cacha">--}}
             </span>
-            <span class="app-brand-text demo menu-text fw-bolder ms-2 text-primary">TokoCacha99</span>
+            <span class="app-brand-text demo menu-text fw-bolder ms-2 text-primary">TokoCacha</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
