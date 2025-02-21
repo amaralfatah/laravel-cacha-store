@@ -70,36 +70,7 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('sneat/assets/js/config.js') }}"></script>
 
-      @if(app()->environment('local'))
-          @vite(['resources/css/app.css', 'resources/js/app.js'])
-      @elseif(file_exists(public_path('build/manifest.json')))
-          @php
-              $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-          @endphp
-
-              <!-- CSS dari file app.css -->
-          @if(isset($manifest['resources/css/app.css']))
-              <link rel="stylesheet" href="{{ asset('build/'.$manifest['resources/css/app.css']['file']) }}">
-          @endif
-
-          <!-- CSS yang dimuat oleh app.js -->
-          @if(isset($manifest['resources/js/app.js']['css']))
-              @foreach($manifest['resources/js/app.js']['css'] as $cssFile)
-                  <link rel="stylesheet" href="{{ asset('build/'.$cssFile) }}">
-              @endforeach
-          @endif
-
-          <!-- JavaScript dari app.js -->
-          @if(isset($manifest['resources/js/app.js']))
-              <script src="{{ asset('build/'.$manifest['resources/js/app.js']['file']) }}" defer></script>
-          @endif
-      @else
-          <!-- Fallback ke file statis yang sudah di-build (JANGAN GUNAKAN css/app.css dan js/app.js) -->
-          <link rel="stylesheet" href="{{ asset('build/assets/app-wIOcQJrJ.css') }}">
-          <link rel="stylesheet" href="{{ asset('build/assets/app-DcDb03eT.css') }}">
-          <script src="{{ asset('build/assets/app-BKFiQ_FA.js') }}" defer></script>
-      @endif
-
+      @include('layouts.partials.vite')
 
       <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 {{--      <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css">--}}

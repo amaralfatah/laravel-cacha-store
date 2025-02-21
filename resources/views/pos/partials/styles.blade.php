@@ -31,12 +31,7 @@
 <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 <script src="{{ asset('sneat/assets/js/config.js') }}"></script>
 
-@if(app()->environment('local'))
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-@else
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <script src="{{ asset('js/app.js') }}" defer></script>
-@endif
+@include('layouts.partials.vite')
 
 <style>
     .transaction-ticker {
