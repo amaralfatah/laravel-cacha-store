@@ -94,8 +94,10 @@
               <script src="{{ asset('build/'.$manifest['resources/js/app.js']['file']) }}" defer></script>
           @endif
       @else
-          <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-          <script src="{{ asset('js/app.js') }}" defer></script>
+          <!-- Fallback ke file statis yang sudah di-build (JANGAN GUNAKAN css/app.css dan js/app.js) -->
+          <link rel="stylesheet" href="{{ asset('build/assets/app-wIOcQJrJ.css') }}">
+          <link rel="stylesheet" href="{{ asset('build/assets/app-DcDb03eT.css') }}">
+          <script src="{{ asset('build/assets/app-BKFiQ_FA.js') }}" defer></script>
       @endif
 
 
