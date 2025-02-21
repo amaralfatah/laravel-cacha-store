@@ -76,15 +76,23 @@
           @php
               $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
           @endphp
-          @foreach(['resources/css/app.css', 'resources/js/app.js'] as $key)
-              @if(isset($manifest[$key]))
-                  @if(Str::endsWith($key, '.css'))
-                      <link rel="stylesheet" href="{{ asset('build/'.$manifest[$key]['file']) }}">
-                  @elseif(Str::endsWith($key, '.js'))
-                      <script src="{{ asset('build/'.$manifest[$key]['file']) }}" defer></script>
-                  @endif
-              @endif
-          @endforeach
+
+              <!-- CSS dari file app.css -->
+          @if(isset($manifest['resources/css/app.css']))
+              <link rel="stylesheet" href="{{ asset('build/'.$manifest['resources/css/app.css']['file']) }}">
+          @endif
+
+          <!-- CSS yang dimuat oleh app.js -->
+          @if(isset($manifest['resources/js/app.js']['css']))
+              @foreach($manifest['resources/js/app.js']['css'] as $cssFile)
+                  <link rel="stylesheet" href="{{ asset('build/'.$cssFile) }}">
+              @endforeach
+          @endif
+
+          <!-- JavaScript dari app.js -->
+          @if(isset($manifest['resources/js/app.js']))
+              <script src="{{ asset('build/'.$manifest['resources/js/app.js']['file']) }}" defer></script>
+          @endif
       @else
           <link rel="stylesheet" href="{{ asset('css/app.css') }}">
           <script src="{{ asset('js/app.js') }}" defer></script>
