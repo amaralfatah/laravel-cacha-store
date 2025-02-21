@@ -36,17 +36,17 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 position-relative hero-image">
-                <img src="{{asset('images/products/slider-image-01.png')}}" alt="Aneka Snack Kekinian Cacha"
-                     class="img-fluid rounded-4 shadow-lg" style="max-width: 600px; max-height: 500px;">
+            <div class="col-lg-6 position-relative hero-image text-center">
+                <img src="{{asset('images/products/hero-image.png')}}" alt="Aneka Snack Kekinian Cacha"
+                     class="img-fluid rounded-4 shadow-lg mx-auto mx-lg-0" style="max-width: 100%; max-height: 500px;">
                 @if($biggestDiscount)
                     <div
                         class="position-absolute top-0 end-0 mt-n4 me-n4 bg-white rounded-circle p-3 shadow-lg d-none d-md-block">
                         <div class="bg-primary-cacha text-white rounded-circle p-3 fw-bold"
                              style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                            <span class="fs-4">
-                                {{ number_format($biggestDiscount->value) }}{{ $biggestDiscount->type === 'percentage' ? '%' : 'Rp' }}
-                            </span>
+                <span class="fs-4">
+                    {{ number_format($biggestDiscount->value) }}{{ $biggestDiscount->type === 'percentage' ? '%' : 'Rp' }}
+                </span>
                             <span class="small">DISKON</span>
                         </div>
                     </div>
