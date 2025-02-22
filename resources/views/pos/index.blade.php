@@ -6,11 +6,11 @@
     <title>Kasir | Toko Cacha</title>
     <meta name="description" content="" />
     @include('pos.partials.styles')
+
 </head>
 
 <body>
 <div class="content-wrapper pos-container">
-
     <div class="transaction-ticker">
         <div class="ticker-content">
             <div class="ticker-item">
@@ -20,7 +20,7 @@
             <div class="ticker-divider"></div>
             <div class="ticker-item">
                 <i class='bx bx-receipt'></i>
-                <span>Total Transaksi: <span id="today_count">0</span></span>
+                <span>Transaksi: <span id="today_count">0</span></span>
             </div>
             <div class="ticker-divider"></div>
             <div class="ticker-item">
@@ -28,53 +28,41 @@
                 <span>Total: <span id="today_total">Rp 0</span></span>
             </div>
             <div class="ticker-divider"></div>
-            <div class="ticker-item">
+            <div class="ticker-item d-none d-md-flex">
                 <i class='bx bx-wallet'></i>
                 <span>Tunai: <span id="cash_total">Rp 0</span></span>
             </div>
-            <div class="ticker-divider"></div>
-            <div class="ticker-item">
+            <div class="ticker-divider d-none d-md-block"></div>
+            <div class="ticker-item d-none d-md-flex">
                 <i class='bx bx-credit-card'></i>
                 <span>Transfer: <span id="transfer_total">Rp 0</span></span>
             </div>
-            <div class="ticker-divider"></div>
-            <div class="ticker-item">
+            <div class="ticker-divider d-none d-md-block"></div>
+            <div class="ticker-item d-none d-md-flex">
                 <i class='bx bx-line-chart'></i>
                 <span>Rata-rata: <span id="average_transaction">Rp 0</span></span>
-            </div>
-            <div class="ticker-divider"></div>
-            <div class="ticker-item">
-                <i class='bx bx-time'></i>
-                <span>Update: <span id="last_update">-</span></span>
             </div>
         </div>
     </div>
 
-    <div class="container-xxl flex-grow-1 mt-3">
-        <div class="row">
-            <!-- Kolom Kiri - Input Produk & Keranjang -->
+    <div class="container-fluid p-4">
+        <div class="row g-4">
+            <!-- Main Content -->
             <div class="col-lg-8">
-
-                {{--action header--}}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="action-header d-flex justify-content-between align-items-center">
-                            <div class="d-flex gap-2">
-                                <a href="{{ url('/dashboard') }}" class="btn btn-outline-primary">
-                                    <i class="bx bx-arrow-back me-1"></i> Dashboard
-                                </a>
-                                <button type="button" class="btn btn-outline-danger" id="btn-clear-cart">
-                                    <i class="bx bx-trash me-1"></i> Clear Cart
-                                </button>
-                                <button type="button" class="btn btn-outline-warning" id="btn-show-pending">
-                                    <i class="bx bx-time me-1"></i> Pending
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mb-4">
+                    <a href="{{ url('/dashboard') }}" class="btn btn-primary">
+                        <i class="bx bx-arrow-back"></i>
+                    </a>
+                    <button type="button" class="btn btn-danger" id="btn-clear-cart">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                    <button type="button" class="btn btn-warning" id="btn-show-pending">
+                        <i class="bx bx-time"></i> Pending
+                    </button>
                 </div>
 
-                <!-- Info Transaksi -->
+                <!-- Transaction Info -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row g-3">
@@ -111,25 +99,34 @@
                     </div>
                 </div>
 
-                <!-- Pencarian Produk -->
+                <!-- Product Search -->
                 <div class="card mb-4">
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label" for="pos_barcode">Pindai Barcode [F1]</label>
-                            <input type="text" class="form-control" id="pos_barcode" autofocus>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="pos_search_product">Cari Produk</label>
-                            <select class="form-control" id="pos_search_product"></select>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="pos_barcode">
+                                    <i class='bx bx-barcode me-1'></i>Scan Barcode [F1]
+                                </label>
+                                <input type="text" class="form-control" id="pos_barcode" autofocus>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="pos_search_product">
+                                    <i class='bx bx-search me-1'></i>Cari Produk
+                                </label>
+                                <select class="form-control" id="pos_search_product"></select>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Keranjang Belanja -->
+                <!-- Shopping Cart -->
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="card-title mb-0">Keranjang Belanja</h5>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive cart-table">
-                            <table class="table" id="cart-table">
+                            <table class="table table-hover" id="cart-table">
                                 <thead>
                                 <tr>
                                     <th>Produk</th>
@@ -148,71 +145,85 @@
                 </div>
             </div>
 
-            <!-- Kolom Kanan - Pembayaran -->
+            <!-- Payment Section -->
             <div class="col-lg-4">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Rincian Pembayaran</h4>
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body bg-light border-bottom">
+                        <div class="text-muted small mb-1">Total Pembayaran</div>
+                        <input type="text" class="form-control-plaintext h2 mb-0 fw-bold"
+                               id="pos_final_amount" readonly>
                     </div>
+
                     <div class="card-body">
-                        <div class="d-flex flex-column gap-2">
-                            <div>
-                                <label class="form-label" for="pos_subtotal">Subtotal</label>
-                                <input type="text" class="form-control amount-field" id="pos_subtotal" readonly>
+                        <!-- Transaction Summary -->
+                        <div class="mb-4">
+                            <div class="amount-detail">
+                                <span>Subtotal</span>
+                                <input type="text" class="form-control-plaintext text-end" id="pos_subtotal" readonly>
+                            </div>
+                            <div class="amount-detail">
+                                <span>Pajak</span>
+                                <input type="text" class="form-control-plaintext text-end" id="pos_tax_amount" readonly>
+                            </div>
+                            <div class="amount-detail">
+                                <span>Diskon</span>
+                                <input type="text" class="form-control-plaintext text-end" id="pos_discount_amount" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="payment-methods">
+                            <select class="form-select form-select-lg mb-3" id="pos_payment_type">
+                                <option value="cash">💵 Tunai</option>
+                                <option value="transfer">🏦 Transfer</option>
+                            </select>
+
+                            <!-- Cash Payment -->
+                            <div id="pos_cash_amount_container" class="mb-3">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" id="pos_cash_amount"
+                                           placeholder="Jumlah Tunai" step="100" min="0">
+                                </div>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="pos_tax_amount">Pajak</label>
-                                <input type="text" class="form-control amount-field" id="pos_tax_amount" readonly>
+                            <div id="pos_change_container" class="mb-3">
+                                <div class="bg-light rounded p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Kembalian</span>
+                                        <input type="text" class="form-control-plaintext text-end h5 mb-0"
+                                               id="pos_change" readonly>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="pos_discount_amount">Diskon</label>
-                                <input type="text" class="form-control amount-field" id="pos_discount_amount" readonly>
-                            </div>
-
-                            <div>
-                                <label class="form-label" for="pos_final_amount">Total</label>
-                                <input type="text" class="form-control amount-field" id="pos_final_amount" readonly>
-                            </div>
-
-                            <div id="pos_cash_amount_container">
-                                <label class="form-label" for="pos_cash_amount">Uang Tunai</label>
-                                <input type="number" class="form-control amount-field" id="pos_cash_amount" step="100" min="0">
-                            </div>
-
-                            <div id="pos_change_container">
-                                <label class="form-label" for="pos_change">Kembalian</label>
-                                <input type="text" class="form-control amount-field" id="pos_change" readonly>
-                            </div>
-
-                            <div>
-                                <label class="form-label" for="pos_payment_type">Metode Pembayaran</label>
-                                <select class="form-select" id="pos_payment_type">
-                                    <option value="cash">Tunai</option>
-                                    <option value="transfer">Transfer</option>
-                                </select>
-                            </div>
-
+                            <!-- Transfer Payment -->
+                            <!-- Transfer Payment -->
                             <div id="pos_reference_number_container" style="display: none;">
-                                <label class="form-label" for="pos_reference_number">Nomor Referensi</label>
-                                <input type="text" class="form-control" id="pos_reference_number">
+                                <input type="text" class="form-control form-control-lg"
+                                       id="pos_reference_number"
+                                       placeholder="Nomor Referensi Transfer">
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <div class="d-flex flex-column gap-2">
-                            <button class="btn btn-warning" id="btn-pending">
-                                <i class="bx bx-save me-1"></i> Simpan Sebagai Pending
+
+                    <!-- Action Buttons -->
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-warning d-flex align-items-center justify-content-center gap-2"
+                                    id="btn-pending">
+                                <i class="bx bx-save"></i>
+                                <span>Simpan Draft</span>
                             </button>
-                            <button class="btn btn-primary" id="btn-save">
-                                <i class="bx bx-check-circle me-1"></i> Selesaikan Transaksi
+                            <button class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2"
+                                    id="btn-save">
+                                <i class="bx bx-check-circle"></i>
+                                <span>Selesaikan</span>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -221,20 +232,23 @@
 <div class="modal fade" id="pendingTransactionsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Transaksi Pending</h5>
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title">
+                    <i class='bx bx-time-five me-2'></i>
+                    Transaksi Tertunda
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-0">
                 <div class="table-responsive">
-                    <table class="table" id="pending-transactions-table">
-                        <thead>
+                    <table class="table mb-0" id="pending-transactions-table">
+                        <thead class="bg-light">
                         <tr>
-                            <th>Faktur</th>
-                            <th>Tanggal</th>
-                            <th>Pelanggan</th>
-                            <th>Total</th>
-                            <th>Aksi</th>
+                            <th class="py-3">Faktur</th>
+                            <th class="py-3">Tanggal</th>
+                            <th class="py-3">Pelanggan</th>
+                            <th class="py-3">Total</th>
+                            <th class="py-3">Aksi</th>
                         </tr>
                         </thead>
                         <tbody></tbody>
@@ -245,7 +259,10 @@
     </div>
 </div>
 
+<!-- Toast Notifications -->
 @include('components.toast')
+
+<!-- Scripts -->
 @include('pos.partials.scripts')
 
 </body>

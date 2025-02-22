@@ -178,7 +178,9 @@
                 discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
                 final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
                 pending_transaction_id: pendingTransactionId,
-                status: 'success'
+                status: 'success',
+
+                cash_amount: paymentType === 'cash' ? parseFloat(document.getElementById('pos_cash_amount').value) : null
             };
 
             // Validasi pembayaran cash
@@ -977,14 +979,6 @@
 }
 `;
     document.head.appendChild(style);
-
-    // Update payment type handler
-
-
-    // Update the store transaction function
-    // In the data object before the fetch call, add:
-    data.cash_amount = document.getElementById('pos_payment_type').value === 'cash' ?
-        parseFloat(document.getElementById('pos_cash_amount').value) : null;
 
 
 
