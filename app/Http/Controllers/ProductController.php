@@ -32,14 +32,12 @@ class ProductController extends Controller
                 'products.barcode',
                 'products.store_id',
                 'products.category_id',
-                'products.supplier_id',
                 'products.is_active',
                 'products.created_at'
             ])->with([
                 'store:id,name',
                 'category:id,name,group_id',
-                'category.group:id,name',  // Tambahkan relasi ke group
-                'supplier:id,name',
+                'category.group:id,name',
                 'productUnits' => function($query) {
                     $query->where('is_default', true)
                         ->select([
@@ -60,21 +58,11 @@ class ProductController extends Controller
                 $products->where('products.store_id', auth()->user()->store_id);
             }
 
-            // Filter grup
+            // Filter grup (termasuk kategori yang berhubungan dengan grup)
             if ($request->filled('group_id')) {
                 $products->whereHas('category', function($query) use ($request) {
                     $query->where('group_id', $request->group_id);
                 });
-            }
-
-            // Filter kategori
-            if ($request->filled('category_id')) {
-                $products->where('category_id', $request->category_id);
-            }
-
-            // Filter supplier
-            if ($request->filled('supplier_id')) {
-                $products->where('supplier_id', $request->supplier_id);
             }
 
             // Filter status aktif
@@ -101,20 +89,22 @@ class ProductController extends Controller
                 ->addColumn('store_name', function ($product) {
                     return $product->store->name ?? '-';
                 })
-                ->addColumn('group_info', function ($product) {
-                    return $product->category?->group?->name ?? '-';
+                ->addColumn('name_link', function ($product) {
+                    return '<a href="' . route('products.show', $product->id) .
+                        '" class="fw-bold text-primary product-link"
+                       data-bs-toggle="tooltip" title="Klik untuk detail produk">' .
+                        e($product->name) . '</a>';
                 })
                 ->addColumn('category_name', function ($product) {
-                    return $product->category?->name ?? '-';
-                })
-                ->addColumn('supplier_name', function ($product) {
-                    return $product->supplier?->name ?? '-';
-                })
-                ->addColumn('unit_info', function ($product) {
-                    $defaultUnit = $product->productUnits->first();
-                    if (!$defaultUnit) return '-';
+                    // Mengkombinasikan nama grup dan kategori
+                    $groupName = $product->category?->group?->name;
+                    $categoryName = $product->category?->name;
 
-                    return $defaultUnit->unit->name;
+                    if ($groupName && $categoryName) {
+                        return $groupName . ' » ' . $categoryName;
+                    }
+
+                    return $categoryName ?? '-';
                 })
                 ->addColumn('stock_info', function ($product) {
                     $defaultUnit = $product->productUnits->first();
@@ -125,6 +115,8 @@ class ProductController extends Controller
                         $stockStatus = '<span class="badge bg-danger">Habis</span>';
                     } elseif ($defaultUnit->stock <= $defaultUnit->min_stock) {
                         $stockStatus = '<span class="badge bg-warning">Menipis</span>';
+                    } else {
+                        $stockStatus = '<span class="badge bg-success">Tersedia</span>';
                     }
 
                     return sprintf(
@@ -133,10 +125,6 @@ class ProductController extends Controller
                         $defaultUnit->unit->name,
                         $stockStatus
                     );
-                })
-                ->addColumn('purchase_price', function ($product) {
-                    $defaultUnit = $product->productUnits->first();
-                    return $defaultUnit ? 'Rp' . number_format($defaultUnit->purchase_price) : '-';
                 })
                 ->addColumn('selling_price', function ($product) {
                     $defaultUnit = $product->productUnits->first();
@@ -147,10 +135,7 @@ class ProductController extends Controller
                         '<span class="badge bg-success">Aktif</span>' :
                         '<span class="badge bg-danger">Nonaktif</span>';
                 })
-                ->addColumn('action', function ($product) {
-                    return view('products.partials.action-buttons', compact('product'))->render();
-                })
-                ->rawColumns(['stock_info', 'price_info', 'status', 'action'])
+                ->rawColumns(['name_link', 'stock_info', 'status'])
                 ->make(true);
         }
 
@@ -170,14 +155,7 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        $suppliers = Supplier::when(auth()->user()->role !== 'admin', function($query) {
-            return $query->where('store_id', auth()->user()->store_id);
-        })
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
-
-        return view('products.index', compact('groups', 'categories', 'suppliers'));
+        return view('products.index', compact('groups', 'categories'));
     }
 
     public function create()

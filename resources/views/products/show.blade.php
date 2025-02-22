@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <x-section-header title="Detail Product"/>
+    <x-section-header title="Detail Produk"/>
 
     <!-- Product Header -->
     <div class="row mb-4">
@@ -58,7 +58,6 @@
 
                                 <!-- Actions -->
                                 <div class="d-flex gap-2">
-                                    <div class="btn-group">
                                         <button type="button"
                                                 class="btn btn-outline-primary d-flex align-items-center"
                                                 data-bs-toggle="modal"
@@ -71,7 +70,11 @@
                                             <i class='bx bx-edit-alt me-1'></i>
                                             <span class="d-none d-sm-inline">Edit</span>
                                         </a>
-                                    </div>
+                                        <form action="{{ route('products.destroy', $product) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">Hapus Produk</button>
+                                        </form>
                                 </div>
                             </div>
 
@@ -108,7 +111,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
                         <div class="content-left">
-                            <span class="fw-medium d-block mb-1">Current Stock</span>
+                            <span class="fw-medium d-block mb-1">Stok Saat Ini</span>
                             <div class="d-flex align-items-end mt-2">
                                 <h4 class="mb-0 me-2">{{ number_format($defaultUnit?->stock ?? 0) }}</h4>
                                 <small class="text-muted">{{ $defaultUnit?->unit->code }}</small>
@@ -128,7 +131,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
                         <div class="content-left">
-                            <span class="fw-medium d-block mb-1">Selling Price</span>
+                            <span class="fw-medium d-block mb-1">Harga Jual</span>
                             <div class="d-flex align-items-end mt-2">
                                 <h4 class="mb-0 me-2">Rp {{ number_format($defaultUnit?->selling_price ?? 0) }}</h4>
                             </div>
@@ -166,7 +169,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between">
                         <div class="content-left">
-                            <span class="fw-medium d-block mb-1">Total Sales</span>
+                            <span class="fw-medium d-block mb-1">Total Penjualan</span>
                             <div class="d-flex align-items-end mt-2">
                                 <h4 class="mb-0 me-2">{{ number_format($statistics['total_sales']) }}</h4>
                                 <small class="text-muted">units</small>
@@ -189,18 +192,9 @@
         <div class="col-xl-4 col-lg-5 col-md-5">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Product Information</h5>
+                    <h5 class="card-title mb-0">Informasi Produk</h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="fw-medium d-block mb-1">Status</label>
-                        <span class="badge bg-label-{{ $product->is_active ? 'success' : 'danger' }}">
-                        {{ $product->is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                        @if($defaultUnit?->stock <= $defaultUnit?->min_stock)
-                            <span class="badge bg-label-warning">Low Stock</span>
-                        @endif
-                    </div>
 
                     @if($product->supplier)
                         <div class="mb-3">
@@ -221,7 +215,7 @@
 
                     @if($product->tax)
                         <div class="mb-3">
-                            <label class="fw-medium d-block mb-1">Tax</label>
+                            <label class="fw-medium d-block mb-1">Pajak</label>
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm me-2">
                                 <span class="avatar-initial rounded bg-label-success">
@@ -238,7 +232,7 @@
 
                     @if($product->discount)
                         <div class="mb-3">
-                            <label class="fw-medium d-block mb-1">Active Discount</label>
+                            <label class="fw-medium d-block mb-1">Diskon</label>
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm me-2">
                                 <span class="avatar-initial rounded bg-label-danger">
@@ -260,9 +254,9 @@
             <!-- Product Images -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Product Images</h5>
+                    <h5 class="card-title mb-0">Gambar</h5>
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadImagesModal">
-                        <i class='bx bx-plus'></i> Add Images
+                        <i class='bx bx-plus'></i> Tambah
                     </button>
                 </div>
                 <div class="card-body">
@@ -287,7 +281,7 @@
                         @empty
                             <div class="text-center py-5">
                                 <i class='bx bx-images fs-1 text-muted mb-2'></i>
-                                <p class="mb-0">No images available</p>
+                                <p class="mb-0">Gambar tidak tersedia</p>
                             </div>
                         @endforelse
                     </div>
@@ -323,7 +317,7 @@
                     @else
                         <div class="text-center py-4">
                             <i class='bx bx-barcode fs-1 text-muted mb-2'></i>
-                            <p class="mb-0">Barcode not available</p>
+                            <p class="mb-0">Barcode tidak tersedia</p>
                         </div>
                     @endif
                 </div>
@@ -334,10 +328,10 @@
             <!-- Product Units -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Units & Stock</h5>
+                    <h5 class="card-title mb-0">Satuan</h5>
                     <a href="{{ route('products.units.create', $product) }}"
-                       class="btn btn-primary">
-                        <i class='bx bx-plus me-1'></i> Add Unit
+                       class="btn btn-sm btn-primary">
+                        <i class='bx bx-plus me-1'></i> Tambah
                     </a>
                 </div>
                 <div class="table-responsive">
@@ -345,13 +339,13 @@
                         <thead>
                         <tr>
                             <th>Unit</th>
-                            <th>Conversion</th>
-                            <th>Purchase Price</th>
-                            <th>Selling Price</th>
-                            <th>Stock</th>
-                            <th>Min Stock</th>
+                            <th>Konversi</th>
+                            <th>Harga Beli</th>
+                            <th>Harga Jual</th>
+                            <th>Stok</th>
+                            <th>Min Stok</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th>Aksi</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -377,17 +371,17 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="btn btn-outline-info" href="javascript:void(0);"
+                                    <a class="btn btn-sm btn-outline-info" href="javascript:void(0);"
                                        data-bs-toggle="modal"
                                        data-bs-target="#adjustStockModal{{ $unit->id }}">
                                         <i class="bx bx-plus"></i>
                                     </a>
-                                    <a class="btn btn-outline-warning"
+                                    <a class="btn btn-sm btn-outline-warning"
                                        href="{{ route('products.units.edit', [$product, $unit]) }}">
                                         <i class="bx bx-edit-alt"></i>
                                     </a>
                                     @if(!$unit->is_default)
-                                        <a class="btn btn-outline-danger "
+                                        <a class="btn btn-sm btn-outline-danger "
                                            href="javascript:void(0);"
                                            onclick="event.preventDefault(); document.getElementById('delete-unit-{{ $unit->id }}').submit();">
                                             <i class="bx bx-trash"></i>
@@ -441,7 +435,7 @@
                                                 <button type="button" class="btn btn-label-secondary"
                                                         data-bs-dismiss="modal">Cancel
                                                 </button>
-                                                <button type="submit" class="btn btn-primary">Save</button>
+                                                <button type="submit" class="btn btn-sm btn-primary">Save</button>
                                             </div>
                                         </form>
                                     </div>
@@ -456,10 +450,10 @@
             <!-- Tiered Pricing -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Tiered Pricing</h5>
+                    <h5 class="card-title mb-0">Harga Bertingkat</h5>
                     <a href="{{ route('products.prices.create', $product) }}"
-                       class="btn btn-primary">
-                        <i class='bx bx-plus me-1'></i> Add Price
+                       class="btn btn-sm btn-primary">
+                        <i class='bx bx-plus me-1'></i> Tambah
                     </a>
                 </div>
                 <div class="table-responsive">
@@ -628,7 +622,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Upload</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Upload</button>
                     </div>
                 </form>
             </div>
