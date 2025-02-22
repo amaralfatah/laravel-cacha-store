@@ -172,6 +172,18 @@
             @endif
         </div>
 
+        <!-- Tambahkan setelah bagian payment_type di dalam div class="totals" -->
+        @if ($transaction->payment_type === 'cash')
+            <div class="total-row">
+                <span>Tunai:</span>
+                <span>{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
+            </div>
+            <div class="total-row">
+                <span>Kembalian:</span>
+                <span>{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+            </div>
+        @endif
+
         <div class="footer">
             <p>Terima kasih telah berbelanja</p>
             <p>Barang yang sudah dibeli tidak dapat dikembalikan</p>

@@ -787,7 +787,18 @@
     // Payment type handling
     document.getElementById('pos_payment_type').addEventListener('change', function() {
         const refContainer = document.getElementById('pos_reference_number_container');
-        refContainer.style.display = this.value === 'transfer' ? 'block' : 'none';
+        const cashContainer = document.getElementById('pos_cash_amount_container');
+        const changeContainer = document.getElementById('pos_change_container');
+
+        if (this.value === 'transfer') {
+            refContainer.style.display = 'block';
+            cashContainer.style.display = 'none';
+            changeContainer.style.display = 'none';
+        } else {
+            refContainer.style.display = 'none';
+            cashContainer.style.display = 'block';
+            changeContainer.style.display = 'block';
+        }
     });
 
     document.getElementById('pos_search_product').addEventListener('input', async function () {
@@ -844,6 +855,8 @@
     });
 
     // Transaction handlers
+    // Perbaikan pada event listener btn-save
+    // Perbaikan pada event listener btn-save
     document.getElementById('btn-save').addEventListener('click', async function () {
         if (cart.length === 0) {
             showErrorModal('Keranjang masih kosong!');
@@ -853,11 +866,29 @@
         const paymentType = document.getElementById('pos_payment_type').value;
         const referenceNumber = document.getElementById('pos_reference_number').value;
 
+        // Validasi pembayaran cash
+        if (paymentType === 'cash') {
+            const cashAmount = parseFloat(document.getElementById('pos_cash_amount').value) || 0;
+            const finalAmount = parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, ""));
+
+            if (!cashAmount) {
+                showErrorModal('Masukkan jumlah uang tunai!');
+                return;
+            }
+
+            if (cashAmount < finalAmount) {
+                showErrorModal('Uang tunai kurang dari total pembayaran!');
+                return;
+            }
+        }
+
+        // Validasi pembayaran transfer
         if (paymentType === 'transfer' && !referenceNumber) {
             showErrorModal('Nomor referensi harus diisi untuk pembayaran transfer!');
             return;
         }
 
+        // Di bagian kode submit transaksi (btn-save click handler)
         const data = {
             invoice_number: document.getElementById('pos_invoice_number').value,
             store_id: document.getElementById('pos_store_id').value,
@@ -870,7 +901,8 @@
             discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
             final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
             pending_transaction_id: pendingTransactionId,
-            status: 'success'
+            status: 'success',
+            cash_amount: paymentType === 'cash' ? parseFloat(document.getElementById('pos_cash_amount').value) : null,
         };
 
         try {
@@ -1468,4 +1500,33 @@ kbd {
 }
 `;
     document.head.appendChild(shortcutStyles);
+
+
+
+
+
+
+
+
+    // Add this after the payment type event listener
+    document.getElementById('pos_cash_amount').addEventListener('input', function() {
+        if (!this.value) {
+            document.getElementById('pos_change').value = '';
+            return;
+        }
+
+        const cashAmount = parseFloat(this.value) || 0;
+        const finalAmount = parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")) || 0;
+        const change = Math.max(0, cashAmount - finalAmount);
+
+        document.getElementById('pos_change').value = formatCurrency(change);
+    });
+
+    // Update payment type handler
+
+
+    // Update the store transaction function
+    // In the data object before the fetch call, add:
+    data.cash_amount = document.getElementById('pos_payment_type').value === 'cash' ?
+        parseFloat(document.getElementById('pos_cash_amount').value) : null;
 </script>

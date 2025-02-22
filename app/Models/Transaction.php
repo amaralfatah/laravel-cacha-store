@@ -20,6 +20,8 @@ class Transaction extends Model
         'reference_number',
         'status',
         'invoice_date',
+        'cash_amount',
+        'change_amount',
 
         'returned_at',
         'returned_by',

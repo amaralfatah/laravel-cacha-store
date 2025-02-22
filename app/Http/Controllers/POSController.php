@@ -232,7 +232,12 @@ class POSController extends Controller
                 'items.*.quantity' => 'required|numeric|min:0.01',
                 'payment_type' => 'required|in:cash,transfer',
                 'reference_number' => 'required_if:payment_type,transfer',
-                'pending_transaction_id' => 'nullable|exists:transactions,id'
+                'status' => 'required|in:pending,success',
+                'cash_amount' => 'required_if:payment_type,cash|numeric|min:0',
+            ], [
+                'cash_amount.required_if' => 'Jumlah uang tunai harus diisi untuk pembayaran cash',
+                'cash_amount.numeric' => 'Jumlah uang tunai harus berupa angka',
+                'cash_amount.min' => 'Jumlah uang tunai tidak boleh negatif',
             ]);
 
             // Verify store access
@@ -275,8 +280,14 @@ class POSController extends Controller
                 'payment_type' => $request->payment_type,
                 'reference_number' => $request->reference_number,
                 'status' => $request->status,
-                'invoice_date' => now()
+                'invoice_date' => now(),
             ];
+
+// Tambahkan cash_amount dan change_amount jika pembayaran cash
+            if ($request->payment_type === 'cash') {
+                $transactionData['cash_amount'] = $request->cash_amount;
+                $transactionData['change_amount'] = max(0, $request->cash_amount - $transactionData['final_amount']);
+            }
 
             // Create or update transaction
             if ($request->pending_transaction_id) {

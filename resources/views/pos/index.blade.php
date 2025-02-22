@@ -300,6 +300,16 @@
                                 <input type="text" class="form-control amount-field" id="pos_final_amount" readonly>
                             </div>
 
+                            <div id="pos_cash_amount_container">
+                                <label class="form-label" for="pos_cash_amount">Uang Tunai</label>
+                                <input type="number" class="form-control amount-field" id="pos_cash_amount" step="100" min="0">
+                            </div>
+
+                            <div id="pos_change_container">
+                                <label class="form-label" for="pos_change">Kembalian</label>
+                                <input type="text" class="form-control amount-field" id="pos_change" readonly>
+                            </div>
+
                             <div>
                                 <label class="form-label" for="pos_payment_type">Metode Pembayaran</label>
                                 <select class="form-select" id="pos_payment_type">
