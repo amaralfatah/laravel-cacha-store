@@ -32,11 +32,6 @@
         document.getElementById('pos_customer_id').value = cartData.customer_id;
         document.getElementById('pos_payment_type').value = cartData.payment_type;
 
-        if (cartData.payment_type === 'transfer') {
-            document.getElementById('pos_reference_number').value = cartData.reference_number;
-            document.getElementById('pos_reference_number_container').style.display = 'block';
-        }
-
         cart = cartData.items;
         cart.forEach(item => {
             productDetails[item.product_id] = {
@@ -80,23 +75,6 @@
                 e.preventDefault();
                 getProduct(this.value);
                 this.value = '';
-            }
-        });
-
-        // Payment type handling
-        document.getElementById('pos_payment_type').addEventListener('change', function() {
-            const refContainer = document.getElementById('pos_reference_number_container');
-            const cashContainer = document.getElementById('pos_cash_amount_container');
-            const changeContainer = document.getElementById('pos_change_container');
-
-            if (this.value === 'transfer') {
-                refContainer.style.display = 'block';
-                cashContainer.style.display = 'none';
-                changeContainer.style.display = 'none';
-            } else {
-                refContainer.style.display = 'none';
-                cashContainer.style.display = 'block';
-                changeContainer.style.display = 'block';
             }
         });
 
@@ -163,7 +141,6 @@
             }
 
             const paymentType = document.getElementById('pos_payment_type').value;
-            const referenceNumber = document.getElementById('pos_reference_number').value;
 
             // Prepare the transaction data
             const transactionData = {
@@ -172,7 +149,6 @@
                 customer_id: document.getElementById('pos_customer_id').value,
                 items: cart,
                 payment_type: paymentType,
-                reference_number: referenceNumber,
                 total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
                 tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
                 discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
@@ -199,12 +175,6 @@
                 }
 
                 transactionData.cash_amount = cashAmount;
-            }
-
-            // Validasi pembayaran transfer
-            if (paymentType === 'transfer' && !referenceNumber) {
-                showErrorModal('Nomor referensi harus diisi untuk pembayaran transfer!');
-                return;
             }
 
             try {
@@ -246,7 +216,6 @@
                     customer_id: document.getElementById('pos_customer_id').value,
                     items: cart,
                     payment_type: document.getElementById('pos_payment_type').value,
-                    reference_number: document.getElementById('pos_reference_number').value,
                     total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
                     tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
                     discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
@@ -403,8 +372,6 @@
                 document.getElementById('pos_invoice_number').value = '{{ $invoiceNumber }}';
                 document.getElementById('pos_customer_id').value = '1'; // Reset to default customer
                 document.getElementById('pos_payment_type').value = 'cash';
-                document.getElementById('pos_reference_number').value = '';
-                document.getElementById('pos_reference_number_container').style.display = 'none';
 
                 // Update UI
                 updateCartTable();
@@ -464,7 +431,7 @@
     // Initialize Select2
     $(document).ready(function() {
         $('#pos_search_product').select2({
-            placeholder: 'Cari produk berdasarkan nama atau barcode',
+            placeholder: 'Cari nama produk..',
             allowClear: true,
             minimumInputLength: 2,
             ajax: {
