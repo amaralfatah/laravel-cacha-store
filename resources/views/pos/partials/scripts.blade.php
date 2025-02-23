@@ -131,9 +131,6 @@
             }
         });
 
-        // Transaction handlers
-        // Perbaikan pada event listener btn-save
-        // Perbaikan pada event listener btn-save
         document.getElementById('btn-save')?.addEventListener('click', async function() {
             if (cart.length === 0) {
                 showErrorModal('Keranjang masih kosong!');
@@ -155,27 +152,8 @@
                 final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
                 pending_transaction_id: pendingTransactionId,
                 status: 'success',
-
-                cash_amount: paymentType === 'cash' ? parseFloat(document.getElementById('pos_cash_amount').value) : null
+                cash_amount: parseFloat(document.getElementById('pos_cash_amount').value || 0)
             };
-
-            // Validasi pembayaran cash
-            if (paymentType === 'cash') {
-                const cashAmount = parseFloat(document.getElementById('pos_cash_amount').value) || 0;
-                const finalAmount = transactionData.final_amount;
-
-                if (!cashAmount) {
-                    showErrorModal('Masukkan jumlah uang tunai!');
-                    return;
-                }
-
-                if (cashAmount < finalAmount) {
-                    showErrorModal('Uang tunai kurang dari total pembayaran!');
-                    return;
-                }
-
-                transactionData.cash_amount = cashAmount;
-            }
 
             try {
                 const response = await fetch('{{ route("pos.store") }}', {
@@ -222,11 +200,7 @@
                     final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
                     pending_transaction_id: pendingTransactionId,
                     status: 'pending',
-                    // Only include cash_amount if payment type is cash and there's a value
-                    ...(document.getElementById('pos_payment_type').value === 'cash' &&
-                    document.getElementById('pos_cash_amount').value ?
-                        {cash_amount: parseFloat(document.getElementById('pos_cash_amount').value)} :
-                        {})
+                    cash_amount: parseFloat(document.getElementById('pos_cash_amount').value || 0)
                 };
 
                 const response = await fetch('{{ route("pos.store") }}', {
@@ -241,7 +215,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showSuccessModal('Transaksi berhasil disimpan sebagai draft!', () => {
+                    showSuccessModal('Transaksi Pending berhasil disimpan', () => {
                         window.location.href = '{{ route("pos.index") }}';
                     });
                 } else {
@@ -253,9 +227,6 @@
             }
         });
 
-        // Add this code to your existing JavaScript file
-
-        // Show pending transactions modal
         document.getElementById('btn-show-pending').addEventListener('click', async function() {
             try {
                 const response = await fetch('{{ route("transactions.index") }}?' + new URLSearchParams({

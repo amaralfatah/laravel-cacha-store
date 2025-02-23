@@ -218,7 +218,7 @@ class POSController extends Controller
         try {
             DB::beginTransaction();
 
-            $validated = $request->validate([
+            $validationRules = [
                 'invoice_number' => [
                     'required',
                     'string',
@@ -231,14 +231,22 @@ class POSController extends Controller
                 'items.*.unit_id' => 'required|exists:units,id',
                 'items.*.quantity' => 'required|numeric|min:0.01',
                 'payment_type' => 'required|in:cash,transfer',
-                'reference_number' => 'required_if:payment_type,transfer',
                 'status' => 'required|in:pending,success',
-                'cash_amount' => 'required_if:payment_type,cash|numeric|min:0',
-            ], [
-                'cash_amount.required_if' => 'Jumlah uang tunai harus diisi untuk pembayaran cash',
-                'cash_amount.numeric' => 'Jumlah uang tunai harus berupa angka',
-                'cash_amount.min' => 'Jumlah uang tunai tidak boleh negatif',
-            ]);
+            ];
+
+            $validationMessages = [];
+
+            // Add cash amount validation only for cash payments
+            if ($request->payment_type === 'cash') {
+                $validationRules['cash_amount'] = 'required|numeric|min:0';
+                $validationMessages = [
+                    'cash_amount.required' => 'Jumlah uang tunai harus diisi untuk pembayaran cash',
+                    'cash_amount.numeric' => 'Jumlah uang tunai harus berupa angka',
+                    'cash_amount.min' => 'Jumlah uang tunai tidak boleh negatif',
+                ];
+            }
+
+            $validated = $request->validate($validationRules, $validationMessages);
 
             // Verify store access
             if (Auth::user()->role !== 'admin' && Auth::user()->store_id !== (int)$request->store_id) {
@@ -278,12 +286,11 @@ class POSController extends Controller
                 'discount_amount' => $total_discount,
                 'final_amount' => $total_amount + $total_tax - $total_discount,
                 'payment_type' => $request->payment_type,
-                'reference_number' => $request->reference_number,
                 'status' => $request->status,
                 'invoice_date' => now(),
             ];
 
-// Tambahkan cash_amount dan change_amount jika pembayaran cash
+            // Handle cash transaction specifics
             if ($request->payment_type === 'cash') {
                 $transactionData['cash_amount'] = $request->cash_amount;
                 $transactionData['change_amount'] = max(0, $request->cash_amount - $transactionData['final_amount']);

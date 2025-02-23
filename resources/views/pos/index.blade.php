@@ -183,10 +183,6 @@
                             </div>
                         </div>
 
-                        <div id="pos_reference_number_container" class="d-none">
-                            <input type="text" class="form-control" id="pos_reference_number" placeholder="Nomor Referensi">
-                        </div>
-
                         <!-- Actions -->
                         <div class="d-grid gap-2 mt-3">
                             <button class="btn btn-warning" id="btn-pending">Pending</button>
