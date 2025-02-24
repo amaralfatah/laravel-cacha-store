@@ -27,6 +27,7 @@ use App\Http\Controllers\User\StoreBalanceController as UserStoreBalanceControll
 use App\Http\Controllers\StoreBalanceController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\PrinterSettingController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -163,4 +164,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchases/search', [PurchaseOrderController::class, 'searchProducts'])->name('purchases.search');
     Route::resource('purchases', PurchaseOrderController::class);
 
+    Route::get('settings/printer', [PrinterSettingController::class, 'index'])
+        ->name('settings.printer');
+    Route::put('settings/printer', [PrinterSettingController::class, 'update'])
+        ->name('settings.printer.update');
+    Route::get('settings/printer/test', [PrinterSettingController::class, 'testPrint'])
+        ->name('settings.printer.test');
 });

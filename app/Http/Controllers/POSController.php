@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrinterSetting;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Inventory;
@@ -391,22 +392,32 @@ class POSController extends Controller
 
     public function printInvoice(Transaction $transaction)
     {
-        // Load relations yang diperlukan
-        $transaction->load([
-            'customer',
-            'user',
-            'items.product',
-            'items.unit'
-        ]);
+        // Cek akses
+        if (auth()->user()->role !== 'admin' &&
+            auth()->user()->store_id !== $transaction->store_id) {
+            abort(403);
+        }
 
-        // Format data untuk invoice
+        // Ambil pengaturan printer dari toko transaksi
+        $setting = PrinterSetting::where('store_id', $transaction->store_id)->first();
+
+        // Jika setting belum ada, buat default setting
+        if (!$setting) {
+            $setting = new PrinterSetting([
+                'store_id' => $transaction->store_id,
+                'paper_size' => '80mm', // ukuran default
+                'auto_print' => true
+            ]);
+        }
+
         $data = [
-            'transaction' => $transaction,
+            'transaction' => $transaction->load(['customer', 'user', 'items.product', 'items.unit']),
             'company' => [
-                'name' => 'Toko Cacha',
-                'address' => 'Emplak, Kalipucang, Pangandaran',
-                'phone' => 'Telp: 081234567890'
-            ]
+                'name' => $transaction->store->name,
+                'address' => $transaction->store->address,
+                'phone' => $transaction->store->phone
+            ],
+            'setting' => $setting
         ];
 
         return view('pos.invoice', $data);

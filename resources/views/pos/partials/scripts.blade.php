@@ -169,7 +169,10 @@
 
                 if (result.success) {
                     showSuccessModal('Transaksi berhasil disimpan!', () => {
-                        window.open(`{{ url('pos/invoice') }}/${result.transaction_id}`, '_blank');
+                        window.open(
+                            `{{ url('pos/invoice') }}/${result.transaction_id}`,
+                            'InvoiceWindow',
+                            'width=400,height=600');
                         window.location.reload();
                     });
                 } else {
