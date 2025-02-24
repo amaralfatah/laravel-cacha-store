@@ -67,14 +67,17 @@
                 <p class="mb-0 text-white-50">&copy; 2025 Cacha Snack. All rights reserved.</p>
             </div>
             <div class="col-md-6">
-                <div class="d-flex justify-content-center justify-content-md-end gap-3">
-                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="Visa" height="25">
-                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="Mastercard" height="25">
-                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="BCA" height="25">
-                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="Mandiri" height="25">
-                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="OVO" height="25">
-                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="GoPay" height="25">
-                    <a href="{{route('login')}}"><img src="{{asset('images/logo-snack-circle-light.png')}}" alt="DANA" height="25"></a>
+                {{--                <div class="d-flex justify-content-center justify-content-md-end gap-3">--}}
+                {{--                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="Visa" height="25">--}}
+                {{--                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="Mastercard" height="25">--}}
+                {{--                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="BCA" height="25">--}}
+                {{--                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="Mandiri" height="25">--}}
+                {{--                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="OVO" height="25">--}}
+                {{--                    <img src="{{asset('images/logo-snack-circle-light.png')}}" alt="GoPay" height="25">--}}
+                {{--                    <a href="{{route('login')}}"><img src="{{asset('images/logo-snack-circle-light.png')}}" alt="DANA" height="25"></a>--}}
+                {{--                </div>--}}
+                <div class="d-flex justify-content-center justify-content-md-end">
+                    <a href="{{route('login')}}" class="text-decoration-none text-reset">Login for admin</a>
                 </div>
             </div>
         </div>
