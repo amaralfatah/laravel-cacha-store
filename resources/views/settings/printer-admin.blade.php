@@ -1,70 +1,63 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Pengaturan Printer Semua Toko</h5>
-                    </div>
 
-                    <div class="card-body">
-                        @if (session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        @endif
+    <x-section-header title="Pengaturan Printer Semua Toko" />
 
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                <tr>
-                                    <th>Kode Toko</th>
-                                    <th>Nama Toko</th>
-                                    <th>Ukuran Kertas</th>
-                                    <th>Nama Printer</th>
-                                    <th>Auto Print</th>
-                                    <th>Aksi</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach($settings as $setting)
-                                    <tr>
-                                        <td>{{ $setting->store->code }}</td>
-                                        <td>{{ $setting->store->name }}</td>
-                                        <td>{{ $setting->paper_size }}</td>
-                                        <td>{{ $setting->printer_name }}</td>
-                                        <td>
+    <div class="card">
+
+        <div class="card-body">
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Kode Toko</th>
+                        <th>Nama Toko</th>
+                        <th>Ukuran Kertas</th>
+                        <th>Nama Printer</th>
+                        <th>Auto Print</th>
+                        <th>Aksi</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($settings as $setting)
+                        <tr>
+                            <td>{{ $setting->store->code }}</td>
+                            <td>{{ $setting->store->name }}</td>
+                            <td>{{ $setting->paper_size }}</td>
+                            <td>{{ $setting->printer_name }}</td>
+                            <td>
                                         <span class="badge {{ $setting->auto_print ? 'bg-success' : 'bg-secondary' }}">
                                             {{ $setting->auto_print ? 'Ya' : 'Tidak' }}
                                         </span>
-                                        </td>
-                                        <td>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-primary"
-                                                    onclick="printTest({{ $setting->store_id }})">
-                                                <i class="bi bi-printer"></i> Test Print
-                                            </button>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editModal{{ $setting->store_id }}">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                            </td>
+                            <td>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        onclick="printTest({{ $setting->store_id }})">
+                                    <i class="bi bi-printer"></i> Test Print
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editModal{{ $setting->store_id }}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
     <!-- Modal Edit untuk setiap toko -->
     @foreach($settings as $setting)
         <div class="modal fade" id="editModal{{ $setting->store_id }}" tabindex="-1">
