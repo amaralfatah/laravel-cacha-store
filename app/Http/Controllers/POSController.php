@@ -405,7 +405,7 @@ class POSController extends Controller
         if (!$setting) {
             $setting = new PrinterSetting([
                 'store_id' => $transaction->store_id,
-                'paper_size' => '80mm', // ukuran default
+                'paper_size' => '78mm', // ukuran default
                 'auto_print' => true
             ]);
         }
