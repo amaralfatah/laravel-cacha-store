@@ -31,26 +31,26 @@
                             <small class="d-block">Printer Thermal Kecil</small>
                         </label>
 
-                        <input type="radio" class="btn-check" name="paper_size" id="size80" value="80mm"
-                            {{ old('paper_size', $setting->paper_size ?? '') == '80mm' ? 'checked' : '' }}>
-                        <label class="btn btn-outline-primary" for="size80">
-                            80mm
+                        <input type="radio" class="btn-check" name="paper_size" id="size78" value="78mm"
+                            {{ old('paper_size', $setting->paper_size ?? '') == '78mm' ? 'checked' : '' }}>
+                        <label class="btn btn-outline-primary" for="size78">
+                            78mm
                             <small class="d-block">Printer Thermal Standard</small>
                         </label>
 
                         <input type="radio" class="btn-check" name="paper_size" id="custom" value="custom"
-                            {{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '80mm']) ? 'checked' : '' }}>
+                            {{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '78mm']) ? 'checked' : '' }}>
                         <label class="btn btn-outline-primary" for="custom">
                             Kustom
                             <small class="d-block">Ukuran Lainnya</small>
                         </label>
                     </div>
 
-                    <div id="customSizeInput" class="mt-2" style="{{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '80mm']) ? '' : 'display: none;' }}">
+                    <div id="customSizeInput" class="mt-2" style="{{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '78mm']) ? '' : 'display: none;' }}">
                         <div class="input-group">
                             <input type="text" class="form-control" name="custom_paper_size" id="customPaperSize"
-                                   value="{{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '80mm']) ? old('paper_size', $setting->paper_size ?? '') : '' }}"
-                                   placeholder="Contoh: 76mm">
+                                   value="{{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '78mm']) ? old('paper_size', $setting->paper_size ?? '') : '' }}"
+                                   placeholder="Contoh: 80mm">
                             <span class="input-group-text">mm</span>
                         </div>
                         <small class="text-muted">Masukkan ukuran lebar kertas dalam mm</small>
