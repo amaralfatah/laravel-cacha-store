@@ -7,7 +7,7 @@
     <style>
         @page {
             margin: 0;
-            size: {{ $setting->paper_size ?? '80mm' }} auto;
+            size: {{ $setting->paper_size ?? '78mm' }} auto;
         }
 
         * {
@@ -21,12 +21,12 @@
             line-height: 1.4;
             margin: 0;
             padding: 0;
-            font-size: {{ $setting->paper_size == '57mm' ? '10px' : '12px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '12px' }};
         }
 
         .print-box {
             width: 100%;
-            max-width: {{ $setting->paper_size ?? '80mm' }};
+            max-width: {{ $setting->paper_size ?? '78mm' }};
             margin: 0 auto;
             padding: 10px 5px;
         }

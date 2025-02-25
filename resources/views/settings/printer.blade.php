@@ -37,7 +37,25 @@
                             80mm
                             <small class="d-block">Printer Thermal Standard</small>
                         </label>
+
+                        <input type="radio" class="btn-check" name="paper_size" id="custom" value="custom"
+                            {{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '80mm']) ? 'checked' : '' }}>
+                        <label class="btn btn-outline-primary" for="custom">
+                            Kustom
+                            <small class="d-block">Ukuran Lainnya</small>
+                        </label>
                     </div>
+
+                    <div id="customSizeInput" class="mt-2" style="{{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '80mm']) ? '' : 'display: none;' }}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="custom_paper_size" id="customPaperSize"
+                                   value="{{ !in_array(old('paper_size', $setting->paper_size ?? ''), ['57mm', '80mm']) ? old('paper_size', $setting->paper_size ?? '') : '' }}"
+                                   placeholder="Contoh: 76mm">
+                            <span class="input-group-text">mm</span>
+                        </div>
+                        <small class="text-muted">Masukkan ukuran lebar kertas dalam mm</small>
+                    </div>
+
                     @error('paper_size')
                     <div class="text-danger mt-1">{{ $message }}</div>
                     @enderror
@@ -85,6 +103,50 @@
                 }
                 const printWindow = window.open(url, '_blank', 'width=400,height=600');
             }
+
+            // Script untuk menangani input ukuran kustom
+            document.addEventListener('DOMContentLoaded', function() {
+                const radioButtons = document.querySelectorAll('input[name="paper_size"]');
+                const customSizeInput = document.getElementById('customSizeInput');
+                const customPaperSizeInput = document.getElementById('customPaperSize');
+
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (this.value === 'custom') {
+                            customSizeInput.style.display = 'block';
+                        } else {
+                            customSizeInput.style.display = 'none';
+                        }
+                    });
+                });
+
+                // Form submission handler
+                document.querySelector('form').addEventListener('submit', function(e) {
+                    if (document.getElementById('custom').checked) {
+                        e.preventDefault();
+                        const customValue = customPaperSizeInput.value.trim();
+
+                        // Validasi input kustom
+                        if (!customValue) {
+                            alert('Silakan masukkan ukuran kertas');
+                            return;
+                        }
+
+                        // Pastikan format benar (angka + mm)
+                        const numericValue = parseFloat(customValue.replace('mm', ''));
+                        if (isNaN(numericValue)) {
+                            alert('Format ukuran kertas tidak valid');
+                            return;
+                        }
+
+                        // Set nilai radio ke input kustom dengan format yang benar
+                        document.getElementById('custom').value = numericValue + 'mm';
+
+                        // Lanjutkan submit form
+                        this.submit();
+                    }
+                });
+            });
         </script>
     @endpush
 @endsection

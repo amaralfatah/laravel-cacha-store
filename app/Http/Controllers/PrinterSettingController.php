@@ -26,7 +26,7 @@ class PrinterSettingController extends Controller
     {
         $request->validate([
             'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
-            'paper_size' => 'required|in:57mm,80mm',
+            'paper_size' => 'required|string|max:10', // Ubah validasi untuk mendukung string fleksibel
             'printer_name' => 'nullable|string|max:255',
             'auto_print' => 'boolean'
         ]);
@@ -58,7 +58,7 @@ class PrinterSettingController extends Controller
         if (!$setting) {
             $setting = new PrinterSetting([
                 'store_id' => $store_id,
-                'paper_size' => '80mm',
+                'paper_size' => '78mm', // Ubah nilai default ke 78mm
                 'auto_print' => true
             ]);
         }

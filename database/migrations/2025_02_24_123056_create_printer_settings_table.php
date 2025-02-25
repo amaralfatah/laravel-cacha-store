@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('printer_settings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('store_id');
-            $table->enum('paper_size', ['57mm', '80mm'])->default('80mm');
+            $table->string('paper_size')->default('78mm');
             $table->string('printer_name')->nullable();
             $table->boolean('auto_print')->default(true);
             $table->timestamps();

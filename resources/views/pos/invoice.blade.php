@@ -10,7 +10,7 @@
         /* Page Settings */
         @page {
             margin: 0;
-            size: {{ $setting->paper_size ?? '80mm' }} auto;
+            size: {{ $setting->paper_size ?? '78mm' }} auto;
         }
 
         /* Reset & Base Styles */
@@ -25,7 +25,8 @@
             line-height: 1.4;
             margin: 0;
             padding: 0;
-            /* Font size akan di-override oleh conditional styles */
+            /* Font size akan diatur secara dinamis berdasarkan ukuran kertas */
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '12px' }};
         }
 
         /* Container Settings */
@@ -33,7 +34,7 @@
             width: 100%;
             margin: 0 auto;
             padding: 5px;
-            /* Max width akan di-override oleh conditional styles */
+            max-width: {{ $setting->paper_size ?? '78mm' }};
         }
 
         /* Header Section */
@@ -46,7 +47,7 @@
         .company-name {
             font-weight: bold;
             margin-bottom: 3px;
-            /* Font size akan di-override oleh conditional styles */
+            font-size: {{ (int) $setting->paper_size < 70 ? '12px' : '14px' }};
         }
 
         /* Info Section */
@@ -60,7 +61,7 @@
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
             margin-bottom: 2px;
         }
 
@@ -69,12 +70,12 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
-            /* Font size akan di-override oleh conditional styles */
+            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '11px' }};
         }
 
         th, td {
             text-align: left;
-            padding: 3px 2px;
+            padding: {{ (int) $setting->paper_size < 70 ? '2px 1px' : '3px 2px' }};
         }
 
         th {
@@ -98,12 +99,12 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 2px;
-            font-size: 11px;
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
         }
 
         .total-row.grand-total {
             font-weight: bold;
-            font-size: 12px;
+            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
             margin: 5px 0;
         }
 
@@ -136,64 +137,7 @@
             }
         }
 
-        /* Conditional Styles Based on Paper Size */
-        @if($setting->paper_size == '57mm')
-/* 57mm Printer Settings */
-        .invoice-box {
-            max-width: 57mm;
-        }
-
-        body {
-            font-size: 10px;
-        }
-
-        .company-name {
-            font-size: 12px;
-        }
-
-        table {
-            font-size: 9px;
-        }
-
-        th, td {
-            padding: 2px 1px;
-        }
-
-        .info-row {
-            font-size: 10px;
-        }
-
-        .total-row {
-            font-size: 10px;
-        }
-
-        .total-row.grand-total {
-            font-size: 11px;
-        }
-        @else
-/* 80mm Printer Settings (Default) */
-        .invoice-box {
-            max-width: 80mm;
-        }
-
-        body {
-            font-size: 12px;
-        }
-
-        .company-name {
-            font-size: 14px;
-        }
-
-        table {
-            font-size: 11px;
-        }
-
-        th, td {
-            padding: 3px 2px;
-        }
-        @endif
-
-/* Helper Classes */
+        /* Helper Classes */
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .text-bold { font-weight: bold; }
