@@ -29,7 +29,7 @@
 
         body {
             /* Font stack ESC/POS style: VT323 (priority), lalu fallback ke font monospace standar */
-            font-family:  'Courier New', monospace;
+            font-family: monospace;
             line-height: 1.2;
             margin: 0;
             padding: 0;
