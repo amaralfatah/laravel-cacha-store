@@ -22,103 +22,116 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            line-height: 1.4;
+            line-height: 1.3;
             margin: 0;
             padding: 0;
-            /* Font size akan diatur secara dinamis berdasarkan ukuran kertas */
-            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '12px' }};
+            /* Font size lebih kecil untuk memastikan konten muat */
+            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+            width: 100%;
+            max-width: {{ (int) $setting->paper_size - 2 }}mm;
         }
 
-        /* Container Settings */
+        /* Container Settings - pastikan lebih kecil dari ukuran kertas */
         .invoice-box {
             width: 100%;
+            max-width: {{ (int) $setting->paper_size - 5 }}mm;
             margin: 0 auto;
-            padding: 5px;
-            max-width: {{ $setting->paper_size ?? '78mm' }};
+            padding: 3px;
+            overflow: hidden;
         }
 
         /* Header Section */
         .header {
             text-align: center;
-            margin-bottom: 10px;
-            padding: 0 5px;
+            margin-bottom: 8px;
+            padding: 0 2px;
         }
 
         .company-name {
             font-weight: bold;
-            margin-bottom: 3px;
-            font-size: {{ (int) $setting->paper_size < 70 ? '12px' : '14px' }};
+            margin-bottom: 2px;
+            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
         }
 
         /* Info Section */
         .info {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 5px 0;
+            padding: 4px 0;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
             margin-bottom: 2px;
         }
 
-        /* Table Styles */
+        /* Table Styles - membuat table lebih kompak */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
-            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '11px' }};
+            margin-bottom: 8px;
+            table-layout: fixed;
+            font-size: {{ (int) $setting->paper_size < 70 ? '8px' : '9px' }};
         }
 
         th, td {
             text-align: left;
-            padding: {{ (int) $setting->paper_size < 70 ? '2px 1px' : '3px 2px' }};
+            padding: {{ (int) $setting->paper_size < 70 ? '1px 0' : '2px 1px' }};
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Untuk item nama produk, izinkan wrap text */
+        td:first-child {
+            white-space: normal;
+            word-break: break-word;
         }
 
         th {
             border-bottom: 1px dashed #000;
         }
 
-        /* Column Widths */
-        th:nth-child(1), td:nth-child(1) { width: 40%; } /* Item */
-        th:nth-child(2), td:nth-child(2) { width: 15%; } /* Qty */
+        /* Column Widths - sesuaikan untuk kertas 78mm */
+        th:nth-child(1), td:nth-child(1) { width: 38%; } /* Item */
+        th:nth-child(2), td:nth-child(2) { width: 12%; } /* Qty */
         th:nth-child(3), td:nth-child(3) { width: 20%; } /* Harga */
-        th:nth-child(4), td:nth-child(4) { width: 25%; } /* Total */
+        th:nth-child(4), td:nth-child(4) { width: 30%; } /* Total */
 
         /* Totals Section */
         .totals {
-            margin-top: 10px;
+            margin-top: 8px;
             border-top: 1px dashed #000;
-            padding-top: 5px;
+            padding-top: 4px;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 2px;
-            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
         }
 
         .total-row.grand-total {
             font-weight: bold;
-            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
-            margin: 5px 0;
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
+            margin: 4px 0;
         }
 
         /* Footer Section */
         .footer {
             text-align: center;
-            margin-top: 10px;
-            padding-top: 5px;
+            margin-top: 8px;
+            padding-top: 4px;
             border-top: 1px dashed #000;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .footer p {
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         /* Print Specific Styles */
@@ -126,10 +139,12 @@
             body {
                 margin: 0;
                 padding: 0;
+                width: {{ (int) $setting->paper_size - 2 }}mm;
             }
 
             .invoice-box {
                 border: none;
+                width: 100%;
             }
 
             .no-print {
@@ -141,8 +156,8 @@
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .text-bold { font-weight: bold; }
-        .mt-1 { margin-top: 5px; }
-        .mb-1 { margin-bottom: 5px; }
+        .mt-1 { margin-top: 4px; }
+        .mb-1 { margin-bottom: 4px; }
 
         /* Print Button Styles */
         .no-print {
@@ -198,10 +213,10 @@
     <table>
         <thead>
         <tr>
-            <th style="width: 40%">Item</th>
-            <th style="width: 15%">Qty</th>
-            <th style="width: 20%">Harga</th>
-            <th style="width: 25%">Total</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Harga</th>
+            <th>Total</th>
         </tr>
         </thead>
         <tbody>
@@ -213,7 +228,7 @@
                         <br><small>Disc: {{ $item->discount }}</small>
                     @endif
                 </td>
-                <td>{{ number_format($item->quantity, 0) }} {{ $item->unit->name }}</td>
+                <td>{{ number_format($item->quantity, 0) }}</td>
                 <td>{{ number_format($item->unit_price, 0, ',', '.') }}</td>
                 <td>{{ number_format($item->subtotal, 0, ',', '.') }}</td>
             </tr>
