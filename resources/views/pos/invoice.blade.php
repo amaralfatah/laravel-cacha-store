@@ -6,6 +6,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Import font khusus yang mirip dengan ESC/POS printer -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
     <style>
         /* Page Settings */
         @page {
@@ -23,16 +28,21 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.3;
+            /* Font stack ESC/POS style: VT323 (priority), lalu fallback ke font monospace standar */
+            font-family:  'Courier New', monospace;
+            line-height: 1.2;
             margin: 0;
             padding: 0;
-            /* Font size lebih kecil untuk memastikan konten muat */
-            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+            /* Font size sesuaikan dengan ESC/POS */
+            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
             /* Kurangi lebar body untuk memberikan ruang margin yang cukup */
             width: 100%;
             max-width: {{ (int) $setting->paper_size - 8 }}mm;
-            margin: 0 auto; /* Tambahkan auto margin untuk center content */
+            margin: 0 auto;
+            /* Karakter ESC/POS */
+            letter-spacing: 0;
+            -webkit-font-smoothing: none;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Container Settings - pastikan lebih kecil dari ukuran kertas */
@@ -48,28 +58,34 @@
         /* Header Section */
         .header {
             text-align: center;
-            margin-bottom: 8px;
-            padding: 0 1px; /* Kurangi padding horizontal */
+            margin-bottom: 10px;
+            padding: 0 1px;
         }
 
         .company-name {
             font-weight: bold;
-            margin-bottom: 2px;
-            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
+            margin-bottom: 4px;
+            font-size: {{ (int) $setting->paper_size < 70 ? '14px' : '16px' }};
+        }
+
+        /* Garis horizontal style ESC/POS */
+        .esc-pos-divider {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 5px 0;
+            height: 1px;
         }
 
         /* Info Section */
         .info {
             margin-bottom: 8px;
-            border-top: 1px dashed #000;
-            border-bottom: 1px dashed #000;
-            padding: 4px 0;
+            padding-bottom: 4px;
         }
 
         .info-row {
             display: grid;
             grid-template-columns: 40% 55%; /* Left 40%, right 55%, dengan 5% gap */
-            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
             margin-bottom: 2px;
         }
 
@@ -80,18 +96,17 @@
             white-space: nowrap;
         }
 
-        /* Table Styles - membuat table lebih kompak */
+        /* Table Styles - membuat table lebih kompak dan style ESC/POS */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 8px;
             table-layout: fixed;
-            font-size: {{ (int) $setting->paper_size < 70 ? '8px' : '9px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
         }
 
         th, td {
-            text-align: left;
-            padding: {{ (int) $setting->paper_size < 70 ? '1px 0' : '1px 0' }}; /* Kurangi padding */
+            padding: {{ (int) $setting->paper_size < 70 ? '1px 0' : '1px 0' }};
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -101,31 +116,33 @@
         td:first-child {
             white-space: normal;
             word-break: break-word;
+            text-align: left;
         }
 
         th {
-            border-bottom: 1px dashed #000;
+            text-transform: uppercase;
+            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+            font-weight: normal;
         }
 
         /* Column Widths - sesuaikan untuk kertas 78mm */
         th:nth-child(1), td:nth-child(1) { width: 36%; } /* Item - kurangi sedikit */
-        th:nth-child(2), td:nth-child(2) { width: 12%; } /* Qty */
-        th:nth-child(3), td:nth-child(3) { width: 19%; } /* Harga - kurangi sedikit */
-        th:nth-child(4), td:nth-child(4) { width: 28%; } /* Total - kurangi sedikit */
+        th:nth-child(2), td:nth-child(2) { width: 12%; text-align: center; } /* Qty - center aligned */
+        th:nth-child(3), td:nth-child(3) { width: 19%; text-align: right; } /* Harga - right aligned */
+        th:nth-child(4), td:nth-child(4) { width: 28%; text-align: right; } /* Total - right aligned */
         /* Total % sekarang adalah 95%, memberi ruang tambahan 5% */
 
         /* Totals Section */
         .totals {
             margin-top: 8px;
-            border-top: 1px dashed #000;
             padding-top: 4px;
         }
 
         .total-row {
             display: grid;
-            grid-template-columns: 40% 55%; /* Left 40%, right 55%, dengan 5% gap */
+            grid-template-columns: 40% 55%;
             margin-bottom: 2px;
-            font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '11px' : '12px' }};
         }
 
         .total-row span:last-child {
@@ -137,7 +154,7 @@
 
         .total-row.grand-total {
             font-weight: bold;
-            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
+            font-size: {{ (int) $setting->paper_size < 70 ? '12px' : '14px' }};
             margin: 4px 0;
         }
 
@@ -149,10 +166,9 @@
         /* Footer Section */
         .footer {
             text-align: center;
-            margin-top: 8px;
-            padding-top: 4px;
-            border-top: 1px dashed #000;
-            font-size: 9px;
+            margin-top: 10px;
+            padding-top: 6px;
+            font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
         }
 
         .footer p {
@@ -197,6 +213,7 @@
         .no-print {
             text-align: center;
             margin-top: 20px;
+            font-family: Arial, sans-serif;
         }
 
         .no-print button {
@@ -217,12 +234,16 @@
 
 <body>
 <div class="invoice-box">
+    <!-- Header Section -->
     <div class="header">
         <div class="company-name">{{ $company['name'] }}</div>
         <div>{{ $company['address'] }}</div>
         <div>{{ $company['phone'] }}</div>
     </div>
 
+    <hr class="esc-pos-divider">
+
+    <!-- Info Section -->
     <div class="info">
         <div class="info-row">
             <span>No. Invoice:</span>
@@ -244,6 +265,9 @@
         @endif
     </div>
 
+    <hr class="esc-pos-divider">
+
+    <!-- Items Table -->
     <table>
         <thead>
         <tr>
@@ -270,6 +294,9 @@
         </tbody>
     </table>
 
+    <hr class="esc-pos-divider">
+
+    <!-- Totals Section -->
     <div class="totals">
         <div class="total-row">
             <span>Subtotal:</span>
@@ -288,7 +315,7 @@
             </div>
         @endif
         <div class="total-row grand-total">
-            <span>Total:</span>
+            <span>TOTAL:</span>
             <span>{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
         </div>
 
@@ -316,6 +343,9 @@
         @endif
     </div>
 
+    <hr class="esc-pos-divider">
+
+    <!-- Footer Section -->
     <div class="footer">
         <p>Terima kasih telah berbelanja</p>
         <p>Barang yang sudah dibeli tidak dapat dikembalikan</p>
