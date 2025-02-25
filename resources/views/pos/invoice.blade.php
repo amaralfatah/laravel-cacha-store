@@ -41,7 +41,7 @@
             /* Kurangi lebar untuk mencegah pemotongan */
             max-width: {{ (int) $setting->paper_size - 10 }}mm;
             margin: 0 auto;
-            padding: 2px; /* Kurangi padding dari 3px ke 2px */
+            padding: 2px 4px 2px 2px; /* Tambahkan padding kanan lebih besar: top right bottom left */
             overflow: hidden;
         }
 
@@ -67,10 +67,17 @@
         }
 
         .info-row {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 40% 55%; /* Left 40%, right 55%, dengan 5% gap */
             font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
             margin-bottom: 2px;
+        }
+
+        .info-row span:last-child {
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         /* Table Styles - membuat table lebih kompak */
@@ -115,16 +122,28 @@
         }
 
         .total-row {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 40% 55%; /* Left 40%, right 55%, dengan 5% gap */
             margin-bottom: 2px;
             font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+        }
+
+        .total-row span:last-child {
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .total-row.grand-total {
             font-weight: bold;
             font-size: {{ (int) $setting->paper_size < 70 ? '10px' : '11px' }};
             margin: 4px 0;
+        }
+
+        .total-row.grand-total span:last-child {
+            /* Pastikan total yang penting tidak terpotong */
+            padding-right: 1mm;
         }
 
         /* Footer Section */
@@ -146,14 +165,20 @@
                 margin: 0 auto;
                 padding: 0;
                 /* Kurangi lebar untuk memberikan ruang margin tambahan */
-                width: {{ (int) $setting->paper_size - 8 }}mm;
+                width: {{ (int) $setting->paper_size - 10 }}mm;
             }
 
             .invoice-box {
                 border: none;
                 width: 100%;
-                /* Pastikan ada ruang di kanan dan kiri */
-                padding: 0 1px;
+                /* Tambahkan padding kanan lebih besar untuk mencegah pemotongan */
+                padding: 0 5px 0 1px; /* top right bottom left */
+            }
+
+            /* Pastikan info dan total row tidak terpotong saat print */
+            .info-row span:last-child,
+            .total-row span:last-child {
+                padding-right: 2mm;
             }
 
             .no-print {
