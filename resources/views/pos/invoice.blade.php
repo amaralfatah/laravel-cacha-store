@@ -9,7 +9,9 @@
     <style>
         /* Page Settings */
         @page {
-            margin: 0;
+            /* Tambahkan margin untuk mencegah pemotongan */
+            margin: 0mm 1mm; /* 0mm atas/bawah, 1mm kiri/kanan */
+            /* Explicitly set both width and height */
             size: {{ $setting->paper_size ?? '78mm' }} auto;
         }
 
@@ -27,16 +29,19 @@
             padding: 0;
             /* Font size lebih kecil untuk memastikan konten muat */
             font-size: {{ (int) $setting->paper_size < 70 ? '9px' : '10px' }};
+            /* Kurangi lebar body untuk memberikan ruang margin yang cukup */
             width: 100%;
-            max-width: {{ (int) $setting->paper_size - 2 }}mm;
+            max-width: {{ (int) $setting->paper_size - 8 }}mm;
+            margin: 0 auto; /* Tambahkan auto margin untuk center content */
         }
 
         /* Container Settings - pastikan lebih kecil dari ukuran kertas */
         .invoice-box {
             width: 100%;
-            max-width: {{ (int) $setting->paper_size - 5 }}mm;
+            /* Kurangi lebar untuk mencegah pemotongan */
+            max-width: {{ (int) $setting->paper_size - 10 }}mm;
             margin: 0 auto;
-            padding: 3px;
+            padding: 2px; /* Kurangi padding dari 3px ke 2px */
             overflow: hidden;
         }
 
@@ -44,7 +49,7 @@
         .header {
             text-align: center;
             margin-bottom: 8px;
-            padding: 0 2px;
+            padding: 0 1px; /* Kurangi padding horizontal */
         }
 
         .company-name {
@@ -79,7 +84,7 @@
 
         th, td {
             text-align: left;
-            padding: {{ (int) $setting->paper_size < 70 ? '1px 0' : '2px 1px' }};
+            padding: {{ (int) $setting->paper_size < 70 ? '1px 0' : '1px 0' }}; /* Kurangi padding */
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -96,10 +101,11 @@
         }
 
         /* Column Widths - sesuaikan untuk kertas 78mm */
-        th:nth-child(1), td:nth-child(1) { width: 38%; } /* Item */
+        th:nth-child(1), td:nth-child(1) { width: 36%; } /* Item - kurangi sedikit */
         th:nth-child(2), td:nth-child(2) { width: 12%; } /* Qty */
-        th:nth-child(3), td:nth-child(3) { width: 20%; } /* Harga */
-        th:nth-child(4), td:nth-child(4) { width: 30%; } /* Total */
+        th:nth-child(3), td:nth-child(3) { width: 19%; } /* Harga - kurangi sedikit */
+        th:nth-child(4), td:nth-child(4) { width: 28%; } /* Total - kurangi sedikit */
+        /* Total % sekarang adalah 95%, memberi ruang tambahan 5% */
 
         /* Totals Section */
         .totals {
@@ -137,14 +143,17 @@
         /* Print Specific Styles */
         @media print {
             body {
-                margin: 0;
+                margin: 0 auto;
                 padding: 0;
-                width: {{ (int) $setting->paper_size - 2 }}mm;
+                /* Kurangi lebar untuk memberikan ruang margin tambahan */
+                width: {{ (int) $setting->paper_size - 8 }}mm;
             }
 
             .invoice-box {
                 border: none;
                 width: 100%;
+                /* Pastikan ada ruang di kanan dan kiri */
+                padding: 0 1px;
             }
 
             .no-print {
