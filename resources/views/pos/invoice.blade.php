@@ -22,7 +22,7 @@
             font-size: {{ request('size') == '57' ? '11px' : '13px' }};
             width: {{ request('size') == '57' ? '58mm' : '80mm' }};
             color: #000;
-            padding: 0 2mm;
+            padding-right: 4px;
         }
 
         .invoice-box {
