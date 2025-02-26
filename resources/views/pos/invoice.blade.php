@@ -27,11 +27,11 @@
             background-color: white;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            padding-right: 10mm;
+            padding-right: 3mm;
         }
 
         .invoice-box {
-            padding: 5px;
+            padding: 3px;
             width: 100%;
             max-width: 100%;
         }
