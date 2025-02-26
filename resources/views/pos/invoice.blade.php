@@ -22,7 +22,7 @@
         body {
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
-            font-size: {{ request('size') == '57' ? '11px' : '13px' }};
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
             width: {{ request('size') == '57' ? '57mm' : '78mm' }};
             color: #000;
             padding-right: 5mm;
@@ -68,7 +68,7 @@
         }
 
         th, td {
-            font-size: {{ request('size') == '57' ? '11px' : '13px' }};
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
             padding: 3px 2px;
         }
 
@@ -205,9 +205,9 @@
         @foreach ($transaction->items as $item)
             <tr>
                 <td class="col-item">{{ $item->product->name }}</td>
-                <td class="col-qty">{{ $item->quantity }}</td>
-                <td class="col-price">{{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                <td class="col-total">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                <td class="col-qty">{{ number_format($item->quantity) }}</td>
+                <td class="col-price">{{ number_format($item->unit_price) }}</td>
+                <td class="col-total">{{ number_format($item->subtotal) }}</td>
             </tr>
         @endforeach
         </tbody>
