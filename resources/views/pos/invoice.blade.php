@@ -139,6 +139,11 @@
 
     <div class="grand-total">Rp {{ number_format($transaction->final_amount, 0, ',', '.') }}</div>
 
+    @if($transaction->payment_type === 'cash')
+        <div class="info-row"><div>Tunai:</div><div>Rp {{ number_format($transaction->cash_amount, 0, ',', '.') }}</div></div>
+        <div class="info-row"><div>Kembali:</div><div>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</div></div>
+    @endif
+
     <div class="footer">TERIMA KASIH TELAH BERBELANJA</div>
 </div>
 
