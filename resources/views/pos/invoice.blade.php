@@ -20,13 +20,11 @@
         }
 
         body {
-            font-family: 'Courier New', sans-serif;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
             font-size: {{ request('size') == '57' ? '11px' : '13px' }};
             width: {{ request('size') == '57' ? '57mm' : '78mm' }};
             color: #000;
-            background-color: white;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
             padding-right: 5mm;
         }
 
