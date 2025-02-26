@@ -1,4 +1,3 @@
-<!-- resources/views/pos/invoice.blade.php -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Optimized for Thermal Printing */
         @page {
             margin: 0;
-            size: {{ request('size') == '57' ? '57mm' : '78mm' }} auto;
+            size: {{ request('size') == '57' ? '58mm' : '80mm' }} auto;
         }
 
         * {
@@ -21,145 +19,83 @@
 
         body {
             font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
-            width: {{ request('size') == '57' ? '57mm' : '78mm' }};
+            font-size: {{ request('size') == '57' ? '11px' : '13px' }};
+            width: {{ request('size') == '57' ? '58mm' : '80mm' }};
             color: #000;
-            padding-right: 5mm;
+            padding: 0 2mm;
         }
 
         .invoice-box {
-            padding: 5px;
+            padding: 4px;
             width: 100%;
-            max-width: 100%;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
         .company-name {
-            font-weight: bold;
-            font-size: {{ request('size') == '57' ? '14px' : '16px' }};
+            font-size: {{ request('size') == '57' ? '13px' : '15px' }};
             text-transform: uppercase;
         }
 
         .company-details {
-            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
         }
 
         .divider {
             border-top: 1px dashed #000;
-            margin: 5px 0;
+            margin: 3px 0;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
-            margin-bottom: 2px;
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto;
         }
 
         th, td {
             font-size: {{ request('size') == '57' ? '10px' : '12px' }};
-            padding: 3px 2px;
+            padding: 2px;
         }
 
         th {
             border-bottom: 1px solid #000;
         }
 
-        .col-item {
-            width: 40%;
-            word-break: break-word;
-        }
-
-        .col-qty {
-            width: 15%;
-            text-align: center;
-        }
-
-        .col-price, .col-total {
-            width: 22%;
-            text-align: right;
-        }
-
-        .totals-section {
-            margin-top: 6px;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
-        }
+        .col-item { width: 45%; }
+        .col-qty { width: 15%; text-align: center; }
+        .col-price, .col-total { width: 20%; text-align: right; }
 
         .grand-total {
             font-weight: bold;
             font-size: {{ request('size') == '57' ? '12px' : '14px' }};
             border-top: 1px solid #000;
             border-bottom: 1px solid #000;
-            padding: 4px 0;
-        }
-
-        .payment-method {
-            text-align: center;
-            font-weight: bold;
-            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
-            margin: 6px 0;
+            padding: 3px 0;
+            text-align: right;
         }
 
         .footer {
             text-align: center;
-            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
-            margin-top: 8px;
-        }
-
-        .qr-container {
-            text-align: center;
-            margin: 6px 0;
-        }
-
-        .qr-code {
-            width: 70%;
-            height: auto;
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
+            margin-top: 5px;
         }
 
         @media print {
             html, body {
-                width: {{ request('size') == '57' ? '57mm' : '78mm' }};
+                width: {{ request('size') == '57' ? '58mm' : '80mm' }};
             }
-
-            .no-print {
-                display: none;
-            }
-
-            body::after {
-                content: "";
-                display: block;
-                height: 5mm;
-            }
-        }
-
-        .no-print {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .no-print button {
-            padding: 8px;
-            cursor: pointer;
+            .no-print { display: none; }
         }
     </style>
 </head>
-
 <body>
 <div class="invoice-box">
     <div class="header">
@@ -170,24 +106,12 @@
 
     <hr class="divider">
 
-    <div class="info-row">
-        <div>No. Invoice:</div>
-        <div>#{{ $transaction->invoice_number }}</div>
-    </div>
-    <div class="info-row">
-        <div>Tanggal:</div>
-        <div>{{ $transaction->invoice_date->format('d/m/Y') }}</div>
-    </div>
-    <div class="info-row">
-        <div>Kasir:</div>
-        <div>{{ $transaction->user->name }}</div>
-    </div>
+    <div class="info-row"><div>No. Invoice:</div><div>#{{ $transaction->invoice_number }}</div></div>
+    <div class="info-row"><div>Tanggal:</div><div>{{ $transaction->invoice_date->format('d/m/Y') }}</div></div>
+    <div class="info-row"><div>Kasir:</div><div>{{ $transaction->user->name }}</div></div>
 
     @if($transaction->customer)
-        <div class="info-row">
-            <div class="info-label">Pelanggan:</div>
-            <div class="info-value">{{ $transaction->customer->name }}</div>
-        </div>
+        <div class="info-row"><div>Pelanggan:</div><div>{{ $transaction->customer->name }}</div></div>
     @endif
 
     <hr class="divider">
@@ -213,38 +137,9 @@
         </tbody>
     </table>
 
-    <hr class="divider">
+    <div class="grand-total">Rp {{ number_format($transaction->final_amount, 0, ',', '.') }}</div>
 
-    <div class="grand-total">
-        <div>TOTAL</div>
-        <div>Rp {{ number_format($transaction->final_amount, 0, ',', '.') }}</div>
-    </div>
-
-    <div class="payment-method">{{ strtoupper($transaction->payment_type) }}</div>
-
-    @if($transaction->payment_type === 'cash')
-        <div class="total-row">
-            <div class="total-label">Tunai:</div>
-            <div class="total-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</div>
-        </div>
-
-        <div class="total-row">
-            <div class="total-label">Kembalian:</div>
-            <div class="total-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</div>
-        </div>
-    @endif
-
-    @if($transaction->reference_number)
-        <div class="total-row">
-            <div class="total-label">No. Referensi:</div>
-            <div class="total-value">{{ $transaction->reference_number }}</div>
-        </div>
-    @endif
-
-    <div class="footer">
-        <div>TERIMA KASIH TELAH BERBELANJA</div>
-        <div style="font-size: 10px;">BARANG YANG SUDAH DIBELI TIDAK DAPAT DIKEMBALIKAN</div>
-    </div>
+    <div class="footer">TERIMA KASIH TELAH BERBELANJA</div>
 </div>
 
 <div class="no-print">
