@@ -27,6 +27,7 @@
             background-color: white;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+            padding-right: 5mm;
         }
 
         .invoice-box {
