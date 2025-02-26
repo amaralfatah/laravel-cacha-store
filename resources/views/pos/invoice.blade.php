@@ -10,7 +10,7 @@
         /* Page Settings - Optimized for Thermal Printing */
         @page {
             margin: 0;
-            size: {{ $setting->paper_size ?? (request('size') == '57' ? '57mm' : '78mm') }} auto;
+            size: {{ request('size') == '57' ? '57mm' : '78mm' }} auto;
         }
 
         * {
@@ -20,235 +20,128 @@
         }
 
         body {
-            /* Solid font optimized for thermal printers */
-            font-family: 'Arial', 'Helvetica', sans-serif;
-            line-height: 1.2;
-            margin: 0;
-            padding: 0;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '10px' : '12px' }};
-            width: 100%;
-            max-width: {{ (int) ($setting->paper_size ?? 78) }}mm;
-            /* Solid black for clearer printing */
-            color: #000000;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            background-color: white !important;
+            font-family: 'Arial', sans-serif;
+            font-size: {{ request('size') == '57' ? '11px' : '13px' }};
+            width: {{ request('size') == '57' ? '57mm' : '78mm' }};
+            color: #000;
+            background-color: white;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .invoice-box {
+            padding: 5px;
             width: 100%;
-            max-width: {{ (int) ($setting->paper_size ?? 78) }}mm;
-            padding: 3px;
+            max-width: 100%;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .company-name {
-            font-weight: 900;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '12px' : '14px' }};
-            margin-bottom: 2px;
+            font-weight: bold;
+            font-size: {{ request('size') == '57' ? '14px' : '16px' }};
             text-transform: uppercase;
-            /* Text stroke for bolder printing */
-            -webkit-text-stroke: 0.3px black;
-            letter-spacing: 0.5px;
         }
 
         .company-details {
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '8px' : '10px' }};
-            line-height: 1.2;
-            font-weight: 600;
+            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
         }
 
         .divider {
-            border: none;
             border-top: 1px dashed #000;
-            margin: 4px 0;
-            clear: both;
-        }
-
-        .info-section {
-            margin-bottom: 4px;
+            margin: 5px 0;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 1px;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '8px' : '10px' }};
-        }
-
-        .info-label {
-            font-weight: 700;
-            width: 40%;
-        }
-
-        .info-value {
-            text-align: right;
-            width: 60%;
-            font-weight: 500;
+            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
+            margin-bottom: 2px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 4px 0;
-            table-layout: fixed;
+            table-layout: auto;
+        }
+
+        th, td {
+            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
+            padding: 3px 2px;
         }
 
         th {
-            text-align: left;
-            padding: 2px 1px;
-            font-weight: 700;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '8px' : '10px' }};
             border-bottom: 1px solid #000;
         }
 
-        td {
-            padding: 3px 1px;
-            vertical-align: top;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '8px' : '10px' }};
+        .col-item {
+            width: 40%;
+            word-break: break-word;
         }
 
-        tr.item-row:not(:last-child) {
-            border-bottom: 1px dotted #ccc;
+        .col-qty {
+            width: 15%;
+            text-align: center;
         }
 
-        .item-name {
-            font-weight: 600;
-            word-break: keep-all;
-            overflow-wrap: break-word;
-            line-height: 1.2;
+        .col-price, .col-total {
+            width: 22%;
+            text-align: right;
         }
-
-        .discount-info {
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '7px' : '9px' }};
-            font-weight: 600;
-            padding-top: 1px;
-        }
-
-        /* Column widths - optimized for readability */
-        @if((int) ($setting->paper_size ?? 78) < 70)
-        .col-item { width: 40%; }
-        .col-qty { width: 15%; text-align: center; }
-        .col-price { width: 20%; text-align: right; }
-        .col-total { width: 25%; text-align: right; }
-        @else
-        .col-item { width: 45%; }
-        .col-qty { width: 15%; text-align: center; }
-        .col-price { width: 18%; text-align: right; }
-        .col-total { width: 22%; text-align: right; }
-        @endif
 
         .totals-section {
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2px;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '8px' : '10px' }};
-        }
-
-        .total-label {
-            font-weight: 700;
-            width: 50%;
-        }
-
-        .total-value {
-            text-align: right;
-            width: 50%;
-            font-weight: 600;
+            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
         }
 
         .grand-total {
-            font-weight: 900;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '11px' : '13px' }};
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            border-top: 1.5px solid #000;
-            border-bottom: 1.5px solid #000;
-            padding: 3px 0;
-            letter-spacing: 0.5px;
+            font-weight: bold;
+            font-size: {{ request('size') == '57' ? '12px' : '14px' }};
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            padding: 4px 0;
         }
 
         .payment-method {
-            font-weight: 700;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '9px' : '11px' }};
-            margin: 5px 0;
             text-align: center;
-            letter-spacing: 0.5px;
+            font-weight: bold;
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
+            margin: 6px 0;
         }
 
         .footer {
             text-align: center;
+            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
             margin-top: 8px;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '8px' : '10px' }};
         }
 
-        .footer-message {
-            font-weight: 700;
-            margin-bottom: 2px;
-            letter-spacing: 0.3px;
-        }
-
-        .footer-policy {
-            font-weight: 500;
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '7px' : '9px' }};
-            line-height: 1.2;
-            margin-bottom: 2px;
-        }
-
-        /* QR Code center alignment */
         .qr-container {
             text-align: center;
-            margin: 5px 0;
+            margin: 6px 0;
         }
 
         .qr-code {
-            margin: 0 auto;
-            display: block;
-            max-width: {{ (int) ($setting->paper_size ?? 78) < 70 ? '80%' : '90%' }};
+            width: 70%;
             height: auto;
         }
 
-        .qr-text {
-            font-size: {{ (int) ($setting->paper_size ?? 78) < 70 ? '7px' : '8px' }};
-            text-align: center;
-            margin-top: 2px;
-        }
-
-        /* Print settings */
         @media print {
             html, body {
-                width: {{ (int) ($setting->paper_size ?? (request('size') == '57' ? '57' : '78')) }}mm;
-                max-width: {{ (int) ($setting->paper_size ?? (request('size') == '57' ? '57' : '78')) }}mm;
-                font-weight: 500;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
+                width: {{ request('size') == '57' ? '57mm' : '78mm' }};
             }
 
             .no-print {
-                display: none !important;
+                display: none;
             }
 
-            /* Ensure numbers print clearly */
-            .total-value, .col-price, .col-total, .col-qty {
-                font-weight: 600 !important;
-                letter-spacing: 0.3px !important;
-            }
-
-            /* Make borders darker */
-            .divider, th, .grand-total {
-                border-color: #000 !important;
-            }
-
-            /* Fix for some thermal printers that cut off content */
             body::after {
                 content: "";
                 display: block;
@@ -259,18 +152,11 @@
         .no-print {
             text-align: center;
             margin-top: 15px;
-            padding-top: 8px;
-            border-top: 1px solid #ccc;
         }
 
         .no-print button {
-            padding: 8px 15px;
-            margin: 0 5px;
+            padding: 8px;
             cursor: pointer;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background: #f8f8f8;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -285,29 +171,17 @@
 
     <hr class="divider">
 
-    <div class="info-section">
-        <div class="info-row">
-            <div class="info-label">No. Invoice:</div>
-            <div class="info-value">#{{ $transaction->invoice_number }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Tanggal:</div>
-            <div class="info-value">{{ $transaction->invoice_date->format('d/m/Y') }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Waktu:</div>
-            <div class="info-value">{{ $transaction->invoice_date->format('H:i') }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Kasir:</div>
-            <div class="info-value">{{ $transaction->user->name }}</div>
-        </div>
-        @if($transaction->customer)
-            <div class="info-row">
-                <div class="info-label">Pelanggan:</div>
-                <div class="info-value">{{ $transaction->customer->name }}</div>
-            </div>
-        @endif
+    <div class="info-row">
+        <div>No. Invoice:</div>
+        <div>#{{ $transaction->invoice_number }}</div>
+    </div>
+    <div class="info-row">
+        <div>Tanggal:</div>
+        <div>{{ $transaction->invoice_date->format('d/m/Y') }}</div>
+    </div>
+    <div class="info-row">
+        <div>Kasir:</div>
+        <div>{{ $transaction->user->name }}</div>
     </div>
 
     <hr class="divider">
@@ -323,14 +197,9 @@
         </thead>
         <tbody>
         @foreach ($transaction->items as $item)
-            <tr class="item-row">
-                <td class="col-item">
-                    <div class="item-name">{{ $item->product->name }}</div>
-                    @if($item->discount > 0)
-                        <div class="discount-info">Disc: {{ $item->discount }}</div>
-                    @endif
-                </td>
-                <td class="col-qty">{{ $item->quantity }} {{ isset($item->unit) ? $item->unit->short_name : '' }}</td>
+            <tr>
+                <td class="col-item">{{ $item->product->name }}</td>
+                <td class="col-qty">{{ $item->quantity }}</td>
                 <td class="col-price">{{ number_format($item->unit_price, 0, ',', '.') }}</td>
                 <td class="col-total">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
             </tr>
@@ -340,92 +209,40 @@
 
     <hr class="divider">
 
-    <div class="totals-section">
+    <div class="grand-total">
+        <div>TOTAL</div>
+        <div>Rp {{ number_format($transaction->final_amount, 0, ',', '.') }}</div>
+    </div>
+
+    <div class="payment-method">{{ strtoupper($transaction->payment_type) }}</div>
+
+    @if($transaction->payment_type === 'cash')
         <div class="total-row">
-            <div class="total-label">Subtotal:</div>
-            <div class="total-value">{{ number_format($transaction->total_amount, 0, ',', '.') }}</div>
+            <div class="total-label">Tunai:</div>
+            <div class="total-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</div>
         </div>
 
-        @if($transaction->tax_amount > 0)
-            <div class="total-row">
-                <div class="total-label">Pajak ({{ $transaction->tax_percentage ?? 11 }}%):</div>
-                <div class="total-value">{{ number_format($transaction->tax_amount, 0, ',', '.') }}</div>
-            </div>
-        @endif
-
-        @if($transaction->discount_amount > 0)
-            <div class="total-row">
-                <div class="total-label">Diskon:</div>
-                <div class="total-value">{{ number_format($transaction->discount_amount, 0, ',', '.') }}</div>
-            </div>
-        @endif
-
-        <div class="grand-total">
-            <div>TOTAL</div>
-            <div>Rp {{ number_format($transaction->final_amount, 0, ',', '.') }}</div>
+        <div class="total-row">
+            <div class="total-label">Kembalian:</div>
+            <div class="total-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</div>
         </div>
+    @endif
 
-        <div class="payment-method">{{ strtoupper($transaction->payment_type) }}</div>
-
-        @if($transaction->payment_type === 'cash')
-            <div class="total-row">
-                <div class="total-label">Tunai:</div>
-                <div class="total-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</div>
-            </div>
-
-            <div class="total-row">
-                <div class="total-label">Kembalian:</div>
-                <div class="total-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</div>
-            </div>
-        @endif
-
-        @if($transaction->reference_number)
-            <div class="total-row">
-                <div class="total-label">No. Referensi:</div>
-                <div class="total-value">{{ $transaction->reference_number }}</div>
-            </div>
-        @endif
-    </div>
-
-    <!-- Barcode untuk referensi cepat -->
-    <div class="qr-container">
-        <img class="qr-code" src="data:image/png;base64,{{ DNS1D::getBarcodePNG($transaction->invoice_number, 'C128', 2, 30) }}" alt="Barcode">
-        <div class="qr-text">{{ $transaction->invoice_number }}</div>
-    </div>
-
-    <hr class="divider">
+    @if($transaction->reference_number)
+        <div class="total-row">
+            <div class="total-label">No. Referensi:</div>
+            <div class="total-value">{{ $transaction->reference_number }}</div>
+        </div>
+    @endif
 
     <div class="footer">
-        <div class="footer-message">TERIMA KASIH TELAH BERBELANJA</div>
-        <div class="footer-policy">Barang yang sudah dibeli tidak dapat dikembalikan</div>
+        <div>TERIMA KASIH TELAH BERBELANJA</div>
     </div>
 </div>
 
 <div class="no-print">
-    <button onclick="window.print()">Print Invoice</button>
+    <button onclick="window.print()">Print</button>
     <button onclick="window.close()">Tutup</button>
 </div>
-
-<script>
-    window.onload = function() {
-        // Menambahkan timeout lebih lama untuk memastikan semua elemen terload sempurna
-        @if(isset($setting->auto_print) && $setting->auto_print)
-        setTimeout(function() {
-            window.print();
-            // Tambahkan callback setelah cetak selesai jika perlu
-            // Pada beberapa browser, ini akan tereksekusi setelah dialog cetak ditutup
-            if (window.matchMedia) {
-                var mediaQueryList = window.matchMedia('print');
-                mediaQueryList.addListener(function(mql) {
-                    if (!mql.matches) {
-                        // Cetak selesai atau dibatalkan
-                        console.log('Cetak selesai');
-                    }
-                });
-            }
-        }, 1200);
-        @endif
-    };
-</script>
 </body>
 </html>
