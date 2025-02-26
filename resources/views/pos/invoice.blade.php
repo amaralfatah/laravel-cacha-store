@@ -131,6 +131,10 @@
             height: auto;
         }
 
+        .qty-box {
+            margin-left: 10px;
+        }
+
         @media print {
             html, body {
                 width: {{ request('size') == '57' ? '57mm' : '78mm' }};
@@ -195,17 +199,24 @@
         <thead>
         <tr>
             <th class="col-item">Item</th>
-            <th class="col-qty">Qty</th>
-            <th class="col-price">Harga</th>
+{{--            <th class="col-qty">Qty</th>--}}
+{{--            <th class="col-price">Harga</th>--}}
             <th class="col-total">Total</th>
         </tr>
         </thead>
         <tbody>
         @foreach ($transaction->items as $item)
             <tr>
-                <td class="col-item">{{ $item->product->name }}</td>
-                <td class="col-qty">{{ number_format($item->quantity) }}</td>
-                <td class="col-price">{{ number_format($item->unit_price) }}</td>
+                <td class="col-item">
+                    {{ $item->product->name }}
+                    <br>
+                <div class="qty-box">
+                    <span class="col-qty">{{ number_format($item->quantity) }}</span>
+                    x
+                    <span class="col-price">{{ number_format($item->unit_price) }}</span>
+                </div>
+                </td>
+
                 <td class="col-total">{{ number_format($item->subtotal) }}</td>
             </tr>
         @endforeach
