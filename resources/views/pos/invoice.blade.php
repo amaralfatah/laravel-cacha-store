@@ -27,11 +27,11 @@
             background-color: white;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            padding-right: 3mm;
+            padding-right: 5mm;
         }
 
         .invoice-box {
-            padding: 3px;
+            padding: 5px;
             width: 100%;
             max-width: 100%;
         }
@@ -106,8 +106,8 @@
         .grand-total {
             font-weight: bold;
             font-size: {{ request('size') == '57' ? '12px' : '14px' }};
-            border-top: 2px solid #000;
-            border-bottom: 2px solid #000;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
             padding: 4px 0;
         }
 
@@ -185,6 +185,13 @@
         <div>{{ $transaction->user->name }}</div>
     </div>
 
+    @if($transaction->customer)
+        <div class="info-row">
+            <div class="info-label">Pelanggan:</div>
+            <div class="info-value">{{ $transaction->customer->name }}</div>
+        </div>
+    @endif
+
     <hr class="divider">
 
     <table>
@@ -238,6 +245,7 @@
 
     <div class="footer">
         <div>TERIMA KASIH TELAH BERBELANJA</div>
+        <div style="font-size: 10px;">BARANG YANG SUDAH DIBELI TIDAK DAPAT DIKEMBALIKAN</div>
     </div>
 </div>
 
