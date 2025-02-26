@@ -20,7 +20,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Courier New', sans-serif;
             font-size: {{ request('size') == '57' ? '11px' : '13px' }};
             width: {{ request('size') == '57' ? '57mm' : '78mm' }};
             color: #000;
@@ -70,7 +70,7 @@
         }
 
         th, td {
-            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
+            font-size: {{ request('size') == '57' ? '11px' : '13px' }};
             padding: 3px 2px;
         }
 
@@ -100,7 +100,7 @@
         .total-row {
             display: flex;
             justify-content: space-between;
-            font-size: {{ request('size') == '57' ? '9px' : '11px' }};
+            font-size: {{ request('size') == '57' ? '10px' : '12px' }};
         }
 
         .grand-total {
