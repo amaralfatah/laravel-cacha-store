@@ -70,7 +70,7 @@
 
     {{-- Header Section --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">{{ $title }}</h4>
+        <h2 class="fw-bold m-0">{{ $title }}</h2>
         <div class="d-flex gap-2">
             {{ $actions ?? '' }}
             @if($route && $buttonText)
