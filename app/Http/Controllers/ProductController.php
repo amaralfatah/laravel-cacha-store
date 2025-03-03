@@ -160,7 +160,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        // Load categories dengan eager loading group untuk mendapatkan code
+        // Load categories with eager loading group to get code
         $categories = Category::where('is_active', true)
             ->when(auth()->user()->role !== 'admin', function($query) {
                 return $query->where('store_id', auth()->user()->store_id);
@@ -174,11 +174,24 @@ class ProductController extends Controller
             })
             ->get();
 
+        // Add taxes and discounts
+        $taxes = Tax::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
+        $discounts = Discount::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
         $stores = auth()->user()->role === 'admin'
             ? \App\Models\Store::all()
             : \App\Models\Store::where('id', auth()->user()->store_id)->get();
 
-        return view('products.create', compact('categories', 'units', 'stores'));
+        return view('products.create', compact('categories', 'units', 'stores', 'taxes', 'discounts'));
     }
 
     public function store(Request $request)
@@ -198,7 +211,9 @@ class ProductController extends Controller
             'is_active' => 'boolean',
             'featured' => 'boolean',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'url' => 'nullable|url'
+            'url' => 'nullable|url',
+            'tax_id' => 'nullable|exists:taxes,id',
+            'discount_id' => 'nullable|exists:discounts,id',
         ]);
 
         try {
@@ -242,6 +257,8 @@ class ProductController extends Controller
                 'store_id' => auth()->user()->role === 'admin'
                     ? $validated['store_id']
                     : auth()->user()->store_id,
+                'tax_id' => $validated['tax_id'] ?? null,
+                'discount_id' => $validated['discount_id'] ?? null,
                 'featured' => $request->has('featured'),
                 'is_active' => $request->has('is_active'),
 
