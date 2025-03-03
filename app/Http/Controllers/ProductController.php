@@ -160,10 +160,12 @@ class ProductController extends Controller
 
     public function create()
     {
+        // Load categories dengan eager loading group untuk mendapatkan code
         $categories = Category::where('is_active', true)
             ->when(auth()->user()->role !== 'admin', function($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
+            ->with('group') // Eager load group data
             ->get();
 
         $units = Unit::where('is_active', true)
@@ -184,7 +186,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|max:255',
             'code' => 'required|unique:products|max:255',
-            'barcode' => 'required|unique:products|max:100',
+            'barcode' => 'nullable|unique:products|max:100',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
             'category_id' => 'required|exists:categories,id',
@@ -202,12 +204,17 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate barcode
-            $barcode = new DNS1D();
-            $barcode->setStorPath(storage_path('app/public/barcodes'));
-            $barcodeImage = $barcode->getBarcodePNG($validated['barcode'], 'C128');
-            $barcodePath = 'barcodes/' . $validated['barcode'] . '.png';
-            Storage::disk('public')->put($barcodePath, base64_decode($barcodeImage));
+            // Variabel untuk barcode path
+            $barcodePath = null;
+
+            // Generate barcode jika barcode diisi
+            if (!empty($validated['barcode'])) {
+                $barcode = new DNS1D();
+                $barcode->setStorPath(storage_path('app/public/barcodes'));
+                $barcodeImage = $barcode->getBarcodePNG($validated['barcode'], 'C128');
+                $barcodePath = 'barcodes/' . $validated['barcode'] . '.png';
+                Storage::disk('public')->put($barcodePath, base64_decode($barcodeImage));
+            }
 
             // Get store and category data for SEO
             $store = Store::find($validated['store_id'] ?? auth()->user()->store_id);
@@ -266,6 +273,7 @@ class ProductController extends Controller
                 'purchase_price' => $validated['purchase_price'],
                 'selling_price' => $validated['selling_price'],
                 'stock' => $validated['stock'],
+                'min_stock' => $validated['min_stock'] ?? 0,
                 'is_default' => true
             ]);
 
@@ -392,6 +400,7 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        // Access check
         if (auth()->user()->role !== 'admin' &&
             $product->store_id !== auth()->user()->store_id) {
             abort(403);
@@ -400,7 +409,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|max:255',
             'code' => 'required|max:255|unique:products,code,' . $product->id,
-            'barcode' => 'required|max:100|unique:products,barcode,' . $product->id,
+            'barcode' => 'nullable|max:100|unique:products,barcode,' . $product->id,
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
             'category_id' => 'required|exists:categories,id',
@@ -419,11 +428,30 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
 
-            // Get store for SEO data
+            // Handle barcode generation if changed
+            $barcodePath = $product->barcode_image;
+            if (isset($validated['barcode']) && $validated['barcode'] !== $product->barcode) {
+                // Delete old barcode image if exists
+                if ($product->barcode_image) {
+                    Storage::disk('public')->delete($product->barcode_image);
+                    $barcodePath = null;
+                }
+
+                // Generate new barcode if provided
+                if (!empty($validated['barcode'])) {
+                    $barcode = new DNS1D();
+                    $barcode->setStorPath(storage_path('app/public/barcodes'));
+                    $barcodeImage = $barcode->getBarcodePNG($validated['barcode'], 'C128');
+                    $barcodePath = 'barcodes/' . $validated['barcode'] . '.png';
+                    Storage::disk('public')->put($barcodePath, base64_decode($barcodeImage));
+                }
+            }
+
+            // Get store and category data for SEO
             $store = Store::find($validated['store_id'] ?? $product->store_id);
             $category = Category::find($validated['category_id']);
 
-            // Generate SEO data
+            // Generate SEO fields
             $seoData = $this->generateSeoData(
                 $validated['name'],
                 $validated['short_description'],
@@ -440,9 +468,10 @@ class ProductController extends Controller
                 'description' => $validated['description'],
                 'short_description' => $validated['short_description'],
                 'barcode' => $validated['barcode'],
+                'barcode_image' => $barcodePath,
                 'category_id' => $validated['category_id'],
-                'tax_id' => $validated['tax_id'],
-                'discount_id' => $validated['discount_id'],
+                'tax_id' => $validated['tax_id'] ?? null,
+                'discount_id' => $validated['discount_id'] ?? null,
                 'store_id' => auth()->user()->role === 'admin'
                     ? $validated['store_id']
                     : $product->store_id,
@@ -458,6 +487,13 @@ class ProductController extends Controller
                 // OpenGraph fields
                 'og_title' => $seoData['og_title'],
                 'og_description' => $seoData['og_description'],
+                'og_type' => 'product',
+
+                // Schema.org fields
+                'schema_brand' => $store->name,
+                'schema_sku' => $validated['code'],
+                'schema_gtin' => $validated['barcode'],
+                'schema_mpn' => $validated['code'],
 
                 'url' => $validated['url']
             ]);
@@ -503,7 +539,7 @@ class ProductController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('products.index')
+            return redirect()->route('products.show', $product)
                 ->with('success', 'Product updated successfully');
 
         } catch (\Exception $e) {
@@ -636,32 +672,52 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete product units and related data
-            $product->productUnits()->delete();
-            $product->images()->delete();
-            $product->prices()->delete();
+            // Dapatkan semua product_unit_id yang terkait dengan produk ini
+            $productUnitIds = $product->productUnits()->pluck('id')->toArray();
 
-            // Delete barcode image if exists
+            // Hapus riwayat stok terkait dengan product_unit_id
+            if (!empty($productUnitIds)) {
+                // Hapus data di stock_histories terlebih dahulu
+                \App\Models\StockHistory::whereIn('product_unit_id', $productUnitIds)->delete();
+
+                // Hapus data di stock_adjustments (jika ada)
+                \App\Models\StockAdjustment::whereIn('product_unit_id', $productUnitIds)->delete();
+
+                // Hapus harga tier (prices) terkait product unit
+                \App\Models\Price::whereIn('product_unit_id', $productUnitIds)->delete();
+            }
+
+            // Hapus item transaksi terkait dengan produk (jika ada)
+            $product->transactionItems()->delete();
+
+            // Hapus product units setelah menghapus data yang terhubung
+            $product->productUnits()->delete();
+
+            // Hapus gambar produk dari database
+            $productImages = $product->images;
+            $product->images()->delete();
+
+            // Hapus barcode image jika ada
             if ($product->barcode_image) {
                 Storage::disk('public')->delete($product->barcode_image);
             }
 
-            // Delete product images
-            foreach ($product->images as $image) {
+            // Hapus file gambar dari storage
+            foreach ($productImages as $image) {
                 Storage::disk('public')->delete($image->image_path);
             }
 
-            // Finally delete the product
+            // Terakhir hapus produk
             $product->delete();
 
             DB::commit();
             return redirect()
                 ->route('products.index')
-                ->with('success', 'Product has been deleted successfully');
+                ->with('success', 'Produk berhasil dihapus');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to delete product: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
         }
     }
 

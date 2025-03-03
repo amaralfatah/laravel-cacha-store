@@ -70,11 +70,13 @@
                                             <i class='bx bx-edit-alt me-1'></i>
                                             <span class="d-none d-sm-inline">Edit</span>
                                         </a>
-                                        <form action="{{ route('products.destroy', $product) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Hapus Produk</button>
-                                        </form>
+                                    <form action="{{ route('products.destroy', $product) }}" method="POST" id="deleteProductForm">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                                            <i class='bx bx-trash me-1'></i> Hapus Produk
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
@@ -629,41 +631,103 @@
         </div>
     </div>
 
-    @push('styles')
-        <style>
-            @media print {
-                body * {
-                    visibility: hidden;
-                }
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">Konfirmasi Hapus Produk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="bx bx-error-circle text-danger" style="font-size: 6rem;"></i>
+                    </div>
+                    <p class="fw-bold text-center fs-5 mb-3">Anda yakin ingin menghapus produk ini?</p>
+                    <p class="text-center mb-0">Produk: <strong>{{ $product->name }}</strong></p>
+                    <p class="text-center text-secondary">Penghapusan akan menghilangkan semua data terkait produk ini, termasuk riwayat stok, unit, dan gambar.</p>
 
-                .barcode-print-area, .barcode-print-area * {
-                    visibility: visible;
-                }
+                    <div class="alert alert-warning mt-3">
+                        <div class="d-flex">
+                            <i class="bx bx-info-circle me-2 mt-1"></i>
+                            <div>
+                                <strong>Perhatian:</strong> Pastikan tidak ada transaksi aktif yang terkait dengan produk ini. Penghapusan tidak dapat dibatalkan.
+                            </div>
+                        </div>
+                    </div>
 
-                .barcode-print-area {
-                    position: absolute;
-                    left: 50%;
-                    top: 50%;
-                    transform: translate(-50%, -50%);
-                }
-            }
-        </style>
-    @endpush
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="confirmDeleteCheck">
+                        <label class="form-check-label" for="confirmDeleteCheck">
+                            Saya mengerti dan ingin menghapus produk ini
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton" disabled>Hapus Produk</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    @push('scripts')
-        <script>
-            function deleteImage(imageId) {
-                if (confirm('Are you sure you want to delete this image?')) {
-                    axios.delete(`/products/images/${imageId}`)
-                        .then(response => {
-                            window.location.reload();
-                        })
-                        .catch(error => {
-                            alert('Failed to delete image');
-                        });
-                }
-            }
-        </script>
-    @endpush
+
 
 @endsection
+
+@push('styles')
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .barcode-print-area, .barcode-print-area * {
+                visibility: visible;
+            }
+
+            .barcode-print-area {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script>
+        function deleteImage(imageId) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                axios.delete(`/products/images/${imageId}`)
+                    .then(response => {
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        alert('Failed to delete image');
+                    });
+            }
+        }
+
+        function confirmDelete() {
+            // Tampilkan modal konfirmasi
+            const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+            modal.show();
+
+            // Aktifkan/nonaktifkan tombol konfirmasi berdasarkan checkbox
+            const checkbox = document.getElementById('confirmDeleteCheck');
+            const confirmButton = document.getElementById('confirmDeleteButton');
+
+            checkbox.addEventListener('change', function() {
+                confirmButton.disabled = !this.checked;
+            });
+
+            // Event listener untuk tombol konfirmasi
+            confirmButton.addEventListener('click', function() {
+                if (checkbox.checked) {
+                    document.getElementById('deleteProductForm').submit();
+                }
+            });
+        }
+    </script>
+@endpush
