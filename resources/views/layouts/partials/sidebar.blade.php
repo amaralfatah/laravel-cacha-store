@@ -104,26 +104,33 @@
             </a>
         </li>
 
-        <li class="menu-item {{ setActive('stock.adjustments.*') }}">
-            <a href="{{ route('stock.adjustments.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-refresh"></i>
-                <div data-i18n="Stock">Penyesuaian Stok</div>
+        <li class="menu-item {{ setActive('stock.*') }} {{ setOpen('stock.*') }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-dock-top"></i>
+                <div data-i18n="Account Settings">Stok</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ setActive('stock.histories.*') }}">
+                    <a href="{{ route('stock.histories.index') }}" class="menu-link">
+                        <div data-i18n="Stock History">Riwayat Stok</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ setActive('stock.adjustments.*') }}">
+                    <a href="{{ route('stock.adjustments.index') }}" class="menu-link">
+                        <div data-i18n="Stock">Penyesuaian Stok</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ setActive('stock-takes.*') }}">
+                    <a href="{{ route('stock-takes.index') }}" class="menu-link">
+                        <div data-i18n="Stock Take">Stok Opname</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
-        <li class="menu-item {{ setActive('stock-takes.*') }}">
-            <a href="{{ route('stock-takes.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-list-check"></i>
-                <div data-i18n="Stock Take">Stok Opname</div>
-            </a>
-        </li>
 
-        <li class="menu-item {{ setActive('stock.histories.*') }}">
-            <a href="{{ route('stock.histories.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-history"></i>
-                <div data-i18n="Stock History">Riwayat Stok</div>
-            </a>
-        </li>
+
+
 
         <!-- Mitra -->
         <li class="menu-header small text-uppercase">
