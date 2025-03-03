@@ -1,5 +1,18 @@
 @extends('layouts.app')
 
+@push('styles')
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+@endpush
+
 @section('content')
     <x-section-header title="Create New Product"/>
 
@@ -266,17 +279,9 @@
         </div>
     </form>
 
-    <style>
-        .animate-fade-in {
-            animation: fadeIn 0.5s;
-        }
+@endsection
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-
+@push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Jalankan fungsi pertama kali saat halaman dimuat
@@ -321,8 +326,7 @@
                 featuredInfoText.classList.add('text-muted');
             }
         }
-    </script>
-    <script>
+
         // Variabel untuk menyimpan nomor auto increment
         let currentProductCount = 1;
 
@@ -382,8 +386,7 @@
                 generateProductCode();
             }
         });
-    </script>
-    <script>
+
         function generateBarcodeCode() {
             const barcodeInput = document.getElementById('barcode');
             const barcodeHelp = document.getElementById('barcode-help');
@@ -401,4 +404,4 @@
             barcodeHelp.textContent = 'Barcode berhasil dibuat.';
         }
     </script>
-@endsection
+@endpush
