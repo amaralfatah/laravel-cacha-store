@@ -6,11 +6,11 @@
     <div class="d-print-none mb-3">
         <div class="d-flex justify-content-between align-items-center">
             <h4>
-                <i class='bx bx-file me-1'></i> Purchase Order Detail
+                <i class='bx bx-file me-1'></i> Detail Pembelian
             </h4>
             <div>
                 <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary me-1">
-                    <i class='bx bx-arrow-back'></i> Back to List
+                    <i class='bx bx-arrow-back'></i> Kembali
                 </a>
                 <button onclick="printPO()" class="btn btn-primary me-1">
                     <i class='bx bx-printer'></i> Print
@@ -30,7 +30,7 @@
             <!-- Screen-only navigation/header will be hidden when printing -->
             <div class="d-none d-print-block mb-4">
                 <div class="text-center">
-                    <h3 class="fw-bold mb-0">PURCHASE ORDER</h3>
+                    <h3 class="fw-bold mb-0">Daftar Pembelian</h3>
                     <p class="text-muted">#{{ $purchase->invoice_number }}</p>
                 </div>
             </div>
@@ -40,17 +40,17 @@
                 <!-- Purchase and Supplier Information -->
                 <div class="row mb-4">
                     <div class="col-md-6 col-print-6">
-                        <div class="d-flex align-items-center mb-2">
+                        <div class="d-flex align-items-center mb-4">
                             <i class='bx bx-info-circle me-2 text-primary'></i>
-                            <h5 class="mb-0">Purchase Information</h5>
+                            <h5 class="mb-0">Informasi Pembelian</h5>
                         </div>
                         <table class="table table-sm">
                             <tr>
-                                <td width="40%" class="border-0 ps-0"><strong>Invoice Number</strong></td>
+                                <td width="40%" class="border-0 ps-0"><strong>No. Invoice</strong></td>
                                 <td class="border-0">{{ $purchase->invoice_number }}</td>
                             </tr>
                             <tr>
-                                <td class="border-0 ps-0"><strong>Purchase Date</strong></td>
+                                <td class="border-0 ps-0"><strong>Tanggal Pembelian</strong></td>
                                 <td class="border-0">{{ $purchase->purchase_date->format('d/m/Y') }}</td>
                             </tr>
                             <tr>
@@ -62,34 +62,34 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="border-0 ps-0"><strong>Payment Type</strong></td>
+                                <td class="border-0 ps-0"><strong>Tipe Pembayaran</strong></td>
                                 <td class="border-0">{{ ucfirst($purchase->payment_type) }}</td>
                             </tr>
                             @if($purchase->reference_number)
                                 <tr>
-                                    <td class="border-0 ps-0"><strong>Reference Number</strong></td>
+                                    <td class="border-0 ps-0"><strong>No. Referensi</strong></td>
                                     <td class="border-0">{{ $purchase->reference_number }}</td>
                                 </tr>
                             @endif
                         </table>
                     </div>
                     <div class="col-md-6 col-print-6">
-                        <div class="d-flex align-items-center mb-2">
+                        <div class="d-flex align-items-center mb-4">
                             <i class='bx bx-user me-2 text-primary'></i>
-                            <h5 class="mb-0">Supplier Information</h5>
+                            <h5 class="mb-0">Informasi Supplier</h5>
                         </div>
                         <table class="table table-sm">
                             <tr>
-                                <td width="40%" class="border-0 ps-0"><strong>Name</strong></td>
+                                <td width="40%" class="border-0 ps-0"><strong>Nama</strong></td>
                                 <td class="border-0">{{ $purchase->supplier->name }}</td>
                             </tr>
                             <tr>
-                                <td class="border-0 ps-0"><strong>Phone</strong></td>
+                                <td class="border-0 ps-0"><strong>Telpon</strong></td>
                                 <td class="border-0">{{ $purchase->supplier->phone }}</td>
                             </tr>
                             @if(isset($purchase->supplier->address))
                                 <tr>
-                                    <td class="border-0 ps-0"><strong>Address</strong></td>
+                                    <td class="border-0 ps-0"><strong>Alamat</strong></td>
                                     <td class="border-0">{{ $purchase->supplier->address }}</td>
                                 </tr>
                             @endif
@@ -105,20 +105,20 @@
 
                 <!-- Items Table -->
                 <div class="mb-4">
-                    <div class="d-flex align-items-center mb-2">
+                    <div class="d-flex align-items-center mb-4">
                         <i class='bx bx-package me-2 text-primary'></i>
-                        <h5 class="mb-0">Items</h5>
+                        <h5 class="mb-0">Daftar Barang</h5>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
                             <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>PRODUCT</th>
+                                <th>PRODUK</th>
                                 <th>UNIT</th>
-                                <th class="text-end">QUANTITY</th>
-                                <th class="text-end">UNIT PRICE</th>
-                                <th class="text-end">DISCOUNT</th>
+                                <th class="text-end">QTY</th>
+                                <th class="text-end">HARGA UNIT</th>
+                                <th class="text-end">DISKON</th>
                                 <th class="text-end">SUBTOTAL</th>
                             </tr>
                             </thead>
@@ -142,18 +142,18 @@
                             </tr>
                             @if($purchase->tax_amount > 0)
                                 <tr>
-                                    <td colspan="6" class="text-end">Tax</td>
+                                    <td colspan="6" class="text-end">PAJAK</td>
                                     <td class="text-end">{{ number_format($purchase->tax_amount, 2) }}</td>
                                 </tr>
                             @endif
                             @if($purchase->discount_amount > 0)
                                 <tr>
-                                    <td colspan="6" class="text-end">Discount</td>
+                                    <td colspan="6" class="text-end">DISKON</td>
                                     <td class="text-end">{{ number_format($purchase->discount_amount, 2) }}</td>
                                 </tr>
                             @endif
                             <tr>
-                                <td colspan="6" class="text-end fw-bold">Final Amount</td>
+                                <td colspan="6" class="text-end fw-bold">TOTAL PEMBELIAN</td>
                                 <td class="text-end fw-bold">{{ number_format($purchase->final_amount, 2) }}</td>
                             </tr>
                             </tfoot>

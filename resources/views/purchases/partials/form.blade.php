@@ -16,7 +16,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class='bx bx-info-circle me-1'></i> Informasi Pembelian
+                    Informasi Pembelian
                 </h5>
             </div>
             <div class="card-body">
@@ -54,7 +54,7 @@
 
                     <!-- Purchase Date -->
                     <div class="col-md-{{ auth()->user()->role === 'admin' ? '4' : '6' }}">
-                        <label class="form-label">Purchase Date</label>
+                        <label class="form-label">Tanggal Pembelian</label>
                         <input type="date" name="purchase_date" class="form-control" required
                                value="{{ isset($purchase) ? $purchase->purchase_date->format('Y-m-d') : '' }}">
                     </div>
@@ -68,7 +68,7 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class='bx bx-package me-1'></i> Daftar Barang
+                    Daftar Barang
                 </h5>
             </div>
             <div class="card-body">
@@ -79,7 +79,7 @@
                                 <div class="card-body">
                                     <div class="row g-2">
                                         <div class="col-md-3">
-                                            <label class="form-label">Product</label>
+                                            <label class="form-label">Produk</label>
                                             <select name="items[{{ $index }}][product_id]" class="form-select product-select" required>
                                                 <option value="">Select Product</option>
                                                 @foreach($products as $product)
@@ -104,11 +104,11 @@
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label">Quantity</label>
+                                            <label class="form-label">QTY</label>
                                             <input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity" required value="{{ $item->quantity }}">
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label">Unit Price</label>
+                                            <label class="form-label">Harga Unit</label>
                                             <input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit-price" required value="{{ $item->unit_price }}">
                                         </div>
                                         <div class="col-md-2">
@@ -139,27 +139,27 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class='bx bx-detail me-1'></i> Informasi Tambahan
+                    Informasi Tambahan
                 </h5>
             </div>
             <div class="card-body">
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Payment Type</label>
+                        <label class="form-label">Tipe Pembayaran</label>
                         <select name="payment_type" class="form-select" required>
                             <option value="cash" {{ isset($purchase) && $purchase->payment_type == 'cash' ? 'selected' : '' }}>Cash</option>
                             <option value="transfer" {{ isset($purchase) && $purchase->payment_type == 'transfer' ? 'selected' : '' }}>Transfer</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Reference Number</label>
+                        <label class="form-label">No. Referensi</label>
                         <input type="text" name="reference_number" class="form-control" placeholder="Optional"
                                value="{{ isset($purchase) ? $purchase->reference_number : '' }}">
                     </div>
                 </div>
 
                 <div>
-                    <label class="form-label">Notes</label>
+                    <label class="form-label">Catatan</label>
                     <textarea name="notes" class="form-control" rows="3" placeholder="Optional notes...">{{ isset($purchase) ? $purchase->notes : '' }}</textarea>
                 </div>
             </div>
@@ -173,7 +173,7 @@
                 <!-- Summary & Submit -->
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="fs-5">
-                        <span class="fw-bold">Total Amount: </span>
+                        <span class="fw-bold">Total Pembelian: </span>
                         <span id="total-amount" class="text-primary">{{ isset($purchase) ? number_format($purchase->total_amount, 2) : '0.00' }}</span>
                         <input type="hidden" name="total_amount" value="{{ isset($purchase) ? $purchase->total_amount : '0' }}">
                         <input type="hidden" name="tax_amount" value="{{ isset($purchase) ? $purchase->tax_amount : '0' }}">

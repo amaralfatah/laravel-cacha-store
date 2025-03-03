@@ -2,10 +2,10 @@
 @extends('layouts.app')
 
 @section('content')
-    <x-section-header title="Purchase Orders">
+    <x-section-header title="Data Pembelian">
         <x-slot:actions>
             <a href="{{ route('purchases.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus"></i> Create Purchase Order
+                <i class="bx bx-plus"></i> Tambah
             </a>
         </x-slot:actions>
     </x-section-header>
