@@ -85,9 +85,9 @@
                     <option value="">Select Category</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}"
-                            {{ isset($product) ? '' : 'data-code="' . $category->code . '" data-group-code="' . $category->group->code . '"' }}
+                            {{ isset($product) ? '' : 'data-code="' . $category->code . '" data-group-code="' . ($category->group->code ?? 'XX') . '"' }}
                             {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                            {{ isset($category->group) ? $category->group->name . ' » ' . $category->name : $category->name }}
+                            {{ isset($category->group) ? ($category->group->name ?? '') . ' » ' . $category->name : $category->name }}
                         </option>
                     @endforeach
                 </select>
@@ -96,119 +96,102 @@
                 @enderror
             </div>
 
-            {{-- Pricing & Stock fields - integrated into Basic Information card --}}
-                @if(!isset($product))
-                    {{-- Create mode - show unit, stock, pricing, tax and discount fields --}}
-                    <div class="col-12 col-md-6">
-                        <label for="default_unit_id" class="form-label">Default Unit</label>
-                        <select name="default_unit_id" class="form-select @error('default_unit_id') is-invalid @enderror" required>
-                            <option value="">Select Unit</option>
-                            @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}" {{ old('default_unit_id') == $unit->id ? 'selected' : '' }}>
-                                    {{ $unit->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('default_unit_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+            {{-- Pricing & Stock fields - Only for Create mode --}}
+            @if(!isset($product))
+                {{-- Create mode - show unit, stock, pricing, tax and discount fields --}}
+                <div class="col-12 col-md-6">
+                    <label for="default_unit_id" class="form-label">Default Unit</label>
+                    <select name="default_unit_id" id="default_unit_id" class="form-select @error('default_unit_id') is-invalid @enderror" required>
+                        <option value="">Select Unit</option>
+                        @foreach ($units as $unit)
+                            <option value="{{ $unit->id }}" {{ old('default_unit_id') == $unit->id ? 'selected' : '' }}>
+                                {{ $unit->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('default_unit_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div class="col-12 col-md-6">
-                        <label for="stock" class="form-label">Initial Stock</label>
-                        <input type="number" step="1" class="form-control @error('stock') is-invalid @enderror"
-                               id="stock" name="stock" value="{{ old('stock', 0) }}" required>
-                        @error('stock')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="stock" class="form-label">Initial Stock</label>
+                    <input type="number" step="1" min="0" class="form-control @error('stock') is-invalid @enderror"
+                           id="stock" name="stock" value="{{ old('stock', 0) }}" required>
+                    @error('stock')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    <div class="col-12 col-md-6">
-                        <label for="purchase_price" class="form-label">Purchase Price</label>
-                        <input type="number" step="0.01" class="form-control @error('purchase_price') is-invalid @enderror"
-                               id="purchase_price" name="purchase_price" value="{{ old('purchase_price') }}" required>
+                <div class="col-12 col-md-6">
+                    <label for="purchase_price" class="form-label">Purchase Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" step="0.01" min="0" class="form-control @error('purchase_price') is-invalid @enderror"
+                               id="purchase_price" name="purchase_price" value="{{ old('purchase_price', 0) }}" required>
                         @error('purchase_price')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                </div>
 
-                    <div class="col-12 col-md-6">
-                        <label for="selling_price" class="form-label">Selling Price</label>
-                        <input type="number" step="0.01" class="form-control @error('selling_price') is-invalid @enderror"
-                               id="selling_price" name="selling_price" value="{{ old('selling_price') }}" required>
+                <div class="col-12 col-md-6">
+                    <label for="selling_price" class="form-label">Selling Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" step="0.01" min="0" class="form-control @error('selling_price') is-invalid @enderror"
+                               id="selling_price" name="selling_price" value="{{ old('selling_price', 0) }}" required>
                         @error('selling_price')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                </div>
 
-                    {{-- Add tax and discount fields to create form --}}
-                    <div class="col-12 col-md-6">
-                        <label for="tax_id" class="form-label">Tax</label>
-                        <select class="form-select @error('tax_id') is-invalid @enderror" id="tax_id" name="tax_id">
-                            <option value="">Select Tax</option>
-                            @foreach ($taxes as $tax)
-                                <option value="{{ $tax->id }}" {{ old('tax_id') == $tax->id ? 'selected' : '' }}>
-                                    {{ $tax->name }} ({{ $tax->rate }}%)
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('tax_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                <div class="col-12 col-md-6">
+                    <label for="min_stock" class="form-label">Minimum Stock</label>
+                    <input type="number" step="1" min="0" class="form-control @error('min_stock') is-invalid @enderror"
+                           id="min_stock" name="min_stock" value="{{ old('min_stock', 0) }}">
+                    @error('min_stock')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            @endif
 
-                    <div class="col-12 col-md-6">
-                        <label for="discount_id" class="form-label">Discount</label>
-                        <select class="form-select @error('discount_id') is-invalid @enderror" id="discount_id" name="discount_id">
-                            <option value="">Select Discount</option>
-                            @foreach ($discounts as $discount)
-                                <option value="{{ $discount->id }}" {{ old('discount_id') == $discount->id ? 'selected' : '' }}>
-                                    {{ $discount->name }}
-                                    ({{ $discount->type == 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0) }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('discount_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                @else
-                    {{-- Edit mode - show tax and discount selectors --}}
-                    <div class="col-12 col-md-6">
-                        <label for="tax_id" class="form-label">Tax</label>
-                        <select class="form-select @error('tax_id') is-invalid @enderror"
-                                id="tax_id" name="tax_id">
-                            <option value="">Select Tax</option>
-                            @foreach ($taxes as $tax)
-                                <option value="{{ $tax->id }}"
-                                    {{ old('tax_id', $product->tax_id) == $tax->id ? 'selected' : '' }}>
-                                    {{ $tax->name }} ({{ $tax->rate }}%)
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('tax_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+            {{-- Tax and discount fields for both create and edit --}}
+            <div class="col-12 col-md-6">
+                <label for="tax_id" class="form-label">Tax</label>
+                <select class="form-select @error('tax_id') is-invalid @enderror"
+                        id="tax_id" name="tax_id">
+                    <option value="">Select Tax</option>
+                    @foreach ($taxes as $tax)
+                        <option value="{{ $tax->id }}"
+                            {{ old('tax_id', $product->tax_id ?? null) == $tax->id ? 'selected' : '' }}>
+                            {{ $tax->name }} ({{ $tax->rate }}%)
+                        </option>
+                    @endforeach
+                </select>
+                @error('tax_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
 
-                    <div class="col-12 col-md-6">
-                        <label for="discount_id" class="form-label">Discount</label>
-                        <select class="form-select @error('discount_id') is-invalid @enderror"
-                                id="discount_id" name="discount_id">
-                            <option value="">Select Discount</option>
-                            @foreach ($discounts as $discount)
-                                <option value="{{ $discount->id }}"
-                                    {{ old('discount_id', $product->discount_id) == $discount->id ? 'selected' : '' }}>
-                                    {{ $discount->name }}
-                                    ({{ $discount->type == 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0) }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('discount_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                @endif
+            <div class="col-12 col-md-6">
+                <label for="discount_id" class="form-label">Discount</label>
+                <select class="form-select @error('discount_id') is-invalid @enderror"
+                        id="discount_id" name="discount_id">
+                    <option value="">Select Discount</option>
+                    @foreach ($discounts as $discount)
+                        <option value="{{ $discount->id }}"
+                            {{ old('discount_id', $product->discount_id ?? null) == $discount->id ? 'selected' : '' }}>
+                            {{ $discount->name }}
+                            ({{ $discount->type == 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0) }})
+                        </option>
+                    @endforeach
+                </select>
+                @error('discount_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
         </div>
     </div>
 </div>
@@ -226,7 +209,7 @@
             <div class="col-12 col-md-6">
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="featured" name="featured"
-                           value="1" {{ old('featured', $product->featured ?? '') ? 'checked' : '' }} onchange="toggleFeaturedComponents()">
+                           value="1" {{ old('featured', $product->featured ?? 0) ? 'checked' : '' }} onchange="toggleFeaturedComponents()">
                     <label class="form-check-label" for="featured">Show on Landing Page</label>
                     <div class="form-text text-primary" id="featured-info">
                         Produk yang ditampilkan di landing page membutuhkan informasi lebih lengkap.
@@ -484,12 +467,25 @@
         function deleteImage(imageId) {
             if (confirm('Are you sure you want to delete this image?')) {
                 // Implement image deletion logic
-                axios.delete(`/products/images/${imageId}`)
+                fetch(`/products/images/${imageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
                         window.location.reload();
                     })
                     .catch(error => {
-                        alert('Error deleting image');
+                        alert('Error deleting image: ' + error.message);
                     });
             }
         }

@@ -196,27 +196,26 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'code' => 'required|unique:products|max:255',
-            'barcode' => 'nullable|unique:products|max:100',
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string|max:500',
-            'category_id' => 'required|exists:categories,id',
-            'purchase_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
-            'default_unit_id' => 'required|exists:units,id',
-            'stock' => 'required|numeric|min:0',
-            'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
-            'is_active' => 'boolean',
-            'featured' => 'boolean',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'url' => 'nullable|url',
-            'tax_id' => 'nullable|exists:taxes,id',
-            'discount_id' => 'nullable|exists:discounts,id',
-        ]);
-
         try {
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'code' => 'required|unique:products|max:255',
+                'barcode' => 'nullable|unique:products|max:100',
+                'description' => 'nullable|string',
+                'short_description' => 'nullable|string|max:500',
+                'category_id' => 'required|exists:categories,id',
+                'purchase_price' => 'required|numeric|min:0',
+                'selling_price' => 'required|numeric|min:0',
+                'stock' => 'required|numeric|min:0',
+                'min_stock' => 'nullable|numeric|min:0',
+                'default_unit_id' => 'required|exists:units,id',
+                'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
+                'tax_id' => 'nullable|exists:taxes,id',
+                'discount_id' => 'nullable|exists:discounts,id',
+                'url' => 'nullable|url',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
             DB::beginTransaction();
 
             // Variabel untuk barcode path
@@ -238,8 +237,8 @@ class ProductController extends Controller
             // Generate SEO fields
             $seoData = $this->generateSeoData(
                 $validated['name'],
-                $validated['short_description'],
-                $validated['description'],
+                $validated['short_description'] ?? null,
+                $validated['description'] ?? null,
                 $store,
                 $category
             );
@@ -249,8 +248,8 @@ class ProductController extends Controller
                 'name' => $validated['name'],
                 'code' => $validated['code'],
                 'slug' => Str::slug($validated['name']),
-                'description' => $validated['description'],
-                'short_description' => $validated['short_description'],
+                'description' => $validated['description'] ?? null,
+                'short_description' => $validated['short_description'] ?? null,
                 'barcode' => $validated['barcode'],
                 'barcode_image' => $barcodePath,
                 'category_id' => $validated['category_id'],
@@ -279,11 +278,11 @@ class ProductController extends Controller
                 'schema_gtin' => $validated['barcode'],
                 'schema_mpn' => $validated['code'],
 
-                'url' => $validated['url']
+                'url' => $validated['url'] ?? null
             ]);
 
             // Create product unit
-            $product->productUnits()->create([
+            $productUnit = $product->productUnits()->create([
                 'store_id' => $product->store_id,
                 'unit_id' => $validated['default_unit_id'],
                 'conversion_factor' => 1,
@@ -293,6 +292,21 @@ class ProductController extends Controller
                 'min_stock' => $validated['min_stock'] ?? 0,
                 'is_default' => true
             ]);
+
+            // Add stock history entry for initial stock
+            if ($validated['stock'] > 0) {
+                \App\Models\StockHistory::create([
+                    'store_id' => $product->store_id,
+                    'product_unit_id' => $productUnit->id,
+                    'reference_type' => 'initial_stock',
+                    'reference_id' => $product->id,
+                    'type' => 'in',
+                    'quantity' => $validated['stock'],
+                    'remaining_stock' => $validated['stock'],
+                    'notes' => 'Initial stock during product creation',
+                    'created_at' => now()
+                ]);
+            }
 
             // Handle multiple images
             if ($request->hasFile('images')) {
@@ -310,11 +324,17 @@ class ProductController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('products.index')
                 ->with('success', 'Produk Berhasil Dibuat');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Log the error for debugging
+            \Log::error('Product creation failed: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
             return back()
                 ->with('error', 'Gagal membuat produk: ' . $e->getMessage())
                 ->withInput();
@@ -423,26 +443,21 @@ class ProductController extends Controller
             abort(403);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'code' => 'required|max:255|unique:products,code,' . $product->id,
-            'barcode' => 'nullable|max:100|unique:products,barcode,' . $product->id,
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string|max:500',
-            'category_id' => 'required|exists:categories,id',
-            'tax_id' => 'nullable|exists:taxes,id',
-            'discount_id' => 'nullable|exists:discounts,id',
-            'purchase_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
-            'stock' => 'required|numeric|min:0',
-            'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
-            'is_active' => 'boolean',
-            'featured' => 'boolean',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'url' => 'nullable|url'
-        ]);
-
         try {
+            $validated = $request->validate([
+                'name' => 'required|max:255',
+                'code' => 'required|max:255|unique:products,code,' . $product->id,
+                'barcode' => 'nullable|max:100|unique:products,barcode,' . $product->id,
+                'description' => 'nullable|string',
+                'short_description' => 'nullable|string|max:500',
+                'category_id' => 'required|exists:categories,id',
+                'tax_id' => 'nullable|exists:taxes,id',
+                'discount_id' => 'nullable|exists:discounts,id',
+                'store_id' => auth()->user()->role === 'admin' ? 'required|exists:stores,id' : '',
+                'url' => 'nullable|url',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
             DB::beginTransaction();
 
             // Handle barcode generation if changed
@@ -471,8 +486,8 @@ class ProductController extends Controller
             // Generate SEO fields
             $seoData = $this->generateSeoData(
                 $validated['name'],
-                $validated['short_description'],
-                $validated['description'],
+                $validated['short_description'] ?? null,
+                $validated['description'] ?? null,
                 $store,
                 $category
             );
@@ -512,31 +527,8 @@ class ProductController extends Controller
                 'schema_gtin' => $validated['barcode'],
                 'schema_mpn' => $validated['code'],
 
-                'url' => $validated['url']
+                'url' => $validated['url'] ?? null
             ]);
-
-            // Update default unit
-            $defaultUnit = $product->productUnits()->where('is_default', true)->first();
-            if ($defaultUnit) {
-                $defaultUnit->update([
-                    'purchase_price' => $validated['purchase_price'],
-                    'selling_price' => $validated['selling_price'],
-                    'stock' => $validated['stock']
-                ]);
-
-                // Update other units based on conversion factor
-                $otherUnits = $product->productUnits()
-                    ->where('id', '!=', $defaultUnit->id)
-                    ->get();
-
-                foreach ($otherUnits as $unit) {
-                    $unit->update([
-                        'purchase_price' => $validated['purchase_price'] * $unit->conversion_factor,
-                        'selling_price' => $validated['selling_price'] * $unit->conversion_factor,
-                        'stock' => floor($validated['stock'] / $unit->conversion_factor)
-                    ]);
-                }
-            }
 
             // Handle new images
             if ($request->hasFile('images')) {
@@ -556,13 +548,19 @@ class ProductController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('products.show', $product)
-                ->with('success', 'Product updated successfully');
+                ->with('success', 'Produk berhasil diperbarui');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // Log the error for debugging
+            \Log::error('Product update failed: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
             return back()
-                ->with('error', 'Failed to update product: ' . $e->getMessage())
+                ->with('error', 'Gagal memperbarui produk: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -645,23 +643,6 @@ class ProductController extends Controller
         // Get default unit for quick access
         $defaultUnit = $product->productUnits->where('is_default', true)->first();
 
-        // Calculate statistics
-        $statistics = [
-            'total_sales' => $product->transactionItems
-                ->where('transaction.status', 'success')
-                ->sum('quantity'),
-            'total_revenue' => $product->transactionItems
-                ->where('transaction.status', 'success')
-                ->sum('subtotal'),
-            'stock_value' => $product->productUnits->sum(
-                fn($unit) => $unit->stock * $unit->purchase_price
-            ),
-            'potential_revenue' => $product->productUnits->sum(
-                fn($unit) => $unit->stock * $unit->selling_price
-            ),
-            'average_margin' => $defaultUnit ?
-                (($defaultUnit->selling_price - $defaultUnit->purchase_price) / $defaultUnit->purchase_price) * 100 : 0
-        ];
 
         // Get recent stock adjustments
         $stockAdjustments = StockAdjustment::query()
@@ -674,7 +655,6 @@ class ProductController extends Controller
         return view('products.show', compact(
             'product',
             'defaultUnit',
-            'statistics',
             'stockAdjustments'
         ));
     }

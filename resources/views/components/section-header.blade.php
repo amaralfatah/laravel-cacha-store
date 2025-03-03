@@ -11,6 +11,30 @@
         @php
             $segments = request()->segments();
             $currentUrl = '';
+            $breadcrumbTitles = [];
+
+            // Fungsi untuk memeriksa apakah segment adalah ID numerik
+            function isNumeric($segment) {
+                return is_numeric($segment);
+            }
+
+            // Fungsi untuk mendapatkan judul segment yang lebih baik
+            function getSegmentTitle($segment, $key, $segments) {
+                // Jika segment adalah ID numerik
+                if (isNumeric($segment)) {
+                    // Coba dapatkan nama model dari segment sebelumnya (jika ada)
+                    $previousSegment = isset($segments[$key - 1]) ? $segments[$key - 1] : '';
+
+                    // Hapus 's' di akhir untuk mendapatkan nama model tunggal (contoh: users -> user)
+                    $modelName = rtrim($previousSegment, 's');
+
+                    // Kembalikan nama yang lebih deskriptif
+                    return ucwords($modelName) . ' Detail';
+                }
+
+                // Untuk segment normal, ubah format seperti biasa
+                return ucwords(str_replace(['-', '_'], ' ', $segment));
+            }
         @endphp
 
         <nav aria-label="breadcrumb">
@@ -24,7 +48,10 @@
                     @php
                         $currentUrl .= '/' . $segment;
                         $isLast = $loop->last;
-                        $segmentTitle = ucwords(str_replace(['-', '_'], ' ', $segment));
+                        $segmentTitle = getSegmentTitle($segment, $key, $segments);
+
+                        // Tambahkan ke array judul untuk referensi
+                        $breadcrumbTitles[$currentUrl] = $segmentTitle;
                     @endphp
                     <li class="breadcrumb-item {{ $isLast ? 'active' : '' }} d-flex align-items-center"
                         {!! $isLast ? 'aria-current="page"' : '' !!}>
