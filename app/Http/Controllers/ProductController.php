@@ -65,6 +65,10 @@ class ProductController extends Controller
                 });
             }
 
+            if ($request->filled('category_id')) {
+                $products->where('products.category_id', $request->category_id);
+            }
+
             // Filter status aktif
             if ($request->filled('is_active')) {
                 $products->where('is_active', $request->is_active);
@@ -82,6 +86,25 @@ class ProductController extends Controller
                 });
             }
 
+            // Handle column-specific filtering for barcode
+            if ($request->filled('columns')) {
+                foreach ($request->columns as $column) {
+                    if ($column['name'] === 'barcode' && !empty($column['search']['value'])) {
+                        $barcodeValue = $column['search']['value'];
+                        $products->where('products.barcode', '=', $barcodeValue);
+                    }
+                }
+            }
+
+            if ($request->filled('search') && $request->search['value'] !== '') {
+                $searchValue = $request->search['value'];
+                $products->where(function($query) use ($searchValue) {
+                    $query->where('products.name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('products.code', 'like', '%' . $searchValue . '%')
+                        ->orWhere('products.barcode', 'like', '%' . $searchValue . '%'); // Added barcode search
+                });
+            }
+
             // Default ordering by created_at in descending order (newest first)
             $products->orderBy('products.created_at', 'desc');
 
@@ -91,20 +114,15 @@ class ProductController extends Controller
                 })
                 ->addColumn('name_link', function ($product) {
                     return '<a href="' . route('products.show', $product->id) .
-                        '" class="fw-bold text-primary product-link"
-                       data-bs-toggle="tooltip" title="Klik untuk detail produk">' .
+                        '" class="btn btn-outline-primary "
+                   data-bs-toggle="tooltip" title="Klik untuk detail produk">' .
                         e($product->name) . '</a>';
                 })
+                ->addColumn('group_name', function ($product) {
+                    return $product->category?->group?->name ?? '-';
+                })
                 ->addColumn('category_name', function ($product) {
-                    // Mengkombinasikan nama grup dan kategori
-                    $groupName = $product->category?->group?->name;
-                    $categoryName = $product->category?->name;
-
-                    if ($groupName && $categoryName) {
-                        return $groupName . ' » ' . $categoryName;
-                    }
-
-                    return $categoryName ?? '-';
+                    return $product->category?->name ?? '-';
                 })
                 ->addColumn('stock_info', function ($product) {
                     $defaultUnit = $product->productUnits->first();
@@ -112,11 +130,11 @@ class ProductController extends Controller
 
                     $stockStatus = '';
                     if ($defaultUnit->stock <= 0) {
-                        $stockStatus = '<span class="badge bg-danger">Habis</span>';
+                        $stockStatus = '<span class="badge badge-sm bg-danger">Habis</span>';
                     } elseif ($defaultUnit->stock <= $defaultUnit->min_stock) {
-                        $stockStatus = '<span class="badge bg-warning">Menipis</span>';
+                        $stockStatus = '<span class="badge badge-sm bg-warning">Menipis</span>';
                     } else {
-                        $stockStatus = '<span class="badge bg-success">Tersedia</span>';
+                        $stockStatus = '<span class="badge badge-sm bg-success">Tersedia</span>';
                     }
 
                     return sprintf(
@@ -132,8 +150,8 @@ class ProductController extends Controller
                 })
                 ->addColumn('status', function ($product) {
                     return $product->is_active ?
-                        '<span class="badge bg-success">Aktif</span>' :
-                        '<span class="badge bg-danger">Nonaktif</span>';
+                        '<span class="badge badge-sm bg-success">Aktif</span>' :
+                        '<span class="badge badge-sm bg-danger">Nonaktif</span>';
                 })
                 ->rawColumns(['name_link', 'stock_info', 'status'])
                 ->make(true);

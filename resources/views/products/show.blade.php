@@ -36,8 +36,7 @@
                                 <!-- Action Buttons -->
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('products.edit', $product) }}"
-                                       class="btn btn-primary btn-sm rounded-pill">
-                                        <i class='bx bx-edit-alt me-1'></i>
+                                       class="btn btn-primary">
                                         <span>Edit</span>
                                     </a>
                                 </div>
@@ -77,10 +76,9 @@
 
                             <!-- Simplified Product Info - Only essential details -->
                             <div class="row g-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="d-flex flex-column gap-2">
                                         <div class="d-flex align-items-center">
-                                            <div class="text-muted" style="width: 30px;"><i class='bx bx-tag'></i></div>
                                             <div>
                                                 <small class="text-muted">Code</small>
                                                 <div>{{ $product->code }}</div>
@@ -88,8 +86,24 @@
                                         </div>
 
                                         <div class="d-flex align-items-center">
-                                            <div class="text-muted" style="width: 30px;"><i class='bx bx-folder'></i>
+                                            <div>
+                                                <small class="text-muted">Barcode</small>
+                                                <div>{{ $product->barcode }}</div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <small class="text-muted">Group</small>
+                                                <div>{{ $product->category->group->name }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center">
                                             <div>
                                                 <small class="text-muted">Category</small>
                                                 <div>{{ $product->category->name }}</div>
@@ -98,11 +112,9 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="d-flex flex-column gap-2">
                                         <div class="d-flex align-items-center">
-                                            <div class="text-muted" style="width: 30px;"><i class='bx bx-package'></i>
-                                            </div>
                                             <div>
                                                 <small class="text-muted">Current Stock</small>
                                                 <div>
@@ -112,8 +124,6 @@
                                         </div>
 
                                         <div class="d-flex align-items-center">
-                                            <div class="text-muted" style="width: 30px;"><i class='bx bx-money'></i>
-                                            </div>
                                             <div>
                                                 <small class="text-muted">Selling Price</small>
                                                 <div>
@@ -171,8 +181,7 @@
                     <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
                         <h5 class="card-title mb-0 text-primary">Satuan</h5>
                         <a href="{{ route('products.units.create', $product) }}"
-                           class="btn btn-sm btn-primary rounded-pill">
-                            <i class='bx bx-plus'></i> Tambah
+                           class="btn btn-sm btn-primary">Tambah
                         </a>
                     </div>
                     <div class="card-body p-0">
@@ -187,7 +196,7 @@
                                     <th class="border-0 px-4 py-3">Stok</th>
                                     <th class="border-0 px-4 py-3">Min Stok</th>
                                     <th class="border-0 px-4 py-3">Status</th>
-                                    <th class="border-0 px-4 py-3 text-end">Aksi</th>
+                                    <th class="border-0 px-4 py-3">Aksi</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -214,14 +223,14 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a class="btn btn-sm btn-outline-info" href="javascript:void(0);"
-                                               data-bs-toggle="modal"
-                                               data-bs-target="#adjustStockModal{{ $unit->id }}">
-                                                <i class="bx bx-plus"></i>
-                                            </a>
-                                            <a class="btn btn-sm btn-outline-warning"
+{{--                                            <a class="btn btn-sm btn-outline-info" href="javascript:void(0);"--}}
+{{--                                               data-bs-toggle="modal"--}}
+{{--                                               data-bs-target="#adjustStockModal{{ $unit->id }}">--}}
+{{--                                                <i class="bx bx-plus"></i>--}}
+{{--                                            </a>--}}
+                                            <a class="btn btn-sm btn-warning"
                                                href="{{ route('products.units.edit', [$product, $unit]) }}">
-                                                <i class="bx bx-edit-alt"></i>
+                                                Edit
                                             </a>
                                             @if(!$unit->is_default)
                                                 <a class="btn btn-sm btn-outline-danger "
@@ -513,7 +522,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete()">
-                            <i class='bx bx-trash me-1'></i> Hapus Produk
+                            Hapus Produk
                         </button>
                     </form>
                 </div>
