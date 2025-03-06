@@ -159,7 +159,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
                         <h5 class="card-title m-0 fw-semibold">Keranjang Belanja</h5>
-                        <span class="badge bg-primary" id="cart-item-count">0 item</span>
+{{--                        <span class="badge bg-primary" id="cart-item-count">0 item</span>--}}
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
