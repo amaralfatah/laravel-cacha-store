@@ -2,10 +2,10 @@
 
 @section('content')
 
-    <x-section-header title="Balance History">
+    <x-section-header title="Riwayat Saldo">
         <x-slot:actions>
             <a href="{{ route('user.store.balance.show') }}" class="btn btn-secondary">
-                <i class='bx bx-arrow-back me-1'></i> Back to Overview
+                <i class='bx bx-arrow-back me-1'></i> Kembali ke Ringkasan
             </a>
         </x-slot:actions>
     </x-section-header>
@@ -16,13 +16,13 @@
                 <table class="table table-striped" id="balanceHistoryTable">
                     <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Payment Method</th>
-                        <th>Amount</th>
-                        <th>Balance</th>
-                        <th>Notes</th>
-                        <th>Created By</th>
+                        <th>Tanggal</th>
+                        <th>Jenis</th>
+                        <th>Metode Pembayaran</th>
+                        <th>Jumlah</th>
+                        <th>Saldo</th>
+                        <th>Catatan</th>
+                        <th>Dibuat Oleh</th>
                     </tr>
                     </thead>
                 </table>
@@ -44,7 +44,9 @@
                     {
                         data: 'payment_method',
                         render: function(data) {
-                            return data.charAt(0).toUpperCase() + data.slice(1);
+                            if (data === 'cash') return 'Tunai';
+                            else if (data === 'transfer') return 'Transfer';
+                            else return data.charAt(0).toUpperCase() + data.slice(1);
                         }
                     },
                     {

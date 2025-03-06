@@ -5,7 +5,7 @@
             <form action="{{ route('user.store.balance.adjustment') }}" method="POST" id="adjustmentForm">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Balance Adjustment</h5>
+                    <h5 class="modal-title">Penyesuaian Saldo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -20,11 +20,11 @@
                     @endif
 
                     <div class="mb-3">
-                        <label class="form-label">Payment Method</label>
+                        <label class="form-label">Metode Pembayaran</label>
                         <div class="btn-group w-100" role="group">
                             <input type="radio" class="btn-check" name="type" id="typeCash" value="cash" checked>
                             <label class="btn btn-outline-primary" for="typeCash">
-                                <i class='bx bx-money me-1'></i> Cash
+                                <i class='bx bx-money me-1'></i> Tunai
                             </label>
                             <input type="radio" class="btn-check" name="type" id="typeTransfer" value="transfer">
                             <label class="btn btn-outline-primary" for="typeTransfer">
@@ -34,21 +34,21 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Adjustment Type</label>
+                        <label class="form-label">Jenis Penyesuaian</label>
                         <div class="btn-group w-100" role="group">
                             <input type="radio" class="btn-check" name="adjustment_type" id="typeIn" value="in" checked>
                             <label class="btn btn-outline-success" for="typeIn">
-                                <i class='bx bx-plus-circle'></i> Money In
+                                <i class='bx bx-plus-circle'></i> Uang Masuk
                             </label>
                             <input type="radio" class="btn-check" name="adjustment_type" id="typeOut" value="out">
                             <label class="btn btn-outline-danger" for="typeOut">
-                                <i class='bx bx-minus-circle'></i> Money Out
+                                <i class='bx bx-minus-circle'></i> Uang Keluar
                             </label>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="amount">Amount</label>
+                        <label class="form-label" for="amount">Jumlah</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
                             <input type="number"
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="notes">Notes</label>
+                        <label class="form-label" for="notes">Catatan</label>
                         <textarea class="form-control @error('notes') is-invalid @enderror"
                                   id="notes"
                                   name="notes"
@@ -78,8 +78,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Adjustment</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Penyesuaian</button>
                 </div>
             </form>
         </div>

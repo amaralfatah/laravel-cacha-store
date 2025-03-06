@@ -2,11 +2,11 @@
 
 @section('content')
 
-    <x-section-header title="Edit Store"/>
+    <x-section-header title="Edit Toko"/>
 
     <div class="card">
 
-        <!-- Store Logo -->
+        <!-- Logo Toko -->
         <div class="card-body">
             <form action="{{ route('user.store.update') }}" method="POST" enctype="multipart/form-data" id="storeForm">
                 @csrf
@@ -14,19 +14,19 @@
 
                 <div class="d-flex align-items-start align-items-sm-center gap-4">
                     @if($store->logo)
-                        <img src="{{ asset($store->logo) }}" alt="store-logo" class="d-block rounded" height="100"
+                        <img src="{{ asset($store->logo) }}" alt="logo-toko" class="d-block rounded" height="100"
                              width="100" id="previewImage"/>
                     @else
                         <div class="d-block rounded bg-light d-flex align-items-center justify-content-center"
                              id="noImagePreview" style="height: 100px; width: 100px;">
                             <i class='bx bx-store text-secondary' style="font-size: 2rem;"></i>
                         </div>
-                        <img src="" alt="store-logo" class="d-block rounded d-none" height="100" width="100"
+                        <img src="" alt="logo-toko" class="d-block rounded d-none" height="100" width="100"
                              id="previewImage"/>
                     @endif
                     <div class="button-wrapper">
                         <label for="logo" class="btn btn-primary me-2 mb-4" tabindex="0">
-                            <span class="d-none d-sm-block">Upload new photo</span>
+                            <span class="d-none d-sm-block">Unggah foto baru</span>
                             <i class="bx bx-upload d-block d-sm-none"></i>
                             <input type="file" id="logo" name="logo" class="account-file-input" hidden
                                    accept="image/png, image/jpeg"/>
@@ -36,7 +36,7 @@
                             <span class="d-none d-sm-block">Reset</span>
                         </button>
 
-                        <p class="text-muted mb-0">Allowed JPG or PNG. Max size of 2MB</p>
+                        <p class="text-muted mb-0">Format JPG atau PNG. Ukuran maksimal 2MB</p>
                     </div>
                 </div>
 
@@ -44,7 +44,7 @@
 
                 <div class="row">
                     <div class="mb-3 col-md-6">
-                        <label for="name" class="form-label">Store Name</label>
+                        <label for="name" class="form-label">Nama Toko</label>
                         <input class="form-control @error('name') is-invalid @enderror"
                                type="text"
                                id="name"
@@ -57,7 +57,7 @@
                     </div>
 
                     <div class="mb-3 col-md-6">
-                        <label for="code" class="form-label">Store Code</label>
+                        <label for="code" class="form-label">Kode Toko</label>
                         <input class="form-control"
                                type="text"
                                id="code"
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="mb-3 col-md-6">
-                        <label for="email" class="form-label">E-mail</label>
+                        <label for="email" class="form-label">Email</label>
                         <input class="form-control @error('email') is-invalid @enderror"
                                type="email"
                                id="email"
@@ -78,7 +78,7 @@
                     </div>
 
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="phone">Phone Number</label>
+                        <label class="form-label" for="phone">Nomor Telepon</label>
                         <div class="input-group input-group-merge">
                             <span class="input-group-text"><i class='bx bx-phone'></i></span>
                             <input type="text"
@@ -93,7 +93,7 @@
                     </div>
 
                     <div class="mb-3 col-md-12">
-                        <label for="address" class="form-label">Address</label>
+                        <label for="address" class="form-label">Alamat</label>
                         <textarea class="form-control @error('address') is-invalid @enderror"
                                   id="address"
                                   name="address"
@@ -104,8 +104,8 @@
                     </div>
                 </div>
                 <div class="mt-2">
-                    <button type="submit" class="btn btn-primary me-2">Save changes</button>
-                    <a href="{{ route('user.store.show') }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary me-2">Simpan Perubahan</button>
+                    <a href="{{ route('user.store.show') }}" class="btn btn-outline-secondary">Batal</a>
                 </div>
             </form>
         </div>
@@ -122,7 +122,7 @@
             const noImagePreview = document.getElementById('noImagePreview');
             const resetButton = document.querySelector('.account-image-reset');
 
-            // Original logo URL untuk reset
+            // URL logo asli untuk reset
             const originalLogoUrl = "{{ $store->logo ? asset($store->logo) : '' }}";
 
             if (logoInput) {
