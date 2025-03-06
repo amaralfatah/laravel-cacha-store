@@ -193,7 +193,7 @@
                     <div class="card-body bg-primary text-white total-payment">
                         <div class="payment-label">Total Pembayaran</div>
                         <div class="d-flex align-items-center">
-                            <input type="text" class="form-control-plaintext text-white payment-value"
+                            <input type="text" class="form-control-plaintext text-white payment-value fw-bold fs-3"
                                    id="pos_final_amount" readonly>
                         </div>
                     </div>
