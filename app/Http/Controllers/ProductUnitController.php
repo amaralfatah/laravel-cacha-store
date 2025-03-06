@@ -85,7 +85,7 @@ class ProductUnitController extends Controller
             'conversion_factor' => 'required|integer|min:1',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'stock' => 'required|numeric|min:0',
+            'stock' => 'required|numeric', // Hapus min:0 agar dapat menerima nilai negatif
             'min_stock' => 'required|numeric|min:0',
             'is_default' => 'boolean',
         ]);

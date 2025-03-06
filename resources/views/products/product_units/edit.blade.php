@@ -40,7 +40,7 @@
                                            class="form-control @error('purchase_price') is-invalid @enderror"
                                            name="purchase_price" id="purchase_price"
                                            value="{{ old('purchase_price', $unit->purchase_price) }}"
-                                           min="0" step="0.01" required>
+                                           min="0" step="50" required>
                                     @error('purchase_price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -52,7 +52,7 @@
                                            class="form-control @error('selling_price') is-invalid @enderror"
                                            name="selling_price" id="selling_price"
                                            value="{{ old('selling_price', $unit->selling_price) }}"
-                                           min="0" step="0.01" required>
+                                           min="0" step="50" required>
                                     @error('selling_price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -66,7 +66,7 @@
                                 <input type="number" class="form-control @error('min_stock') is-invalid @enderror"
                                        name="min_stock" id="min_stock"
                                        value="{{ old('min_stock', $unit->min_stock) }}"
-                                       min="0" step="0.01" required>
+                                       min="0" step="1" required>
                                 @error('min_stock')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
