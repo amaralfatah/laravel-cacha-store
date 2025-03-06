@@ -3,105 +3,38 @@
 @section('content')
         <x-section-header title="Dashboard"/>
 
-        <!-- Stats Cards -->
-        <div class="row">
-            <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-info">
-                                <p class="card-text">Penjualan Hari Ini</p>
-                                <div class="d-flex align-items-end mb-2">
-                                    <h4 class="card-title mb-0 me-2">Rp {{ number_format($todaySales, 0, ',', '.') }}</h4>
-                                    @if($salesGrowth > 0)
-                                        <small class="text-success">(+{{ number_format($salesGrowth, 1) }}%)</small>
-                                    @elseif($salesGrowth < 0)
-                                        <small class="text-danger">({{ number_format($salesGrowth, 1) }}%)</small>
-                                    @else
-                                        <small class="text-muted">(0%)</small>
-                                    @endif
-                                </div>
-                                <small class="text-muted">dibandingkan kemarin</small>
-                            </div>
-                            <div class="card-icon">
-                            <span class="badge bg-label-primary rounded p-2">
-                                <i class="bx bx-calendar bx-sm"></i>
-                            </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="row mb-4">
+            <x-card-status
+                title="Penjualan Hari Ini"
+                :value="$todaySales"
+                :growth="$salesGrowth"
+                subtitle="dibandingkan kemarin"
+                icon="bx-calendar"
+                iconColor="primary" />
 
-            <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-info">
-                                <p class="card-text">Penjualan Bulan Ini</p>
-                                <div class="d-flex align-items-end mb-2">
-                                    <h4 class="card-title mb-0 me-2">Rp {{ number_format($monthlySales, 0, ',', '.') }}</h4>
-                                    @if($monthlyGrowth > 0)
-                                        <small class="text-success">(+{{ number_format($monthlyGrowth, 1) }}%)</small>
-                                    @elseif($monthlyGrowth < 0)
-                                        <small class="text-danger">({{ number_format($monthlyGrowth, 1) }}%)</small>
-                                    @else
-                                        <small class="text-muted">(0%)</small>
-                                    @endif
-                                </div>
-                                <small class="text-muted">dibandingkan bulan lalu</small>
-                            </div>
-                            <div class="card-icon">
-                            <span class="badge bg-label-success rounded p-2">
-                                <i class="bx bx-dollar bx-sm"></i>
-                            </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-card-status
+                title="Penjualan Bulan Ini"
+                :value="$monthlySales"
+                :growth="$monthlyGrowth"
+                subtitle="dibandingkan bulan lalu"
+                icon="bx-dollar"
+                iconColor="success" />
 
-            <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-info">
-                                <p class="card-text">Transaksi Hari Ini</p>
-                                <div class="d-flex align-items-end mb-2">
-                                    <h4 class="card-title mb-0 me-2">{{ $todayTransactions }}</h4>
-                                </div>
-                                <small class="text-muted">transaksi sukses</small>
-                            </div>
-                            <div class="card-icon">
-                            <span class="badge bg-label-info rounded p-2">
-                                <i class="bx bx-receipt bx-sm"></i>
-                            </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-card-status
+                title="Transaksi Hari Ini"
+                :value="$todayTransactions"
+                subtitle="transaksi sukses"
+                icon="bx-receipt"
+                iconColor="info"
+                format="normal" />
 
-            <div class="col-lg-3 col-md-6 col-sm-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-info">
-                                <p class="card-text">Produk Aktif</p>
-                                <div class="d-flex align-items-end mb-2">
-                                    <h4 class="card-title mb-0 me-2">{{ $activeProducts }}</h4>
-                                </div>
-                                <small class="text-muted">total produk</small>
-                            </div>
-                            <div class="card-icon">
-                            <span class="badge bg-label-warning rounded p-2">
-                                <i class="bx bx-package bx-sm"></i>
-                            </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-card-status
+                title="Produk Aktif"
+                :value="$activeProducts"
+                subtitle="total produk"
+                icon="bx-package"
+                iconColor="warning"
+                format="normal" />
         </div>
 
         <div class="row">

@@ -43,6 +43,11 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'cashier_id');
     }
 
+    public function cashier()
+    {
+        return $this->belongsTo(User::class, 'cashier_id');
+    }
+
     public function items()
     {
         return $this->hasMany(TransactionItem::class);

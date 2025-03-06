@@ -39,27 +39,27 @@ class DashboardController extends Controller
         $stockQuery = ProductUnit::query()->where('stock', '<', DB::raw('min_stock'));
 
         if ($storeId) {
-            $query->where('store_id', $storeId);
-            $productQuery->where('store_id', $storeId);
-            $stockQuery->where('store_id', $storeId);
+            $query->where('transactions.store_id', $storeId);
+            $productQuery->where('products.store_id', $storeId);
+            $stockQuery->where('product_units.store_id', $storeId);
         }
 
         // Statistik Penjualan Hari Ini
         $todaySales = $query->clone()
-            ->whereDate('created_at', $today)
-            ->where('status', 'success')
-            ->sum('final_amount');
+            ->whereDate('transactions.created_at', $today)
+            ->where('transactions.status', 'success')
+            ->sum('transactions.final_amount');
 
         $todayTransactions = $query->clone()
-            ->whereDate('created_at', $today)
-            ->where('status', 'success')
+            ->whereDate('transactions.created_at', $today)
+            ->where('transactions.status', 'success')
             ->count();
 
         // Perbandingan dengan hari sebelumnya
         $yesterdaySales = $query->clone()
-            ->whereDate('created_at', $yesterday)
-            ->where('status', 'success')
-            ->sum('final_amount');
+            ->whereDate('transactions.created_at', $yesterday)
+            ->where('transactions.status', 'success')
+            ->sum('transactions.final_amount');
 
         $salesGrowth = $yesterdaySales > 0
             ? (($todaySales - $yesterdaySales) / $yesterdaySales) * 100
@@ -67,14 +67,14 @@ class DashboardController extends Controller
 
         // Statistik Bulanan
         $monthlySales = $query->clone()
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->where('status', 'success')
-            ->sum('final_amount');
+            ->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+            ->where('transactions.status', 'success')
+            ->sum('transactions.final_amount');
 
         $lastMonthSales = $query->clone()
-            ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
-            ->where('status', 'success')
-            ->sum('final_amount');
+            ->whereBetween('transactions.created_at', [$startOfLastMonth, $endOfLastMonth])
+            ->where('transactions.status', 'success')
+            ->sum('transactions.final_amount');
 
         $monthlyGrowth = $lastMonthSales > 0
             ? (($monthlySales - $lastMonthSales) / $lastMonthSales) * 100
@@ -103,7 +103,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Stok Rendah
+        // Stok Rendah - FIX: Specify the table name for store_id to avoid ambiguity
         $lowStockProducts = $stockQuery->select(
             'product_units.id',
             'products.name as product_name',
@@ -120,11 +120,11 @@ class DashboardController extends Controller
         // Grafik Penjualan
         $salesChart = $query->clone()
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(final_amount) as total_sales')
+                DB::raw('DATE(transactions.created_at) as date'),
+                DB::raw('SUM(transactions.final_amount) as total_sales')
             )
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->where('status', 'success')
+            ->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+            ->where('transactions.status', 'success')
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -147,12 +147,12 @@ class DashboardController extends Controller
         if (Auth::user()->role === 'admin') {
             $stores = Store::where('is_active', true)
                 ->withCount(['transactions as transaction_count' => function ($query) use ($startOfMonth, $endOfMonth) {
-                    $query->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                        ->where('status', 'success');
+                    $query->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+                        ->where('transactions.status', 'success');
                 }])
                 ->withSum(['transactions as sales_total' => function ($query) use ($startOfMonth, $endOfMonth) {
-                    $query->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                        ->where('status', 'success');
+                    $query->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+                        ->where('transactions.status', 'success');
                 }], 'final_amount')
                 ->orderByDesc('sales_total')
                 ->limit(5)
@@ -181,7 +181,7 @@ class DashboardController extends Controller
             ->get();
 
         // Total produk aktif
-        $activeProducts = $productQuery->where('is_active', true)->count();
+        $activeProducts = $productQuery->where('products.is_active', true)->count();
 
         return view('dashboard.index', compact(
             'todaySales',
@@ -196,5 +196,50 @@ class DashboardController extends Controller
             'topCategories',
             'activeProducts'
         ));
+    }
+
+    // Endpoint untuk data grafik
+    public function getChartData()
+    {
+        $storeId = $this->getStoreId();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+
+        // Query basis berdasarkan role
+        $query = Transaction::query();
+
+        if ($storeId) {
+            $query->where('transactions.store_id', $storeId);
+        }
+
+        // Data penjualan harian
+        $dailySales = $query->clone()
+            ->select(
+                DB::raw('DATE(transactions.created_at) as date'),
+                DB::raw('SUM(transactions.final_amount) as total_sales'),
+                DB::raw('COUNT(*) as transaction_count')
+            )
+            ->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+            ->where('transactions.status', 'success')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Data metode pembayaran
+        $paymentMethods = $query->clone()
+            ->select(
+                'transactions.payment_type',
+                DB::raw('COUNT(*) as count'),
+                DB::raw('SUM(transactions.final_amount) as total_amount')
+            )
+            ->where('transactions.status', 'success')
+            ->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+            ->groupBy('transactions.payment_type')
+            ->get();
+
+        return response()->json([
+            'daily_sales' => $dailySales,
+            'payment_methods' => $paymentMethods,
+        ]);
     }
 }

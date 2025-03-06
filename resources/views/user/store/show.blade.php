@@ -44,6 +44,23 @@
 
     <!-- Quick Stats Cards -->
     <div class="row g-3 mb-4">
+        <!-- Total Inventory Value Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card border h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-label-danger p-3 me-3">
+                            <i class='bx bx-store-alt fs-4 text-danger'></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Rp {{ number_format($totalInventoryValue, 0, ',', '.') }}</h6>
+                            <small>Total Inventory Value</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- After the existing cards in the Quick Stats Cards row -->
         <div class="col-12 col-sm-6 col-md-4">
             <div class="card border h-100">

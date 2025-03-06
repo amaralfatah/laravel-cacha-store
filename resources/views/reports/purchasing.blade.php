@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Laporan Keuangan')
+@section('title', 'Laporan Pembelian')
 
 @section('content')
-    <x-section-header title="Laporan Keuangan">
+    <x-section-header title="Laporan Pembelian">
         <x-slot:actions>
             <form id="date-filter-form" class="d-flex gap-3">
                 <div class="input-group">
@@ -25,38 +25,34 @@
     </x-section-header>
 
     <!-- Summary Cards -->
+    <!-- Using the original card-status component without modifications -->
+
     <div class="row mb-4">
         <x-card-status
-            title="Total Pemasukan"
-            subtitle="Seluruh aliran kas masuk"
-            :value="$totalIncome"
-            icon="bx-trending-up"
-            iconColor="success"
-            columnSize="col-md-3" />
-
-        <x-card-status
-            title="Total Pengeluaran"
-            subtitle="Seluruh aliran kas keluar"
-            :value="$totalExpense"
-            icon="bx-trending-down"
-            iconColor="danger"
-            columnSize="col-md-3" />
-
-        <x-card-status
-            title="Arus Kas Bersih"
-            subtitle="Pemasukan - Pengeluaran"
-            :value="abs($netCashflow)"
-            icon="bx-wallet"
+            title="Total Pembelian"
+            subtitle="Seluruh pembelian yang sudah selesai"
+            :value="$totalPurchases"
+            icon="bx-shopping-bag"
             iconColor="primary"
-            columnSize="col-md-3" />
+            columnSize="col-md-4" />
 
         <x-card-status
-            title="Saldo Toko"
-            subtitle="Saldo saat ini"
-            :value="$storeBalance && $storeBalance->balance ? $storeBalance->balance->amount : 0"
-            icon="bx-money"
+            title="Pembelian Tertunda"
+            subtitle="Pembelian yang belum selesai"
+            :value="$pendingPurchasesCount"
+            icon="bx-time"
+            iconColor="warning"
+            format="normal"
+            columnSize="col-md-4" />
+
+        <x-card-status
+            title="Jumlah Supplier"
+            subtitle="Total supplier aktif"
+            :value="$suppliers->count()"
+            icon="bx-building"
             iconColor="info"
-            columnSize="col-md-3" />
+            format="normal"
+            columnSize="col-md-4" />
     </div>
 
     <!-- Charts -->
@@ -65,12 +61,12 @@
             <div class="card h-100">
                 <div class="card-header d-flex align-items-center p-4">
                     <div class="card-title mb-0">
-                        <h5 class="mb-0">Aliran Kas</h5>
-                        <small class="text-muted">Pemasukan dan pengeluaran dalam periode terpilih</small>
+                        <h5 class="mb-0">Tren Pembelian</h5>
+                        <small class="text-muted">Riwayat pembelian per periode</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
-                    <div id="cashflowChart" style="width: 100%; height: 300px;"></div>
+                    <div id="purchaseChart" style="width: 100%; height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -79,7 +75,7 @@
                 <div class="card-header d-flex align-items-center p-4">
                     <div class="card-title mb-0">
                         <h5 class="mb-0">Metode Pembayaran</h5>
-                        <small class="text-muted">Distribusi transaksi</small>
+                        <small class="text-muted">Distribusi metode pembayaran</small>
                     </div>
                 </div>
                 <div class="card-body p-4">
@@ -89,51 +85,52 @@
         </div>
     </div>
 
-    <!-- Transactions Table -->
+    <!-- Purchases Table -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center p-4">
-            <h5 class="card-title mb-0">Riwayat Transaksi Keuangan</h5>
+            <h5 class="card-title mb-0">Riwayat Pembelian</h5>
             <div class="d-flex gap-2">
-                <input type="hidden" id="type" name="type">
-                <input type="hidden" id="payment_method" name="payment_method">
+                <input type="hidden" id="supplier_id" name="supplier_id">
+                <input type="hidden" id="status" name="status">
 
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="typeFilterDropdown"
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="supplierFilterDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter Tipe
+                        Filter Supplier
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="typeFilterDropdown">
-                        <li><a class="dropdown-item type-filter" href="#" data-type="">Semua Transaksi</a></li>
-                        <li><a class="dropdown-item type-filter" href="#" data-type="in">Pemasukan</a></li>
-                        <li><a class="dropdown-item type-filter" href="#" data-type="out">Pengeluaran</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="supplierFilterDropdown">
+                        <li><a class="dropdown-item supplier-filter" href="#" data-supplier="">Semua Supplier</a></li>
+                        @foreach($suppliers as $supplier)
+                            <li><a class="dropdown-item supplier-filter" href="#" data-supplier="{{ $supplier->id }}">{{ $supplier->name }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="methodFilterDropdown"
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="statusFilterDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter Metode
+                        Filter Status
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="methodFilterDropdown">
-                        <li><a class="dropdown-item method-filter" href="#" data-method="">Semua Metode</a></li>
-                        <li><a class="dropdown-item method-filter" href="#" data-method="cash">Tunai</a></li>
-                        <li><a class="dropdown-item method-filter" href="#" data-method="transfer">Transfer</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="statusFilterDropdown">
+                        <li><a class="dropdown-item status-filter" href="#" data-status="">Semua Status</a></li>
+                        <li><a class="dropdown-item status-filter" href="#" data-status="completed">Selesai</a></li>
+                        <li><a class="dropdown-item status-filter" href="#" data-status="pending">Tertunda</a></li>
+                        <li><a class="dropdown-item status-filter" href="#" data-status="cancelled">Dibatalkan</a></li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="card-body p-4">
             <div class="table-responsive">
-                <table id="financial-table" class="table table-striped table-hover">
+                <table id="purchases-table" class="table table-striped table-hover">
                     <thead>
                     <tr>
+                        <th>Nomor Faktur</th>
                         <th>Tanggal</th>
-                        <th>Keterangan</th>
-                        <th>Tipe</th>
-                        <th>Metode</th>
-                        <th>Jumlah</th>
-                        <th>Saldo</th>
-                        <th>Dibuat Oleh</th>
+                        <th>Supplier</th>
+                        <th>Total Pembelian</th>
+                        <th>Metode Pembayaran</th>
+                        <th>Status</th>
                     </tr>
                     </thead>
                 </table>
@@ -149,39 +146,30 @@
             const filters = {
                 start_date: $('#start_date').val(),
                 end_date: $('#end_date').val(),
-                type: '',
-                payment_method: ''
+                supplier_id: '',
+                status: ''
             };
 
-            const financialTable = $('#financial-table').DataTable({
+            const purchasesTable = $('#purchases-table').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('reports.financial') }}",
+                    url: "{{ route('reports.purchasing') }}",
                     data: function (d) {
                         d.start_date = $('#start_date').val();
                         d.end_date = $('#end_date').val();
-                        d.type = $('#type').val();
-                        d.payment_method = $('#payment_method').val();
+                        d.supplier_id = $('#supplier_id').val();
+                        d.status = $('#status').val();
                     }
                 },
                 columns: [
-                    {data: 'formatted_date', name: 'created_at'},
-                    {data: 'notes', name: 'notes'},
+                    {data: 'invoice_number', name: 'invoice_number'},
+                    {data: 'formatted_date', name: 'purchase_date'},
+                    {data: 'supplier_name', name: 'supplier_id'},
+                    {data: 'formatted_total', name: 'final_amount'},
                     {
-                        data: 'type',
-                        name: 'type',
-                        render: function (data) {
-                            if (data === 'in') {
-                                return '<span class="badge bg-success">Pemasukan</span>';
-                            } else {
-                                return '<span class="badge bg-danger">Pengeluaran</span>';
-                            }
-                        }
-                    },
-                    {
-                        data: 'payment_method',
-                        name: 'payment_method',
+                        data: 'payment_type',
+                        name: 'payment_type',
                         render: function (data) {
                             if (data === 'cash') {
                                 return '<span class="badge bg-info">Tunai</span>';
@@ -190,46 +178,46 @@
                             }
                         }
                     },
-                    {data: 'formatted_amount', name: 'amount'},
-                    {data: 'formatted_balance', name: 'current_balance'},
-                    {data: 'created_by', name: 'created_by'}
+                    {data: 'status_label', name: 'status'},
                 ],
-                order: [[0, 'desc']]
+                order: [[1, 'desc']]
             });
 
             // Chart management
             let charts = {
-                cashflow: null,
+                purchase: null,
                 paymentMethod: null
             };
 
             // Event handlers
-            $('.type-filter').on('click', function (e) {
+            $('.supplier-filter').on('click', function (e) {
                 e.preventDefault();
-                filters.type = $(this).data('type');
-                $('#typeFilterDropdown').text($(this).text());
-                financialTable.ajax.reload();
+                filters.supplier_id = $(this).data('supplier');
+                $('#supplier_id').val(filters.supplier_id);
+                $('#supplierFilterDropdown').text($(this).text());
+                purchasesTable.ajax.reload();
             });
 
-            $('.method-filter').on('click', function (e) {
+            $('.status-filter').on('click', function (e) {
                 e.preventDefault();
-                filters.payment_method = $(this).data('method');
-                $('#methodFilterDropdown').text($(this).text());
-                financialTable.ajax.reload();
+                filters.status = $(this).data('status');
+                $('#status').val(filters.status);
+                $('#statusFilterDropdown').text($(this).text());
+                purchasesTable.ajax.reload();
             });
 
             $('#date-filter-form').on('submit', function (e) {
                 e.preventDefault();
                 filters.start_date = $('#start_date').val();
                 filters.end_date = $('#end_date').val();
-                financialTable.ajax.reload();
+                purchasesTable.ajax.reload();
                 loadChartData();
             });
 
             // Load chart data
             function loadChartData() {
                 $.ajax({
-                    url: "{{ route('reports.financial.chart') }}",
+                    url: "{{ route('reports.purchasing.chart') }}",
                     method: "GET",
                     data: {
                         start_date: filters.start_date,
@@ -242,7 +230,7 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Error loading chart data:", error);
-                        showChartError('#cashflowChart');
+                        showChartError('#purchaseChart');
                         showChartError('#paymentMethodChart');
                     }
                 });
@@ -253,46 +241,49 @@
             }
 
             function renderCharts(data) {
-                renderCashflowChart(data.cashflow);
+                renderPurchaseChart(data.purchases);
                 renderPaymentMethodChart(data.payment_methods);
             }
 
-            function renderCashflowChart(data) {
-                if (charts.cashflow) {
-                    charts.cashflow.destroy();
+            function renderPurchaseChart(data) {
+                if (charts.purchase) {
+                    charts.purchase.destroy();
                 }
 
-                $("#cashflowChart").empty();
+                $("#purchaseChart").empty();
 
                 if (!data || data.length === 0) {
-                    $("#cashflowChart").html('<div class="text-center py-5 text-muted">Tidak ada data untuk periode ini</div>');
+                    $("#purchaseChart").html('<div class="text-center py-5 text-muted">Tidak ada data untuk periode ini</div>');
                     return;
                 }
 
                 const options = {
                     series: [
                         {
-                            name: "Pemasukan",
-                            data: data.map(item => parseFloat(item.income))
-                        },
-                        {
-                            name: "Pengeluaran",
-                            data: data.map(item => parseFloat(item.expense))
+                            name: "Total Pembelian",
+                            data: data.map(item => parseFloat(item.amount))
                         }
                     ],
                     chart: {
-                        type: "bar",
+                        type: "line",
                         height: 300,
                         fontFamily: 'Public Sans, sans-serif',
                         toolbar: {
                             show: false
                         }
                     },
-                    colors: ['#03c3ec', '#ff3e1d'],
-                    plotOptions: {
-                        bar: {
-                            borderRadius: 4,
-                            columnWidth: '55%'
+                    colors: ['#696cff'],
+                    stroke: {
+                        curve: 'smooth',
+                        width: 3
+                    },
+                    markers: {
+                        size: 4,
+                        colors: ['#696cff'],
+                        strokeColors: '#fff',
+                        strokeWidth: 2,
+                        hover: {
+                            size: 6
                         }
                     },
                     dataLabels: {
@@ -314,17 +305,17 @@
                             formatter: val => "Rp " + new Intl.NumberFormat('id-ID').format(val)
                         }
                     },
-                    legend: {
-                        position: 'top'
+                    grid: {
+                        borderColor: '#f1f1f1',
                     }
                 };
 
                 try {
-                    charts.cashflow = new ApexCharts(document.querySelector("#cashflowChart"), options);
-                    charts.cashflow.render();
+                    charts.purchase = new ApexCharts(document.querySelector("#purchaseChart"), options);
+                    charts.purchase.render();
                 } catch (e) {
-                    console.error("Error rendering cashflow chart:", e);
-                    showChartError('#cashflowChart');
+                    console.error("Error rendering purchase chart:", e);
+                    showChartError('#purchaseChart');
                 }
             }
 
@@ -346,9 +337,6 @@
                         type: 'donut',
                         height: 250,
                         fontFamily: 'Public Sans, sans-serif',
-                        animations: {
-                            enabled: false
-                        }
                     },
                     labels: data.map(item => item.method === 'cash' ? 'Tunai' : 'Transfer'),
                     colors: ['#696cff', '#03c3ec'],

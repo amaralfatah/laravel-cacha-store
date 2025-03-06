@@ -117,11 +117,23 @@ Route::middleware('auth')->group(function () {
     // Report Routes
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/sales', [ReportController::class, 'storeSales'])->name('sales');
-        Route::get('/inventory', [ReportController::class, 'storeInventory'])->name('inventory');
-        Route::get('/stock-movement', [ReportController::class, 'storeStockMovement'])->name('stock-movement');
-        Route::get('/financial', [ReportController::class, 'storeFinancial'])->name('financial');
+        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
+        Route::get('/financial', [ReportController::class, 'financial'])->name('financial');
+        Route::get('/financial/chart', [ReportController::class, 'financialChart'])->name('financial.chart');
+        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
+        Route::get('/stock-history', [ReportController::class, 'stockHistory'])->name('stock-history');
+        Route::get('/purchasing', [ReportController::class, 'purchasing'])->name('purchasing');
+        Route::get('/purchasing/chart', [ReportController::class, 'purchasingChart'])->name('purchasing.chart');
+        Route::get('/customers', [ReportController::class, 'customers'])->name('customers');
 
+        // Admin-only routes
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/store-performance', [ReportController::class, 'storePerformance'])->name('store-performance');
+            Route::get('/store/{id}/detail', [ReportController::class, 'storeDetail'])->name('store.detail');
+        });
+
+        // AJAX endpoints for charts
+        Route::get('/sales/payment-chart', [ReportController::class, 'salesByPaymentType'])->name('sales.payment-chart');
     });
 
     // Search Route

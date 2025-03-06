@@ -4,8 +4,10 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Store;
+use App\Models\ProductUnit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class StoreController extends Controller
@@ -18,8 +20,17 @@ class StoreController extends Controller
         $store->loadCount(['products', 'customers', 'transactions']);
         $store->load('storeBalance');
 
-        return view('user.store.show', compact('store'));
+        // Calculate total inventory value (price * quantity) for all products
+        $totalInventoryValue = ProductUnit::join('products', 'product_units.product_id', '=', 'products.id')
+            ->where('products.store_id', $store->id)
+            ->where('products.is_active', true)
+            ->select(DB::raw('SUM(product_units.stock * product_units.selling_price) as total_value'))
+            ->first()
+            ->total_value ?? 0;
+
+        return view('user.store.show', compact('store', 'totalInventoryValue'));
     }
+
     public function edit()
     {
         $store = Auth::user()->store;

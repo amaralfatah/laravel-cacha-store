@@ -6,10 +6,16 @@ use App\Models\Transaction;
 use App\Models\Product;
 use App\Models\StockHistory;
 use App\Models\BalanceMutation;
+use App\Models\PurchaseOrder;
+use App\Models\Store;
+use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Supplier;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class ReportController extends Controller
 {
@@ -19,318 +25,467 @@ class ReportController extends Controller
         return $user->role === 'admin' ? null : $user->store_id;
     }
 
-    public function index()
-    {
-        return view('reports.index');
-    }
-
-    public function storeSales(Request $request)
+    /**
+     * Sales report
+     */
+    public function sales(Request $request)
     {
         $storeId = $this->getStoreId();
 
-        $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-        ]);
-
-        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
-
         if ($request->ajax()) {
-            $query = Transaction::with(['customer', 'user', 'items.product', 'items.unit'])
-                ->when($storeId, function($query) use ($storeId) {
-                    $query->where('store_id', $storeId);
+            $query = Transaction::with(['customer', 'cashier'])
+                ->when($storeId, function($q) use ($storeId) {
+                    return $q->where('store_id', $storeId);
                 })
-                ->whereBetween('invoice_date', [$startDate, $endDate])
-                ->where('status', 'success');
+                ->when($request->start_date, function($q) use ($request) {
+                    return $q->whereDate('invoice_date', '>=', $request->start_date);
+                })
+                ->when($request->end_date, function($q) use ($request) {
+                    return $q->whereDate('invoice_date', '<=', $request->end_date);
+                })
+                ->when($request->status, function($q) use ($request) {
+                    return $q->where('status', $request->status);
+                })
+                ->orderBy('invoice_date', 'desc');
 
-            return datatables()->of($query)
-                ->addIndexColumn()
-                ->addColumn('total_items', function($sale) {
-                    return $sale->items->sum('quantity');
+            return DataTables::of($query)
+                ->addColumn('customer_name', function ($row) {
+                    return $row->customer->name ?? 'N/A';
                 })
-                ->editColumn('invoice_date', function($sale) {
-                    return $sale->invoice_date->format('d/m/Y H:i');
+                ->addColumn('cashier_name', function ($row) {
+                    return $row->cashier->name ?? 'N/A';
                 })
-                ->editColumn('customer.name', function($sale) {
-                    return $sale->customer->name;
+                ->addColumn('formatted_date', function ($row) {
+                    return Carbon::parse($row->invoice_date)->format('d M Y H:i');
                 })
-                ->editColumn('user.name', function($sale) {
-                    return $sale->user->name;
+                ->addColumn('formatted_total', function ($row) {
+                    return 'Rp ' . number_format($row->final_amount, 0, ',', '.');
                 })
-                ->editColumn('total_amount', function($sale) {
-                    return 'Rp ' . number_format($sale->total_amount, 0, ',', '.');
-                })
-                ->editColumn('discount_amount', function($sale) {
-                    return 'Rp ' . number_format($sale->discount_amount, 0, ',', '.');
-                })
-                ->editColumn('tax_amount', function($sale) {
-                    return 'Rp ' . number_format($sale->tax_amount, 0, ',', '.');
-                })
-                ->editColumn('final_amount', function($sale) {
-                    return 'Rp ' . number_format($sale->final_amount, 0, ',', '.');
-                })
-                ->editColumn('payment_type', function($sale) {
-                    return $sale->payment_type === 'cash' ? 'Tunai' : 'Transfer';
-                })
-                ->rawColumns(['action'])
                 ->make(true);
         }
 
-        // Get summary data
-        // Get summary data
-        $salesQuery = Transaction::when($storeId, function($query) use ($storeId) {
-            $query->where('store_id', $storeId);
+        // Summary data
+        $totalSales = Transaction::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
         })
-            ->whereBetween('invoice_date', [$startDate, $endDate])
-            ->where('status', 'success');
+            ->where('status', 'success')
+            ->sum('final_amount');
 
-        $summary = [
-            'total_sales' => $salesQuery->sum('final_amount'),
-            'total_transactions' => $salesQuery->count(),
-            'average_transaction' => $salesQuery->count() > 0 ? $salesQuery->sum('final_amount') / $salesQuery->count() : 0,
-            'total_items' => Transaction::whereBetween('invoice_date', [$startDate, $endDate])
-                ->where('status', 'success')
-                ->join('transaction_items', 'transactions.id', '=', 'transaction_items.transaction_id')
-                ->sum('transaction_items.quantity'),
-        ];
+        $salesCount = Transaction::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })
+            ->where('status', 'success')
+            ->count();
 
-        return view('reports.sales', compact('summary', 'startDate', 'endDate'));
-    }
-
-    public function storeInventory(Request $request)
-    {
-        $storeId = $this->getStoreId();
-
-        if ($request->ajax()) {
-            $query = Product::with(['category', 'productUnits.unit'])
-                ->when($storeId, function($query) use ($storeId) {
-                    $query->where('store_id', $storeId);
-                })
-                ->where('is_active', true);
-
-
-            return datatables()->of($query)
-                ->addIndexColumn()
-                ->addColumn('total_stock', function ($product) {
-                    return $product->productUnits->sum('stock');
-                })
-                ->addColumn('low_stock', function ($product) {
-                    return $product->productUnits->filter(function ($unit) {
-                            return $unit->stock <= $unit->min_stock;
-                        })->count() > 0;
-                })
-                ->addColumn('units', function ($product) {
-                    return view('reports.partials.units-column', [
-                        'units' => $product->productUnits
-                    ])->render();
-                })
-                ->addColumn('status', function ($product) {
-                    $totalStock = $product->productUnits->sum('stock');
-                    $lowStock = $product->productUnits->filter(function ($unit) {
-                            return $unit->stock <= $unit->min_stock;
-                        })->count() > 0;
-
-                    if ($totalStock <= 0) {
-                        return '<span class="badge bg-danger">Stok Habis</span>';
-                    } elseif ($lowStock) {
-                        return '<span class="badge bg-warning">Stok Menipis</span>';
-                    } else {
-                        return '<span class="badge bg-success">Tersedia</span>';
-                    }
-                })
-                ->editColumn('category.name', function ($product) {
-                    return $product->category->name;
-                })
-                ->rawColumns(['units', 'status'])
-                ->make(true);
-        }
-
-        $products = Product::with(['category', 'productUnits.unit'])
-            ->when($storeId, function($query) use ($storeId) {
-                $query->where('store_id', $storeId);
+        $topProducts = DB::table('transaction_items')
+            ->join('transactions', 'transactions.id', '=', 'transaction_items.transaction_id')
+            ->join('products', 'products.id', '=', 'transaction_items.product_id')
+            ->select(
+                'products.name',
+                DB::raw('SUM(transaction_items.quantity) as total_qty'),
+                DB::raw('SUM(transaction_items.subtotal) as total_amount')
+            )
+            ->when($storeId, function($q) use ($storeId) {
+                return $q->where('transactions.store_id', $storeId);
             })
-            ->where('is_active', true)
+            ->where('transactions.status', 'success')
+            ->groupBy('products.id', 'products.name')
+            ->orderBy('total_qty', 'desc')
+            ->limit(5)
             ->get();
 
-        $summary = [
-            'total_products' => $products->count(),
-            'low_stock' => $products->filter(function($product) {
-                return $product->productUnits->contains(function($unit) {
-                    return $unit->stock <= $unit->min_stock;
-                });
-            })->count(),
-            'available' => $products->filter(function($product) {
-                return $product->productUnits->sum('stock') > 0;
-            })->count(),
-            'out_of_stock' => $products->filter(function($product) {
-                return $product->productUnits->sum('stock') <= 0;
-            })->count(),
-        ];
-
-        return view('reports.inventory', compact('summary'));
+        return view('reports.sales', compact('totalSales', 'salesCount', 'topProducts'));
     }
 
-    public function storeStockMovement(Request $request)
+    public function financial(Request $request)
     {
         $storeId = $this->getStoreId();
 
-        $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'product_id' => 'nullable|exists:products,id'
-        ]);
-
-        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
-
         if ($request->ajax()) {
-            $query = StockHistory::with(['productUnit.product', 'productUnit.unit'])
-                ->when($storeId, function($query) use ($storeId) {
-                    $query->where('store_id', $storeId);
+            $query = BalanceMutation::with('creator')
+                ->when($storeId, function($q) use ($storeId) {
+                    return $q->where('store_id', $storeId);
                 })
-                ->whereBetween('created_at', [$startDate, $endDate]);
+                ->when($request->start_date, function($q) use ($request) {
+                    return $q->whereDate('created_at', '>=', $request->start_date);
+                })
+                ->when($request->end_date, function($q) use ($request) {
+                    return $q->whereDate('created_at', '<=', $request->end_date);
+                })
+                ->when($request->type, function($q) use ($request) {
+                    return $q->where('type', $request->type);
+                })
+                ->when($request->payment_method, function($q) use ($request) {
+                    return $q->where('payment_method', $request->payment_method);
+                })
+                ->orderBy('created_at', 'desc');
 
-            if ($request->product_id) {
-                $query->whereHas('productUnit', function($q) use ($request, $storeId) {
-                    $q->where('product_id', $request->product_id)
-                        ->when($storeId, function($q) use ($storeId) {
-                            $q->where('store_id', $storeId);
-                        });
-                });
-            }
-
-            return datatables()->of($query)
-                ->addIndexColumn()
-                ->editColumn('created_at', function($movement) {
-                    return $movement->created_at->format('d/m/Y H:i');
+            return DataTables::of($query)
+                ->addColumn('created_by', function ($row) {
+                    return $row->creator->name ?? 'System';
                 })
-                ->editColumn('productUnit.product.name', function($movement) {
-                    return $movement->productUnit->product->name;
+                ->addColumn('formatted_date', function ($row) {
+                    return Carbon::parse($row->created_at)->format('d M Y H:i');
                 })
-                ->editColumn('productUnit.unit.name', function($movement) {
-                    return $movement->productUnit->unit->name;
+                ->addColumn('formatted_amount', function ($row) {
+                    $prefix = $row->type === 'in' ? '+ ' : '- ';
+                    return $prefix . 'Rp ' . number_format($row->amount, 0, ',', '.');
                 })
-                ->editColumn('type', function($movement) {
-                    $badges = [
-                        'in' => 'success',
-                        'out' => 'danger',
-                        'adjustment' => 'warning'
-                    ];
-                    $labels = [
-                        'in' => 'Masuk',
-                        'out' => 'Keluar',
-                        'adjustment' => 'Penyesuaian'
-                    ];
-                    return '<span class="badge bg-' . $badges[$movement->type] . '">' .
-                        $labels[$movement->type] . '</span>';
+                ->addColumn('formatted_balance', function ($row) {
+                    return 'Rp ' . number_format($row->current_balance, 0, ',', '.');
                 })
-                ->editColumn('reference_type', function($movement) {
-                    $refTypes = [
-                        'stock_adjustments' => 'Penyesuaian Stok',
-                        'transactions' => 'Transaksi',
-                        'stock_takes' => 'Stok Opname'
-                    ];
-                    return $refTypes[$movement->reference_type] ?? $movement->reference_type;
-                })
-                ->rawColumns(['type'])
                 ->make(true);
         }
 
-        $products = Product::when($storeId, function($query) use ($storeId) {
-            $query->where('store_id', $storeId);
+        // Summary data
+        $totalIncome = BalanceMutation::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
         })
+            ->where('type', 'in')
+            ->sum('amount');
+
+        $totalExpense = BalanceMutation::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })
+            ->where('type', 'out')
+            ->sum('amount');
+
+        $netCashflow = $totalIncome - $totalExpense;
+
+        $storeBalance = Store::with('balance')
+            ->where('id', $storeId)
+            ->first();
+
+        return view('reports.financial', compact('totalIncome', 'totalExpense', 'netCashflow', 'storeBalance'));
+    }
+
+    public function inventory(Request $request)
+    {
+        $storeId = $this->getStoreId();
+
+        if ($request->ajax()) {
+            $query = Product::with(['category', 'supplier', 'productUnits.unit'])
+                ->when($storeId, function($q) use ($storeId) {
+                    return $q->where('store_id', $storeId);
+                })
+                ->when($request->category_id, function($q) use ($request) {
+                    return $q->where('category_id', $request->category_id);
+                })
+                ->when($request->supplier_id, function($q) use ($request) {
+                    return $q->where('supplier_id', $request->supplier_id);
+                })
+                ->when($request->status, function($q) use ($request) {
+                    if ($request->status === 'out_of_stock') {
+                        return $q->whereHas('productUnits', function($query) {
+                            $query->where('stock', '<=', 0);
+                        });
+                    } elseif ($request->status === 'low_stock') {
+                        return $q->whereHas('productUnits', function($query) {
+                            $query->whereRaw('stock <= min_stock')->where('stock', '>', 0);
+                        });
+                    } elseif ($request->status === 'in_stock') {
+                        return $q->whereHas('productUnits', function($query) {
+                            $query->whereRaw('stock > min_stock');
+                        });
+                    }
+                });
+
+            return DataTables::of($query)
+                ->addColumn('category_name', function ($row) {
+                    return $row->category->name ?? 'N/A';
+                })
+                ->addColumn('supplier_name', function ($row) {
+                    return $row->supplier->name ?? 'N/A';
+                })
+                ->addColumn('stock_status', function ($row) {
+                    $defaultUnit = $row->productUnits->where('is_default', true)->first();
+                    if (!$defaultUnit) return 'No Units';
+
+                    $stock = $defaultUnit->stock;
+                    $minStock = $defaultUnit->min_stock;
+
+                    if ($stock <= 0) {
+                        return '<span class="badge bg-danger">Out of Stock</span>';
+                    } elseif ($stock <= $minStock) {
+                        return '<span class="badge bg-warning">Low Stock</span>';
+                    } else {
+                        return '<span class="badge bg-success">In Stock</span>';
+                    }
+                })
+                ->addColumn('current_stock', function ($row) {
+                    $defaultUnit = $row->productUnits->where('is_default', true)->first();
+                    if (!$defaultUnit) return 'N/A';
+
+                    return $defaultUnit->stock . ' ' . ($defaultUnit->unit->name ?? '');
+                })
+                ->rawColumns(['stock_status'])
+                ->make(true);
+        }
+
+        // Get filter data
+        $categories = Category::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })->where('is_active', true)->get();
+
+        $suppliers = Supplier::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })->get();
+
+        return view('reports.inventory', compact('categories', 'suppliers'));
+    }
+
+    public function purchasing(Request $request)
+    {
+        $storeId = $this->getStoreId();
+
+        if ($request->ajax()) {
+            $query = PurchaseOrder::with(['supplier'])
+                ->when($storeId, function($q) use ($storeId) {
+                    return $q->where('store_id', $storeId);
+                })
+                ->when($request->start_date, function($q) use ($request) {
+                    return $q->whereDate('purchase_date', '>=', $request->start_date);
+                })
+                ->when($request->end_date, function($q) use ($request) {
+                    return $q->whereDate('purchase_date', '<=', $request->end_date);
+                })
+                ->when($request->supplier_id, function($q) use ($request) {
+                    return $q->where('supplier_id', $request->supplier_id);
+                })
+                ->when($request->status, function($q) use ($request) {
+                    return $q->where('status', $request->status);
+                })
+                ->orderBy('purchase_date', 'desc');
+
+            return DataTables::of($query)
+                ->addColumn('supplier_name', function ($row) {
+                    return $row->supplier->name ?? 'N/A';
+                })
+                ->addColumn('formatted_date', function ($row) {
+                    return Carbon::parse($row->purchase_date)->format('d M Y');
+                })
+                ->addColumn('formatted_total', function ($row) {
+                    return 'Rp ' . number_format($row->final_amount, 0, ',', '.');
+                })
+                ->addColumn('status_label', function ($row) {
+                    if ($row->status === 'completed') {
+                        return '<span class="badge bg-success">Completed</span>';
+                    } elseif ($row->status === 'pending') {
+                        return '<span class="badge bg-warning">Pending</span>';
+                    } else {
+                        return '<span class="badge bg-danger">Cancelled</span>';
+                    }
+                })
+                ->rawColumns(['status_label'])
+                ->make(true);
+        }
+
+        // Get suppliers for filter
+        $suppliers = Supplier::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })->get();
+
+        // Get summary data
+        $totalPurchases = PurchaseOrder::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })
+            ->where('status', 'completed')
+            ->sum('final_amount');
+
+        $pendingPurchasesCount = PurchaseOrder::when($storeId, function($q) use ($storeId) {
+            return $q->where('store_id', $storeId);
+        })
+            ->where('status', 'pending')
+            ->count();
+
+        return view('reports.purchasing', compact('suppliers', 'totalPurchases', 'pendingPurchasesCount'));
+    }
+
+    public function storePerformance()
+    {
+        // Only admin should access this
+        if (Auth::user()->role !== 'admin') {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        // Get stores with performance metrics
+        $stores = Store::withCount(['transactions as sales_count' => function($query) {
+            $query->where('status', 'success');
+        }])
+            ->withSum(['transactions as revenue' => function($query) {
+                $query->where('status', 'success');
+            }], 'final_amount')
+            ->withCount('customers')
             ->where('is_active', true)
             ->get();
 
-        return view('reports.stock-movement', compact('products', 'startDate', 'endDate'));
+        // Get top-performing stores
+        $topStores = Store::withSum(['transactions as revenue' => function($query) {
+            $query->where('status', 'success')
+                ->whereMonth('invoice_date', Carbon::now()->month)
+                ->whereYear('invoice_date', Carbon::now()->year);
+        }], 'final_amount')
+            ->orderByDesc('revenue')
+            ->limit(5)
+            ->get();
+
+        return view('reports.store_performance', compact('stores', 'topStores'));
     }
 
-    public function storeFinancial(Request $request)  // Menggantikan financial()
+    public function salesByPaymentType(Request $request)
     {
-        $storeId = Auth::user()->store_id;
+        $storeId = $this->getStoreId();
 
-        $request->validate([
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+        $startDate = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
+
+        $paymentData = Transaction::select('payment_type', DB::raw('COUNT(*) as count'), DB::raw('SUM(final_amount) as amount'))
+            ->when($storeId, function($q) use ($storeId) {
+                return $q->where('store_id', $storeId);
+            })
+            ->where('status', 'success')
+            ->whereBetween('invoice_date', [$startDate, $endDate])
+            ->groupBy('payment_type')
+            ->get();
+
+        // Calculate percentages
+        $totalAmount = $paymentData->sum('amount');
+        $chartData = $paymentData->map(function($item) use ($totalAmount) {
+            return [
+                'payment_type' => $item->payment_type,
+                'amount' => $totalAmount > 0 ? round(($item->amount / $totalAmount) * 100, 1) : 0,
+                'raw_amount' => $item->amount,
+                'count' => $item->count
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $chartData
         ]);
+    }
 
-        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+    public function financialChart(Request $request)
+    {
+        $storeId = $this->getStoreId();
 
-        if ($request->ajax()) {
-            $query = BalanceMutation::with('createdBy')
-                ->when($storeId, function($query) use ($storeId) {
-                    $query->where('store_id', $storeId);
-                })
-                ->whereBetween('created_at', [$startDate, $endDate]);
+        $startDate = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
-            return datatables()->of($query)
-                ->addIndexColumn()
-                ->editColumn('created_at', function($mutation) {
-                    return $mutation->created_at->format('d/m/Y H:i');
-                })
-                ->editColumn('type', function($mutation) {
-                    return '<span class="badge bg-' . ($mutation->type === 'in' ? 'success' : 'danger') . '">' .
-                        ($mutation->type === 'in' ? 'MASUK' : 'KELUAR') . '</span>';
-                })
-                ->editColumn('amount', function($mutation) {
-                    return 'Rp ' . number_format($mutation->amount, 0, ',', '.');
-                })
-                ->editColumn('source_type', function($mutation) {
-                    $sourceLabels = [
-                        'App\Models\Transaction' => 'Transaksi Penjualan',
-                        'App\Models\Purchase' => 'Transaksi Pembelian',
-                        'App\Models\Expense' => 'Pengeluaran',
-                        'App\Models\CashAdjustment' => 'Penyesuaian Kas',
-                        // Tambahkan mapping lainnya sesuai kebutuhan
-                    ];
+        // Calculate cashflow data grouped by date in a single query
+        $cashflowData = BalanceMutation::selectRaw('
+        DATE(created_at) as date,
+        SUM(CASE WHEN type = "in" THEN amount ELSE 0 END) as income,
+        SUM(CASE WHEN type = "out" THEN amount ELSE 0 END) as expense,
+        COUNT(*) as transactions_count
+    ')
+            ->when($storeId, function($q) use ($storeId) {
+                return $q->where('store_id', $storeId);
+            })
+            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date')
+            ->get()
+            ->map(function($item) {
+                $item->date = Carbon::parse($item->date)->format('d M Y');
+                return $item;
+            });
 
-                    $label = $sourceLabels[$mutation->source_type] ?? 'Lainnya';
+        // Calculate payment method distribution with better handling for null values
+        $paymentMethodsData = BalanceMutation::selectRaw('
+        COALESCE(payment_method, "unknown") as method,
+        COUNT(*) as count,
+        SUM(amount) as total_amount
+    ')
+            ->when($storeId, function($q) use ($storeId) {
+                return $q->where('store_id', $storeId);
+            })
+            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
+            ->groupBy('payment_method')
+            ->get();
 
-                    if ($mutation->source_id) {
-                        $label .= " #" . $mutation->source_id;
-                    }
+        // Calculate percentages
+        $totalTransactions = $paymentMethodsData->sum('count');
 
-                    return $label;
-                })
-                ->editColumn('previous_balance', function($mutation) {
-                    return 'Rp ' . number_format($mutation->previous_balance, 0, ',', '.');
-                })
-                ->editColumn('current_balance', function($mutation) {
-                    return 'Rp ' . number_format($mutation->current_balance, 0, ',', '.');
-                })
-                ->editColumn('createdBy.name', function($mutation) {
-                    return $mutation->createdBy->name;
-                })
-                ->editColumn('payment_method', function($mutation) {
-                    $methodLabels = [
-                        'cash' => 'Tunai',
-                        'transfer' => 'Transfer',
-                        'adjustment' => 'Penyesuaian'
-                    ];
-                    return $methodLabels[$mutation->payment_method] ?? ucfirst($mutation->payment_method);
-                })
-                ->rawColumns(['type'])
-                ->make(true);
-        }
+        $paymentMethodsData = $paymentMethodsData
+            ->filter(function($item) {
+                return $item->method != 'unknown' && $item->method != 'adjustment';
+            })
+            ->map(function($item) use ($totalTransactions) {
+                return [
+                    'method' => $item->method,
+                    'count' => $item->count,
+                    'amount' => $item->total_amount,
+                    'percentage' => $totalTransactions > 0 ? round(($item->count / $totalTransactions) * 100, 1) : 0
+                ];
+            })
+            ->values();
 
-        // Get summary data
-        $summaryQuery = BalanceMutation::when($storeId, function($query) use ($storeId) {
-            $query->where('store_id', $storeId);
-        })
-            ->whereBetween('created_at', [$startDate, $endDate]);
+        return response()->json([
+            'success' => true,
+            'cashflow' => $cashflowData,
+            'payment_methods' => $paymentMethodsData
+        ]);
+    }
 
-        $totalIn = $summaryQuery->clone()->where('type', 'in')->sum('amount');
-        $totalOut = $summaryQuery->clone()->where('type', 'out')->sum('amount');
+    public function purchasingChart(Request $request)
+    {
+        $storeId = $this->getStoreId();
 
-        $summary = [
-            'total_in' => $totalIn,
-            'total_out' => $totalOut,
-            'net_amount' => $totalIn - $totalOut,
-            'current_balance' => DB::table('store_balances')->first()->amount ?? 0,
-        ];
+        $startDate = $request->start_date ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
-        return view('reports.financial', compact('summary', 'startDate', 'endDate'));
+        // Calculate purchase data grouped by date
+        $purchaseData = PurchaseOrder::selectRaw('
+        DATE(purchase_date) as date,
+        COUNT(*) as count,
+        SUM(final_amount) as amount
+    ')
+            ->when($storeId, function($q) use ($storeId) {
+                return $q->where('store_id', $storeId);
+            })
+            ->where('status', 'completed')
+            ->whereBetween(DB::raw('DATE(purchase_date)'), [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(purchase_date)'))
+            ->orderBy('date')
+            ->get()
+            ->map(function($item) {
+                $item->date = Carbon::parse($item->date)->format('d M Y');
+                return $item;
+            });
+
+        // Calculate payment method distribution
+        $paymentMethodsData = PurchaseOrder::selectRaw('
+        payment_type as method,
+        COUNT(*) as count,
+        SUM(final_amount) as total_amount
+    ')
+            ->when($storeId, function($q) use ($storeId) {
+                return $q->where('store_id', $storeId);
+            })
+            ->where('status', 'completed')
+            ->whereBetween(DB::raw('DATE(purchase_date)'), [$startDate, $endDate])
+            ->groupBy('payment_type')
+            ->get();
+
+        // Calculate percentages
+        $totalTransactions = $paymentMethodsData->sum('count');
+
+        $paymentMethodsData = $paymentMethodsData
+            ->map(function($item) use ($totalTransactions) {
+                return [
+                    'method' => $item->method,
+                    'count' => $item->count,
+                    'amount' => $item->total_amount,
+                    'percentage' => $totalTransactions > 0 ? round(($item->count / $totalTransactions) * 100, 1) : 0
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'purchases' => $purchaseData,
+            'payment_methods' => $paymentMethodsData
+        ]);
     }
 }

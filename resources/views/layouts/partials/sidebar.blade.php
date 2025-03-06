@@ -195,36 +195,56 @@
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Laporan</span>
         </li>
-        {{--        <li class="menu-item {{ setActive('reports.index') }}">--}}
-        {{--            <a href="{{ route('reports.index') }}" class="menu-link">--}}
-        {{--                <i class="menu-icon tf-icons bx bx-pie-chart"></i>--}}
-        {{--                <div data-i18n="Dashboard">Ringkasan</div>--}}
-        {{--            </a>--}}
-        {{--        </li>--}}
+        {{--<li class="menu-item {{ setActive('reports.index') }}">--}}
+        {{--    <a href="{{ route('reports.index') }}" class="menu-link">--}}
+        {{--        <i class="menu-icon tf-icons bx bx-pie-chart"></i>--}}
+        {{--        <div data-i18n="Dashboard">Ringkasan</div>--}}
+        {{--    </a>--}}
+        {{--</li>--}}
         <li class="menu-item {{ setActive('reports.sales') }}">
             <a href="{{ route('reports.sales') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-trending-up"></i>
                 <div data-i18n="Sales Report">Penjualan</div>
             </a>
         </li>
-        <li class="menu-item {{ setActive('reports.stock-movement') }}">
-            <a href="{{ route('reports.stock-movement') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-cabinet"></i>
-                <div data-i18n="Stock Report">Mutasi Stok</div>
+        <li class="menu-item {{ setActive('reports.purchasing') }}">
+            <a href="{{ route('reports.purchasing') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cart"></i>
+                <div data-i18n="Purchasing Report">Pembelian</div>
             </a>
         </li>
         <li class="menu-item {{ setActive('reports.inventory') }}">
             <a href="{{ route('reports.inventory') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-crown"></i>
-                <div data-i18n="Inventory">Stok</div>
+                <i class="menu-icon tf-icons bx bx-package"></i>
+                <div data-i18n="Inventory">Inventory</div>
             </a>
         </li>
+{{--        <li class="menu-item {{ setActive('reports.stock-history') }}">--}}
+{{--            <a href="{{ route('reports.stock-history') }}" class="menu-link">--}}
+{{--                <i class="menu-icon tf-icons bx bx-transfer-alt"></i>--}}
+{{--                <div data-i18n="Stock Movement">Mutasi Stok</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
         <li class="menu-item {{ setActive('reports.financial') }}">
             <a href="{{ route('reports.financial') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-money"></i>
                 <div data-i18n="Financial">Keuangan</div>
             </a>
         </li>
+{{--        <li class="menu-item {{ setActive('reports.customers') }}">--}}
+{{--            <a href="{{ route('reports.customers') }}" class="menu-link">--}}
+{{--                <i class="menu-icon tf-icons bx bx-user-check"></i>--}}
+{{--                <div data-i18n="Customers">Pelanggan</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
+        @if(auth()->user()->role === 'admin')
+            <li class="menu-item {{ setActive('reports.store-performance') }}">
+                <a href="{{ route('reports.store-performance') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-store"></i>
+                    <div data-i18n="Store Performance">Performa Toko</div>
+                </a>
+            </li>
+        @endif
 
         <!-- Pengaturan -->
         <li class="menu-header small text-uppercase">
