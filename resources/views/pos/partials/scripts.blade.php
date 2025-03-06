@@ -58,10 +58,6 @@
     });
 
     function initializePOS() {
-        // Initialize Select2
-        $('#pos_search_product').select2({
-            // Select2 configuration...
-        });
 
         // Add event listeners
         setupEventListeners();
@@ -448,17 +444,19 @@
             if (!product.product || !product.product.default_unit) return product.text;
 
             const defaultUnit = product.product.default_unit;
+            const stockClass = defaultUnit.stock <= 0 ? 'text-danger' : 'text-muted';
+            const stockText = defaultUnit.stock <= 0 ? `Stock: ${defaultUnit.stock} (Minus)` : `Stock: ${defaultUnit.stock}`;
 
             return $(`
-        <div class="product-info">
-            <span class="product-name">${product.product.name}</span>
-            <span class="product-details">
-                ${product.product.barcode || 'No Barcode'} -
-                Stock: ${defaultUnit.stock} -
-                ${formatCurrency(defaultUnit.selling_price)}
-            </span>
-        </div>
-    `);
+<div class="product-info">
+    <span class="product-name">${product.product.name}</span>
+    <span class="product-details">
+        ${product.product.barcode || 'No Barcode'} -
+        <span class="${stockClass}">${stockText}</span> -
+        ${formatCurrency(defaultUnit.selling_price)}
+    </span>
+</div>
+`);
         }
 
         function formatProductSelection(product) {
@@ -565,7 +563,6 @@
         }
     }
 
-    // Cart handling functions
     function addToCart(product) {
         let defaultUnit;
 
@@ -580,10 +577,11 @@
             return;
         }
 
-        if (defaultUnit.stock <= 0) {
-            showErrorModal('Stok produk tidak tersedia!');
-            return;
-        }
+        // Remove stock check to allow transactions with zero or negative stock
+        // if (defaultUnit.stock <= 0) {
+        //     showErrorModal('Stok produk tidak tersedia!');
+        //     return;
+        // }
 
         const selectedUnitId = defaultUnit.unit_id || defaultUnit.product_unit_id;
         const existingItemIndex = cart.findIndex(item =>
@@ -695,7 +693,6 @@
         document.getElementById('errorOkButton').focus();
     }
 
-    // Helper functions
     function updateCartTable() {
         const tbody = document.querySelector('#cart-table tbody');
         tbody.innerHTML = '';
@@ -703,6 +700,11 @@
         cart.forEach((item, index) => {
             const tr = document.createElement('tr');
             const unit = item.available_units.find(u => u.unit_id === item.unit_id);
+
+            // Check if stock is negative or zero
+            const stockWarning = parseFloat(unit.stock) <= 0
+                ? `<span class="text-danger">(Stok: ${unit.stock})</span>`
+                : '';
 
             const conversionInfo = parseFloat(unit.conversion_factor) > 1
                 ? `(1 ${unit.unit_name} = ${unit.conversion_factor} ${unit.unit_name})`
@@ -712,7 +714,7 @@
 <td>
     ${item.product_name}
     <br>
-    <small class="text-muted">${conversionInfo}</small>
+    <small class="text-muted">${conversionInfo} ${stockWarning}</small>
 </td>
 <td>
     <select class="form-select form-select-sm"
@@ -745,7 +747,7 @@
             tbody.appendChild(tr);
         });
 
-// Add keyboard navigation for quantity inputs
+        // Add keyboard navigation for quantity inputs
         const quantityInputs = document.querySelectorAll('.quantity-input');
         quantityInputs.forEach((input, index) => {
             input.addEventListener('keydown', (e) => {
@@ -977,4 +979,64 @@
             tickerContent.style.animation = 'none';
         }
     }
+
+    //================================================================================================
+
+    // Add this separate script at the bottom of your body tag
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Keyboard shortcuts initialized...');
+
+        // Create a standalone handler that won't be affected by other code
+        function handleShortcuts(e) {
+            console.log('Key pressed:', e.key);
+
+            // Allow shortcuts even when in input fields for these specific function keys
+            if (e.key === 'F2' || e.key === 'F3' || e.key === 'F8') {
+                // Always prevent the default browser behavior for these keys
+                e.preventDefault();
+
+                // Detect which function key was pressed
+                switch(e.key) {
+                    case 'F2': // New Transaction
+                        console.log('F2 pressed - Clear Cart');
+                        const clearBtn = document.getElementById('btn-clear-cart');
+                        if (clearBtn) {
+                            clearBtn.click();
+                        } else {
+                            console.error('Clear cart button not found');
+                        }
+                        break;
+
+                    case 'F3': // Scan Barcode
+                        console.log('F3 pressed - Focus Barcode');
+                        const barcodeInput = document.getElementById('pos_barcode');
+                        if (barcodeInput) {
+                            barcodeInput.focus();
+                        } else {
+                            console.error('Barcode input not found');
+                        }
+                        break;
+
+                    case 'F8': // Complete Transaction
+                        console.log('F8 pressed - Save Transaction');
+                        const saveBtn = document.getElementById('btn-save');
+                        if (saveBtn) {
+                            saveBtn.click();
+                        } else {
+                            console.error('Save button not found');
+                        }
+                        break;
+                }
+            }
+        }
+
+        // Remove any existing event listeners (can't actually do this directly,
+        // but this ensures our handler is the last one added)
+        document.removeEventListener('keydown', handleShortcuts);
+
+        // Add our event listener with the highest priority (capturing phase)
+        document.addEventListener('keydown', handleShortcuts, true);
+
+        console.log('Keyboard shortcuts for F2, F3, and F8 are now active.');
+    });
 </script>

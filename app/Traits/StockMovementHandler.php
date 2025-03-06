@@ -30,10 +30,11 @@ trait StockMovementHandler
                 default => throw new \InvalidArgumentException("Invalid stock movement type: {$type}")
             };
 
-            // Validate stock for 'out' movements
-            if ($type === 'out' && $newStock < 0) {
-                throw new \Exception("Insufficient stock for product unit {$productUnit->id}");
-            }
+            // Removed stock validation check to allow negative stock values
+            // Original code had:
+            // if ($type === 'out' && $newStock < 0) {
+            //     throw new \Exception("Insufficient stock for product unit {$productUnit->id}");
+            // }
 
             // Update the stock
             $productUnit->stock = $newStock;
@@ -54,20 +55,11 @@ trait StockMovementHandler
         });
     }
 
+    // Method preserved but modified to always return true without validation
     protected function validateStockAvailability(array $items)
     {
-        foreach ($items as $item) {
-            $productUnit = ProductUnit::where('product_id', $item['product_id'])
-                ->where('unit_id', $item['unit_id'])
-                ->first();
-
-            if (!$productUnit) {
-                throw new \Exception("Product unit not found");
-            }
-
-            if ($productUnit->stock < $item['quantity']) {
-                throw new \Exception("Insufficient stock for product {$productUnit->product->name}");
-            }
-        }
+        // Previous implementation checked stock and threw exceptions
+        // Now we simply return true to allow transactions regardless of stock levels
+        return true;
     }
 }

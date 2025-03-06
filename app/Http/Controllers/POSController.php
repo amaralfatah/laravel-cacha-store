@@ -259,10 +259,7 @@ class POSController extends Controller
             $total_tax = 0;
             $total_discount = 0;
 
-            // Validate stock availability first
-            if ($request->status === 'success') {
-                $this->validateStockAvailability($request->items);
-            }
+            // Removed stock validation - allow transactions regardless of stock level
 
             foreach ($request->items as $item) {
                 $product = Product::with(['productUnits', 'tax', 'discount'])->find($item['product_id']);
@@ -369,6 +366,8 @@ class POSController extends Controller
             ], 500);
         }
     }
+
+    // Removed the validateStockAvailability method that was previously used
 
     private function generateInvoiceNumber($latestInvoice)
     {
