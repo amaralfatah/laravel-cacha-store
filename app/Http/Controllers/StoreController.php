@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductUnit;
 use App\Models\Store;
 use App\Models\StoreBalance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -36,6 +38,24 @@ class StoreController extends Controller
         $stores = $query->latest()->paginate(10);
 
         return view('stores.index', compact('stores'));
+    }
+
+    public function show(Store $store)
+    {
+
+        // Load counts using withCount
+        $store->loadCount(['products', 'customers', 'transactions']);
+        $store->load('storeBalance');
+
+        // Calculate total inventory value (price * quantity) for all products
+        $totalInventoryValue = ProductUnit::join('products', 'product_units.product_id', '=', 'products.id')
+            ->where('products.store_id', $store->id)
+            ->where('products.is_active', true)
+            ->select(DB::raw('SUM(product_units.stock * product_units.selling_price) as total_value'))
+            ->first()
+            ->total_value ?? 0;
+
+        return view('stores.show', compact('store', 'totalInventoryValue'));
     }
 
     /**

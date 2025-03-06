@@ -86,9 +86,9 @@
                             </form>
                         </td>
                         <td>
-                            <a href="{{ route('stores.balance.show', $store) }}"
+                            <a href="{{ route('stores.show', $store) }}"
                            class="btn btn-sm btn-info">
-                                Balance
+                                Detail
                             </a>
                             <a href="{{ route('stores.edit', $store) }}"
                                class="btn btn-sm btn-warning">
