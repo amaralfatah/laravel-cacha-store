@@ -53,7 +53,7 @@
         <x-card-status
             title="Saldo Toko"
             subtitle="Saldo saat ini"
-            :value="$storeBalance && $storeBalance->balance ? $storeBalance->balance->amount : 0"
+            :value="$totalBalance"
             icon="bx-money"
             iconColor="info"
             columnSize="col-md-3" />

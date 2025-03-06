@@ -152,11 +152,18 @@ class ReportController extends Controller
 
         $netCashflow = $totalIncome - $totalExpense;
 
-        $storeBalance = Store::with('balance')
-            ->where('id', $storeId)
+        // Get store balance data (cash + non-cash)
+        $storeBalance = DB::table('store_balances')
+            ->where('store_id', $storeId)
             ->first();
 
-        return view('reports.financial', compact('totalIncome', 'totalExpense', 'netCashflow', 'storeBalance'));
+        // Calculate total balance
+        $totalBalance = 0;
+        if ($storeBalance) {
+            $totalBalance = $storeBalance->cash_amount + $storeBalance->non_cash_amount;
+        }
+
+        return view('reports.financial', compact('totalIncome', 'totalExpense', 'netCashflow', 'totalBalance'));
     }
 
     public function inventory(Request $request)
@@ -164,6 +171,7 @@ class ReportController extends Controller
         $storeId = $this->getStoreId();
 
         if ($request->ajax()) {
+            // Base product query
             $query = Product::with(['category', 'supplier', 'productUnits.unit'])
                 ->when($storeId, function($q) use ($storeId) {
                     return $q->where('store_id', $storeId);
@@ -190,7 +198,34 @@ class ReportController extends Controller
                     }
                 });
 
-            return DataTables::of($query)
+            // For export functionality
+            if ($request->has('export') && $request->export === 'excel') {
+                // Add your export logic here
+                // ...
+            }
+
+            // Get counts for summary cards (based on the same filters)
+            $totalProducts = $query->count();
+
+            // Clone the query for each stock status
+            $inStockCount = clone $query;
+            $lowStockCount = clone $query;
+            $outOfStockCount = clone $query;
+
+            // Modify each query to get the specific counts
+            $inStockCount = $inStockCount->whereHas('productUnits', function($q) {
+                $q->whereRaw('stock > min_stock');
+            })->count();
+
+            $lowStockCount = $lowStockCount->whereHas('productUnits', function($q) {
+                $q->whereRaw('stock <= min_stock')->where('stock', '>', 0);
+            })->count();
+
+            $outOfStockCount = $outOfStockCount->whereHas('productUnits', function($q) {
+                $q->where('stock', '<=', 0);
+            })->count();
+
+            $response = DataTables::of($query)
                 ->addColumn('category_name', function ($row) {
                     return $row->category->name ?? 'N/A';
                 })
@@ -218,8 +253,19 @@ class ReportController extends Controller
 
                     return $defaultUnit->stock . ' ' . ($defaultUnit->unit->name ?? '');
                 })
-                ->rawColumns(['stock_status'])
-                ->make(true);
+                ->rawColumns(['stock_status']);
+
+            // Attach summary counts to the response
+            $response = $response->with([
+                'summary' => [
+                    'totalProducts' => $totalProducts,
+                    'inStockCount' => $inStockCount,
+                    'lowStockCount' => $lowStockCount,
+                    'outOfStockCount' => $outOfStockCount
+                ]
+            ]);
+
+            return $response->make(true);
         }
 
         // Get filter data

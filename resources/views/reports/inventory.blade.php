@@ -54,7 +54,7 @@
 
         <x-card-status
             title="Produk Stok Tersedia"
-            subtitle="Produk dengan stok mencukupi"
+            subtitle="Produk stok tersedia"
             icon="bx-check-circle"
             iconColor="info"
             format="normal"
@@ -118,6 +118,7 @@
 
 @push('scripts')
     <script>
+        // Updated script for correctly targeting card titles
         $(function () {
             // Initialize DataTable
             const inventoryTable = $('#inventory-table').DataTable({
@@ -129,6 +130,11 @@
                         d.category_id = $('#category_id').val();
                         d.supplier_id = $('#supplier_id').val();
                         d.status = $('#status').val();
+                    },
+                    dataSrc: function(json) {
+                        // Update summary cards when data is loaded
+                        updateSummaryFromResponse(json.summary);
+                        return json.data;
                     }
                 },
                 columns: [
@@ -152,29 +158,26 @@
                         searchable: false,
                         render: function (data, type, row) {
                             return `
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-sm dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="{{ route('products.edit', '') }}/${row.id}">
-                                            <i class="bx bx-edit-alt me-1"></i> Edit Produk
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('stock.adjustments.create') }}?product_id=${row.id}">
-                                            <i class="bx bx-plus-circle me-1"></i> Tambah Stok
-                                        </a>
-                                        <a class="dropdown-item" href="{{ route('stock.histories.index') }}?product_id=${row.id}">
-                                            <i class="bx bx-history me-1"></i> Riwayat Stok
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{{ route('products.edit', '') }}/${row.id}">
+                                    <i class="bx bx-edit-alt me-1"></i> Edit Produk
+                                </a>
+                                <a class="dropdown-item" href="{{ route('stock.adjustments.create') }}?product_id=${row.id}">
+                                    <i class="bx bx-plus-circle me-1"></i> Tambah Stok
+                                </a>
+                                <a class="dropdown-item" href="{{ route('stock.histories.index') }}?product_id=${row.id}">
+                                    <i class="bx bx-history me-1"></i> Riwayat Stok
+                                </a>
+                            </div>
+                        </div>
+                    `;
                         }
                     }
-                ],
-                drawCallback: function() {
-                    updateSummaryFromTable();
-                }
+                ]
             });
 
             // Handle filter form submit
@@ -183,39 +186,45 @@
                 inventoryTable.ajax.reload();
             });
 
-            // Calculate summary from table data
-            function updateSummaryFromTable() {
-                // Reset counters
-                let totalCount = 0;
-                let inStockCount = 0;
-                let lowStockCount = 0;
-                let outOfStockCount = 0;
+            // Update summary from server response
+            function updateSummaryFromResponse(summary) {
+                if (summary) {
+                    // Based on the card-status.blade.php component structure,
+                    // we need to target the h4.card-title elements inside each card
+                    const cards = document.querySelectorAll('.row.mb-4 .card');
 
-                // Get all visible rows data
-                const tableData = inventoryTable.rows({ page: 'current' }).data();
+                    if (cards.length >= 4) {
+                        // Target each h4.card-title element within each card
+                        const totalProductsTitle = cards[0].querySelector('h4.card-title');
+                        const inStockTitle = cards[1].querySelector('h4.card-title');
+                        const lowStockTitle = cards[2].querySelector('h4.card-title');
+                        const outOfStockTitle = cards[3].querySelector('h4.card-title');
 
-                // Count for each category
-                for (let i = 0; i < tableData.length; i++) {
-                    const row = tableData[i];
-                    totalCount++;
+                        // Update values with appropriate formatting
+                        if (totalProductsTitle) {
+                            totalProductsTitle.textContent = formatNumber(summary.totalProducts);
+                        }
 
-                    // Check stock status
-                    const statusHtml = row.stock_status;
-                    if (statusHtml.includes('bg-success')) {
-                        inStockCount++;
-                    } else if (statusHtml.includes('bg-warning')) {
-                        lowStockCount++;
-                    } else if (statusHtml.includes('bg-danger')) {
-                        outOfStockCount++;
+                        if (inStockTitle) {
+                            inStockTitle.textContent = formatNumber(summary.inStockCount);
+                        }
+
+                        if (lowStockTitle) {
+                            lowStockTitle.textContent = formatNumber(summary.lowStockCount);
+                        }
+
+                        if (outOfStockTitle) {
+                            outOfStockTitle.textContent = formatNumber(summary.outOfStockCount);
+                        }
+                    } else {
+                        console.error('Could not find all required card elements');
                     }
                 }
+            }
 
-                // Update card contents using JavaScript
-                // This is needed since we're using static components but dynamic data
-                document.querySelectorAll('.card-title')[1].textContent = totalCount;
-                document.querySelectorAll('.card-title')[2].textContent = inStockCount;
-                document.querySelectorAll('.card-title')[3].textContent = lowStockCount;
-                document.querySelectorAll('.card-title')[4].textContent = outOfStockCount;
+            // Helper function to format numbers with thousands separators
+            function formatNumber(value) {
+                return new Intl.NumberFormat('id-ID').format(value);
             }
 
             // Handle export button
