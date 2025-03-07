@@ -21,6 +21,7 @@
 
         body {
             font-family: Courier, monospace;
+            font-weight: bold;
             font-size: {{ request('size') == '57' ? '10px' : '12px' }};
             width: {{ request('size') == '57' ? '57mm' : '78mm' }};
             color: #000;
