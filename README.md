@@ -1,19 +1,18 @@
-# Rangkuman Fitur dan Alur Toko Cacha POS
+# Cacha Store - Sistem POS dan Inventori
 
-## 1. Manajemen Pengguna
-Fitur:
+## Tentang Aplikasi
+
+Cacha Store adalah aplikasi Point of Sale (POS) dan manajemen inventori berbasis web yang dibangun dengan Laravel. Sistem ini dirancang untuk membantu pemilik toko dan kasir dalam mengelola penjualan, inventori, harga, transaksi, dan laporan secara efisien.
+
+## Fitur Utama
+
+### 1. Manajemen Pengguna
 - Multi-role (Admin dan Kasir)
 - Login dengan "remember me"
 - Kontrol akses berbasis peran
 - Manajemen sesi pengguna
 
-Alur:
-1. Login ke sistem dengan kredensial
-2. Sistem mengarahkan ke dashboard sesuai peran
-3. Akses fitur berdasarkan hak akses yang diberikan
-
-## 2. Manajemen Produk
-Fitur:
+### 2. Manajemen Produk
 - Operasi CRUD untuk produk
 - Generasi dan scanning barcode (Code128)
 - Konversi multi-unit
@@ -24,25 +23,7 @@ Fitur:
 - Deskripsi produk lengkap dan singkat
 - Featured products untuk highlight di landing page
 
-Alur Input Produk:
-1. Masuk ke menu produk
-2. Pilih "Tambah Produk Baru"
-3. Isi informasi produk:
-    - Data dasar (nama, kategori)
-    - Generate/upload barcode
-    - Upload multiple images
-    - Set unit dasar dan konversi
-    - Tentukan harga per unit
-    - Isi deskripsi untuk landing page
-    - Set featured status
-4. Sistem otomatis:
-    - Generate slug untuk URL
-    - Optimize SEO metadata
-    - Set primary image
-5. Simpan data produk
-
-## 3. Manajemen Inventori
-Fitur:
+### 3. Manajemen Inventori
 - Tracking stok realtime
 - Inventori multi-unit
 - Peringatan stok menipis
@@ -50,31 +31,13 @@ Fitur:
 - Riwayat pergerakan stok
 - Indikator status stok
 
-Alur Manajemen Stok:
-1. Monitor level stok dari dashboard
-2. Terima notifikasi untuk stok menipis
-3. Periksa riwayat pergerakan
-4. Lakukan penyesuaian stok
-5. Catat perubahan di sistem
-
-## 4. Manajemen Harga
-Fitur:
+### 4. Manajemen Harga
 - Konfigurasi harga dasar
 - Sistem harga bertingkat
 - Integrasi pajak
 - Manajemen diskon
 
-Alur Pengaturan Harga:
-1. Pilih produk
-2. Set harga dasar
-3. Konfigurasi:
-    - Harga per unit
-    - Harga berdasarkan kuantitas
-    - Diskon (persentase/nominal)
-4. Terapkan pengaturan
-
-## 5. Point of Sale (POS)
-Fitur:
+### 5. Point of Sale (POS)
 - Interface POS intuitif
 - Scanning barcode
 - Pencarian produk manual
@@ -84,39 +47,14 @@ Fitur:
 - Generasi invoice otomatis
 - Cetak struk
 
-Alur Transaksi POS:
-1. Buka antarmuka POS
-2. Input produk:
-    - Scan barcode, atau
-    - Cari manual
-3. Pilih unit dan jumlah
-4. Sistem kalkulasi otomatis
-5. Proses pembayaran
-6. Cetak struk
-
-## 6. Manajemen Transaksi
-Fitur:
+### 6. Manajemen Transaksi
 - Daftar semua transaksi dengan pagination
 - Manajemen transaksi tertunda
 - Detail history transaksi
 - Status tracking transaksi
 - Fitur lanjutkan transaksi
 
-Alur Manajemen Transaksi:
-1. Akses menu transaksi
-2. Lihat daftar transaksi
-3. Pilih transaksi untuk:
-    - Lihat detail
-    - Lanjutkan transaksi tertunda
-    - Cetak ulang struk
-4. Untuk lanjutkan transaksi:
-    - Pilih transaksi tertunda
-    - Muat ulang data transaksi
-    - Konversi ke format POS
-    - Lanjutkan proses pembayaran
-
-## 7. Stock Opname
-Fitur:
+### 7. Stock Opname
 - Input stok fisik per unit
 - Komparasi stok sistem vs fisik
 - Penyesuaian stok otomatis
@@ -124,7 +62,117 @@ Fitur:
 - Pencarian & filter produk
 - Dukungan scanner barcode
 
-Alur Stock Opname:
+### 8. Sistem Pelaporan
+- Laporan penjualan (harian/bulanan)
+- Laporan inventori
+- Analisis produk terlaris
+- Kalkulasi profit
+- Ekspor ke PDF/Excel
+
+### 9. Toko Online
+- Landing page produk
+- Optimasi SEO
+- Management gambar produk
+- Showcase produk unggulan
+
+## Teknologi yang Digunakan
+
+- **Framework**: Laravel 11
+- **PHP**: 8.2+
+- **Database**: MySQL
+- **Frontend**: Blade, JavaScript, Bootstrap
+- **Dependensi Utama**:
+  - artesaos/seotools: Optimasi SEO
+  - barryvdh/laravel-dompdf: Generasi PDF
+  - maatwebsite/excel: Import/export Excel
+  - milon/barcode: Generasi barcode
+  - spatie/laravel-sluggable: Pembuatan slug otomatis
+  - yajra/laravel-datatables-oracle: Handling datatables
+
+## Instalasi
+
+### Persyaratan Sistem
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL atau MariaDB
+
+### Langkah Instalasi
+
+1. **Clone Repositori**
+   ```
+   git clone [URL_REPOSITORY]
+   cd laravel-cacha-store
+   ```
+
+2. **Instal Dependensi PHP**
+   ```
+   composer install
+   ```
+
+3. **Instal Dependensi JavaScript**
+   ```
+   npm install
+   ```
+
+4. **Konfigurasi Lingkungan**
+   ```
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+5. **Konfigurasi Database**
+   - Edit file `.env` dan sesuaikan konfigurasi database:
+     ```
+     DB_CONNECTION=mysql
+     DB_HOST=127.0.0.1
+     DB_PORT=3306
+     DB_DATABASE=cacha_store
+     DB_USERNAME=root
+     DB_PASSWORD=
+     ```
+
+6. **Migrasi dan Seed Database**
+   ```
+   php artisan migrate --seed
+   ```
+
+7. **Kompilasi Aset**
+   ```
+   npm run dev
+   ```
+   atau untuk produksi:
+   ```
+   npm run build
+   ```
+
+8. **Jalankan Aplikasi**
+   ```
+   php artisan serve
+   ```
+   Aplikasi akan berjalan di `http://localhost:8000`
+
+## Kredensial Default
+
+- **Admin**
+  - Email: admin@example.com
+  - Password: password
+
+- **Kasir**
+  - Email: kasir@example.com
+  - Password: password
+
+## Alur Penggunaan
+
+### Alur POS
+1. Login sebagai Kasir atau Admin
+2. Buka halaman POS
+3. Tambahkan produk ke keranjang (scan barcode atau cari manual)
+4. Pilih unit dan jumlah
+5. Proses pembayaran
+6. Cetak struk
+
+### Alur Stock Opname
 1. Mulai sesi stock opname
 2. Scan/input produk
 3. Catat stok fisik
@@ -133,108 +181,27 @@ Alur Stock Opname:
 6. Lakukan penyesuaian
 7. Simpan riwayat
 
-## 8. Sistem Pelaporan
-Fitur:
-- Laporan penjualan (harian/bulanan)
-- Laporan inventori
-- Analisis produk terlaris
-- Kalkulasi profit
-- Ekspor ke PDF/Excel
+## Pemeliharaan
 
-Alur Pelaporan:
-1. Pilih jenis laporan
-2. Set periode
-3. Generate laporan
-4. Review data
-5. Ekspor sesuai kebutuhan
+### Backup Database
+```
+php artisan backup:run
+```
 
-## 9. Pencarian Global
-Fitur:
-- Pencarian multi-entitas (produk, pelanggan, supplier, transaksi)
-- Pencarian berdasarkan kata kunci
-- Hasil real-time
-- Batasan minimal 2 karakter
-- Tampilan hasil terorganisir
+### Update Aplikasi
+```
+git pull
+composer install
+php artisan migrate
+npm install
+npm run build
+php artisan optimize:clear
+```
 
-Alur Pencarian:
-1. Input kata kunci (min. 2 karakter)
-2. Sistem mencari di semua entitas:
-    - Produk (nama/barcode)
-    - Pelanggan (nama/telepon)
-    - Supplier (nama/telepon)
-    - Transaksi (nomor invoice)
-3. Tampilkan hasil dengan kategori
-4. Klik hasil untuk navigasi ke detail
+## Dukungan
 
-## 10. Landing Page & SEO
-Fitur:
-- Multiple product images
-- Primary image management
-- SEO optimization otomatis:
-    - Meta title
-    - Meta description
-    - Meta keywords
-    - Canonical URLs
-- OpenGraph support untuk social media
-- Schema.org markup untuk produk
-- Featured products showcase
-- Responsive image gallery
-- Image alt text untuk SEO
-- Slug otomatis untuk URL yang SEO-friendly
+Jika Anda mengalami masalah atau memiliki pertanyaan, silakan hubungi support di [email_support@example.com]
 
-Alur Manajemen Landing Page:
-1. Input produk dengan informasi lengkap:
-    - Upload multiple images
-    - Set featured status
-    - Isi deskripsi lengkap dan singkat
-2. Sistem otomatis generate:
-    - SEO metadata
-    - OpenGraph tags
-    - Schema.org markup
-3. Atur tampilan produk:
-    - Set primary image
-    - Atur urutan gambar
-    - Manage featured status
-4. Preview dan publikasi
+## Lisensi
 
-## 11. Image Management
-Fitur:
-- Multiple image upload
-- Primary image selection
-- Image ordering
-- Automatic image resizing
-- Alt text management
-- Gallery view
-- Image deletion with reorganization
-- Dukungan format: JPG, PNG, GIF
-- Validasi ukuran dan tipe file
-- Responsive image display
-
-Alur Image Management:
-1. Upload gambar:
-    - Single atau multiple upload
-    - Set primary image
-    - Atur urutan gambar
-2. Edit gambar:
-    - Update alt text
-    - Ubah urutan
-    - Ganti primary image
-3. Hapus gambar:
-    - Konfirmasi penghapusan
-    - Reorganisasi otomatis
-    - Update primary image jika perlu
-   
-## Keamanan dan Pemeliharaan
-Fitur Keamanan:
-- Proteksi CSRF
-- Validasi input
-- Autentikasi user
-- Penanganan password aman
-- Keamanan sesi
-
-Alur Pemeliharaan:
-1. Backup database rutin
-2. Monitor log sistem
-3. Update keamanan
-4. Optimasi performa
-5. Review level stok
+Aplikasi ini dilisensikan di bawah [Lisensi MIT](LICENSE).
