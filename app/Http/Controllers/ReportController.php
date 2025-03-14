@@ -34,16 +34,16 @@ class ReportController extends Controller
 
         if ($request->ajax()) {
             $query = Transaction::with(['customer', 'cashier'])
-                ->when($storeId, function($q) use ($storeId) {
+                ->when($storeId, function ($q) use ($storeId) {
                     return $q->where('store_id', $storeId);
                 })
-                ->when($request->start_date, function($q) use ($request) {
+                ->when($request->start_date, function ($q) use ($request) {
                     return $q->whereDate('invoice_date', '>=', $request->start_date);
                 })
-                ->when($request->end_date, function($q) use ($request) {
+                ->when($request->end_date, function ($q) use ($request) {
                     return $q->whereDate('invoice_date', '<=', $request->end_date);
                 })
-                ->when($request->status, function($q) use ($request) {
+                ->when($request->status, function ($q) use ($request) {
                     return $q->where('status', $request->status);
                 })
                 ->orderBy('invoice_date', 'desc');
@@ -65,13 +65,13 @@ class ReportController extends Controller
         }
 
         // Summary data
-        $totalSales = Transaction::when($storeId, function($q) use ($storeId) {
+        $totalSales = Transaction::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })
             ->where('status', 'success')
             ->sum('final_amount');
 
-        $salesCount = Transaction::when($storeId, function($q) use ($storeId) {
+        $salesCount = Transaction::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })
             ->where('status', 'success')
@@ -85,7 +85,7 @@ class ReportController extends Controller
                 DB::raw('SUM(transaction_items.quantity) as total_qty'),
                 DB::raw('SUM(transaction_items.subtotal) as total_amount')
             )
-            ->when($storeId, function($q) use ($storeId) {
+            ->when($storeId, function ($q) use ($storeId) {
                 return $q->where('transactions.store_id', $storeId);
             })
             ->where('transactions.status', 'success')
@@ -103,19 +103,19 @@ class ReportController extends Controller
 
         if ($request->ajax()) {
             $query = BalanceMutation::with('creator')
-                ->when($storeId, function($q) use ($storeId) {
+                ->when($storeId, function ($q) use ($storeId) {
                     return $q->where('store_id', $storeId);
                 })
-                ->when($request->start_date, function($q) use ($request) {
+                ->when($request->start_date, function ($q) use ($request) {
                     return $q->whereDate('created_at', '>=', $request->start_date);
                 })
-                ->when($request->end_date, function($q) use ($request) {
+                ->when($request->end_date, function ($q) use ($request) {
                     return $q->whereDate('created_at', '<=', $request->end_date);
                 })
-                ->when($request->type, function($q) use ($request) {
+                ->when($request->type, function ($q) use ($request) {
                     return $q->where('type', $request->type);
                 })
-                ->when($request->payment_method, function($q) use ($request) {
+                ->when($request->payment_method, function ($q) use ($request) {
                     return $q->where('payment_method', $request->payment_method);
                 })
                 ->orderBy('created_at', 'desc');
@@ -138,13 +138,13 @@ class ReportController extends Controller
         }
 
         // Summary data
-        $totalIncome = BalanceMutation::when($storeId, function($q) use ($storeId) {
+        $totalIncome = BalanceMutation::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })
             ->where('type', 'in')
             ->sum('amount');
 
-        $totalExpense = BalanceMutation::when($storeId, function($q) use ($storeId) {
+        $totalExpense = BalanceMutation::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })
             ->where('type', 'out')
@@ -173,36 +173,31 @@ class ReportController extends Controller
         if ($request->ajax()) {
             // Base product query
             $query = Product::with(['category', 'supplier', 'productUnits.unit'])
-                ->when($storeId, function($q) use ($storeId) {
+                ->when($storeId, function ($q) use ($storeId) {
                     return $q->where('store_id', $storeId);
                 })
-                ->when($request->category_id, function($q) use ($request) {
+                ->when($request->category_id, function ($q) use ($request) {
                     return $q->where('category_id', $request->category_id);
                 })
-                ->when($request->supplier_id, function($q) use ($request) {
+                ->when($request->supplier_id, function ($q) use ($request) {
                     return $q->where('supplier_id', $request->supplier_id);
                 })
-                ->when($request->status, function($q) use ($request) {
+                ->when($request->status, function ($q) use ($request) {
                     if ($request->status === 'out_of_stock') {
-                        return $q->whereHas('productUnits', function($query) {
+                        return $q->whereHas('productUnits', function ($query) {
                             $query->where('stock', '<=', 0);
                         });
                     } elseif ($request->status === 'low_stock') {
-                        return $q->whereHas('productUnits', function($query) {
+                        return $q->whereHas('productUnits', function ($query) {
                             $query->whereRaw('stock <= min_stock')->where('stock', '>', 0);
                         });
                     } elseif ($request->status === 'in_stock') {
-                        return $q->whereHas('productUnits', function($query) {
+                        return $q->whereHas('productUnits', function ($query) {
                             $query->whereRaw('stock > min_stock');
                         });
                     }
                 });
 
-            // For export functionality
-            if ($request->has('export') && $request->export === 'excel') {
-                // Add your export logic here
-                // ...
-            }
 
             // Get counts for summary cards (based on the same filters)
             $totalProducts = $query->count();
@@ -213,15 +208,15 @@ class ReportController extends Controller
             $outOfStockCount = clone $query;
 
             // Modify each query to get the specific counts
-            $inStockCount = $inStockCount->whereHas('productUnits', function($q) {
+            $inStockCount = $inStockCount->whereHas('productUnits', function ($q) {
                 $q->whereRaw('stock > min_stock');
             })->count();
 
-            $lowStockCount = $lowStockCount->whereHas('productUnits', function($q) {
+            $lowStockCount = $lowStockCount->whereHas('productUnits', function ($q) {
                 $q->whereRaw('stock <= min_stock')->where('stock', '>', 0);
             })->count();
 
-            $outOfStockCount = $outOfStockCount->whereHas('productUnits', function($q) {
+            $outOfStockCount = $outOfStockCount->whereHas('productUnits', function ($q) {
                 $q->where('stock', '<=', 0);
             })->count();
 
@@ -234,7 +229,8 @@ class ReportController extends Controller
                 })
                 ->addColumn('stock_status', function ($row) {
                     $defaultUnit = $row->productUnits->where('is_default', true)->first();
-                    if (!$defaultUnit) return 'No Units';
+                    if (!$defaultUnit)
+                        return 'No Units';
 
                     $stock = $defaultUnit->stock;
                     $minStock = $defaultUnit->min_stock;
@@ -249,7 +245,8 @@ class ReportController extends Controller
                 })
                 ->addColumn('current_stock', function ($row) {
                     $defaultUnit = $row->productUnits->where('is_default', true)->first();
-                    if (!$defaultUnit) return 'N/A';
+                    if (!$defaultUnit)
+                        return 'N/A';
 
                     return $defaultUnit->stock . ' ' . ($defaultUnit->unit->name ?? '');
                 })
@@ -269,11 +266,11 @@ class ReportController extends Controller
         }
 
         // Get filter data
-        $categories = Category::when($storeId, function($q) use ($storeId) {
+        $categories = Category::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })->where('is_active', true)->get();
 
-        $suppliers = Supplier::when($storeId, function($q) use ($storeId) {
+        $suppliers = Supplier::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })->get();
 
@@ -286,19 +283,19 @@ class ReportController extends Controller
 
         if ($request->ajax()) {
             $query = PurchaseOrder::with(['supplier'])
-                ->when($storeId, function($q) use ($storeId) {
+                ->when($storeId, function ($q) use ($storeId) {
                     return $q->where('store_id', $storeId);
                 })
-                ->when($request->start_date, function($q) use ($request) {
+                ->when($request->start_date, function ($q) use ($request) {
                     return $q->whereDate('purchase_date', '>=', $request->start_date);
                 })
-                ->when($request->end_date, function($q) use ($request) {
+                ->when($request->end_date, function ($q) use ($request) {
                     return $q->whereDate('purchase_date', '<=', $request->end_date);
                 })
-                ->when($request->supplier_id, function($q) use ($request) {
+                ->when($request->supplier_id, function ($q) use ($request) {
                     return $q->where('supplier_id', $request->supplier_id);
                 })
-                ->when($request->status, function($q) use ($request) {
+                ->when($request->status, function ($q) use ($request) {
                     return $q->where('status', $request->status);
                 })
                 ->orderBy('purchase_date', 'desc');
@@ -327,18 +324,18 @@ class ReportController extends Controller
         }
 
         // Get suppliers for filter
-        $suppliers = Supplier::when($storeId, function($q) use ($storeId) {
+        $suppliers = Supplier::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })->get();
 
         // Get summary data
-        $totalPurchases = PurchaseOrder::when($storeId, function($q) use ($storeId) {
+        $totalPurchases = PurchaseOrder::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })
             ->where('status', 'completed')
             ->sum('final_amount');
 
-        $pendingPurchasesCount = PurchaseOrder::when($storeId, function($q) use ($storeId) {
+        $pendingPurchasesCount = PurchaseOrder::when($storeId, function ($q) use ($storeId) {
             return $q->where('store_id', $storeId);
         })
             ->where('status', 'pending')
@@ -355,22 +352,28 @@ class ReportController extends Controller
         }
 
         // Get stores with performance metrics
-        $stores = Store::withCount(['transactions as sales_count' => function($query) {
-            $query->where('status', 'success');
-        }])
-            ->withSum(['transactions as revenue' => function($query) {
+        $stores = Store::withCount([
+            'transactions as sales_count' => function ($query) {
                 $query->where('status', 'success');
-            }], 'final_amount')
+            }
+        ])
+            ->withSum([
+                'transactions as revenue' => function ($query) {
+                    $query->where('status', 'success');
+                }
+            ], 'final_amount')
             ->withCount('customers')
             ->where('is_active', true)
             ->get();
 
         // Get top-performing stores
-        $topStores = Store::withSum(['transactions as revenue' => function($query) {
-            $query->where('status', 'success')
-                ->whereMonth('invoice_date', Carbon::now()->month)
-                ->whereYear('invoice_date', Carbon::now()->year);
-        }], 'final_amount')
+        $topStores = Store::withSum([
+            'transactions as revenue' => function ($query) {
+                $query->where('status', 'success')
+                    ->whereMonth('invoice_date', Carbon::now()->month)
+                    ->whereYear('invoice_date', Carbon::now()->year);
+            }
+        ], 'final_amount')
             ->orderByDesc('revenue')
             ->limit(5)
             ->get();
@@ -386,7 +389,7 @@ class ReportController extends Controller
         $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
         $paymentData = Transaction::select('payment_type', DB::raw('COUNT(*) as count'), DB::raw('SUM(final_amount) as amount'))
-            ->when($storeId, function($q) use ($storeId) {
+            ->when($storeId, function ($q) use ($storeId) {
                 return $q->where('store_id', $storeId);
             })
             ->where('status', 'success')
@@ -396,7 +399,7 @@ class ReportController extends Controller
 
         // Calculate percentages
         $totalAmount = $paymentData->sum('amount');
-        $chartData = $paymentData->map(function($item) use ($totalAmount) {
+        $chartData = $paymentData->map(function ($item) use ($totalAmount) {
             return [
                 'payment_type' => $item->payment_type,
                 'amount' => $totalAmount > 0 ? round(($item->amount / $totalAmount) * 100, 1) : 0,
@@ -425,14 +428,14 @@ class ReportController extends Controller
         SUM(CASE WHEN type = "out" THEN amount ELSE 0 END) as expense,
         COUNT(*) as transactions_count
     ')
-            ->when($storeId, function($q) use ($storeId) {
+            ->when($storeId, function ($q) use ($storeId) {
                 return $q->where('store_id', $storeId);
             })
             ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('date')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $item->date = Carbon::parse($item->date)->format('d M Y');
                 return $item;
             });
@@ -443,7 +446,7 @@ class ReportController extends Controller
         COUNT(*) as count,
         SUM(amount) as total_amount
     ')
-            ->when($storeId, function($q) use ($storeId) {
+            ->when($storeId, function ($q) use ($storeId) {
                 return $q->where('store_id', $storeId);
             })
             ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
@@ -454,10 +457,10 @@ class ReportController extends Controller
         $totalTransactions = $paymentMethodsData->sum('count');
 
         $paymentMethodsData = $paymentMethodsData
-            ->filter(function($item) {
+            ->filter(function ($item) {
                 return $item->method != 'unknown' && $item->method != 'adjustment';
             })
-            ->map(function($item) use ($totalTransactions) {
+            ->map(function ($item) use ($totalTransactions) {
                 return [
                     'method' => $item->method,
                     'count' => $item->count,
@@ -487,7 +490,7 @@ class ReportController extends Controller
         COUNT(*) as count,
         SUM(final_amount) as amount
     ')
-            ->when($storeId, function($q) use ($storeId) {
+            ->when($storeId, function ($q) use ($storeId) {
                 return $q->where('store_id', $storeId);
             })
             ->where('status', 'completed')
@@ -495,7 +498,7 @@ class ReportController extends Controller
             ->groupBy(DB::raw('DATE(purchase_date)'))
             ->orderBy('date')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $item->date = Carbon::parse($item->date)->format('d M Y');
                 return $item;
             });
@@ -506,7 +509,7 @@ class ReportController extends Controller
         COUNT(*) as count,
         SUM(final_amount) as total_amount
     ')
-            ->when($storeId, function($q) use ($storeId) {
+            ->when($storeId, function ($q) use ($storeId) {
                 return $q->where('store_id', $storeId);
             })
             ->where('status', 'completed')
@@ -518,7 +521,7 @@ class ReportController extends Controller
         $totalTransactions = $paymentMethodsData->sum('count');
 
         $paymentMethodsData = $paymentMethodsData
-            ->map(function($item) use ($totalTransactions) {
+            ->map(function ($item) use ($totalTransactions) {
                 return [
                     'method' => $item->method,
                     'count' => $item->count,
