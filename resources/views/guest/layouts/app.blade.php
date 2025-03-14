@@ -133,7 +133,7 @@
     <!-- End Google Tag Manager -->
 
     <!-- Google Analytics -->
-    {{-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+    {{-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-6XVCHNSS0E"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -141,7 +141,7 @@
             dataLayer.push(arguments);
         }
         gtag('js', new Date());
-        gtag('config', 'G-XXXXXXXX');
+        gtag('config', 'G-6XVCHNSS0E');
 
         // Track Core Web Vitals
         gtag('set', {
