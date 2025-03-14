@@ -1,12 +1,29 @@
 User-agent: *
 Allow: /
+Allow: /products/
+Allow: /categories/
+Allow: /shop/
+Allow: /about/
+Allow: /contact/
+Allow: /sitemap.xml
+
+# Disallow admin and private areas
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /login
 Disallow: /register
-Disallow: /logout
-Disallow: /password/*
-Disallow: /cart/checkout
-Disallow: /cart/payment
+Disallow: /password/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /api/
 
+# Crawl-delay
+Crawl-delay: 10
+
+# Sitemaps
 Sitemap: https://cachastore.com/sitemap.xml
+Sitemap: https://cachastore.com/products-sitemap.xml
+Sitemap: https://cachastore.com/categories-sitemap.xml
+
+# Host
+Host: https://cachastore.com
