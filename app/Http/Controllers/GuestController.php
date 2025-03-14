@@ -9,14 +9,18 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Group;
 use App\Models\Transaction;
+use App\Traits\SEOTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Artesaos\SEOTools\Facades\SEOTools;
 
 class GuestController extends Controller
 {
+    use SEOTrait;
+
     public function getProductsByGroup()
     {
-        $products = Product::whereHas('category.group', function($query) {
+        $products = Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
             ->with(['category', 'productImages', 'productUnits'])
@@ -28,7 +32,7 @@ class GuestController extends Controller
 
     public function getCategory()
     {
-        $categories = Category::whereHas('group', function($query) {
+        $categories = Category::whereHas('group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
             ->withCount('products')
@@ -41,17 +45,23 @@ class GuestController extends Controller
 
     public function productBestseller()
     {
-        $bestSellers = Product::whereHas('category.group', function($query) {
+        $bestSellers = Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
-            ->withCount(['transactionItems as total_sold' => function($query) {
-                $query->whereHas('transaction', function($q) {
-                    $q->where('status', 'success');
-                });
-            }])
-            ->with(['category', 'productImages' => function($query) {
-                $query->where('is_primary', true);
-            }, 'productUnits'])
+            ->withCount([
+                'transactionItems as total_sold' => function ($query) {
+                    $query->whereHas('transaction', function ($q) {
+                        $q->where('status', 'success');
+                    });
+                }
+            ])
+            ->with([
+                'category',
+                'productImages' => function ($query) {
+                    $query->where('is_primary', true);
+                },
+                'productUnits'
+            ])
             ->orderBy('total_sold', 'desc')
             ->take(4)
             ->get();
@@ -61,12 +71,16 @@ class GuestController extends Controller
 
     public function catalogProducts()
     {
-        $catalogProducts = Product::whereHas('category.group', function($query) {
+        $catalogProducts = Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
-            ->with(['category', 'productImages' => function($query) {
-                $query->where('is_primary', true);
-            }, 'productUnits'])
+            ->with([
+                'category',
+                'productImages' => function ($query) {
+                    $query->where('is_primary', true);
+                },
+                'productUnits'
+            ])
             ->where('is_active', true)
             ->take(6)
             ->get();
@@ -77,7 +91,7 @@ class GuestController extends Controller
     public function statisticData()
     {
         $statistics = [
-            'product_variants' => Product::whereHas('category.group', function($query) {
+            'product_variants' => Product::whereHas('category.group', function ($query) {
                 $query->where('code', 'CACHASNACK');
             })->count(),
             'satisfied_customers' => Transaction::where('status', 'success')
@@ -93,7 +107,7 @@ class GuestController extends Controller
     public function galleryImages()
     {
         // Ambil dulu ID produk bestseller
-        $bestsellerIds = Product::whereHas('category.group', function($query) {
+        $bestsellerIds = Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
             ->join('transaction_items', 'products.id', '=', 'transaction_items.product_id')
@@ -105,14 +119,14 @@ class GuestController extends Controller
             ->pluck('products.id');
 
         // Ambil gambar produk random selain bestseller
-        $gallery = ProductImage::whereHas('product.category.group', function($query) {
+        $gallery = ProductImage::whereHas('product.category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
-            ->whereHas('product', function($query) use ($bestsellerIds) {
+            ->whereHas('product', function ($query) use ($bestsellerIds) {
                 $query->where('is_active', true)
                     ->whereNotIn('id', $bestsellerIds);
             })
-            ->with(['product:id,name,short_description'])
+            ->with(['product:id,name,short_description,slug']) // Ensure slug is included for links
             ->inRandomOrder()
             ->distinct('product_id')
             ->take(6)
@@ -124,7 +138,7 @@ class GuestController extends Controller
     public function getBiggestDiscount()
     {
         // 1. Mendapatkan produk CACHASNACK dengan diskon aktif
-        $products = Product::whereHas('category.group', function($query) {
+        $products = Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
             ->whereNotNull('discount_id')
@@ -135,14 +149,14 @@ class GuestController extends Controller
         $discounts = $products->pluck('discount')->filter();
 
         // 3. Kembalikan diskon dengan value terbesar
-        return $discounts->sortByDesc(function($discount) {
+        return $discounts->sortByDesc(function ($discount) {
             return $discount->type === 'percentage' ? $discount->value : 0;
         })->first();
     }
 
     private function getTotalProducts()
     {
-        return Product::whereHas('category.group', function($query) {
+        return Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })
             ->where('is_active', true)
@@ -160,6 +174,8 @@ class GuestController extends Controller
         $biggestDiscount = $this->getBiggestDiscount();
         $totalProducts = $this->getTotalProducts();
 
+        // Set SEO for homepage using the trait method
+        $this->setHomepageSEO();
 
         // Compact all data for the view
         return view('welcome', compact(
@@ -177,7 +193,7 @@ class GuestController extends Controller
     {
         // Ambil data produk dengan relasi yang dibutuhkan
         $product = Product::where('slug', $slug)
-            ->whereHas('category.group', function($query) {
+            ->whereHas('category.group', function ($query) {
                 $query->where('code', 'CACHASNACK');
             })
             ->with([
@@ -190,7 +206,7 @@ class GuestController extends Controller
 
         // Hitung diskon jika ada
         $defaultUnit = $product->productUnits->where('is_default', true)->first();
-        if ($defaultUnit && $product->discount) {
+        if ($defaultUnit && $product->discount && $product->discount->is_active) {
             if ($product->discount->type == 'percentage') {
                 $discountAmount = $defaultUnit->selling_price * ($product->discount->value / 100);
             } else {
@@ -199,6 +215,9 @@ class GuestController extends Controller
             $discountPrice = $defaultUnit->selling_price - $discountAmount;
             $discountPercentage = round(($discountAmount / $defaultUnit->selling_price) * 100);
         }
+
+        // Set SEO for product detail using the trait method
+        $this->setProductSEO($product);
 
         // Data untuk view
         $data = [
@@ -228,25 +247,33 @@ class GuestController extends Controller
         // Base query with joins for sorting
         $query = Product::query()
             ->select('products.*')
-            ->leftJoin('product_units', function($join) {
+            ->leftJoin('product_units', function ($join) {
                 $join->on('products.id', '=', 'product_units.product_id')
                     ->where('product_units.is_default', '=', true);
             })
-            ->whereHas('category.group', function($query) {
+            ->whereHas('category.group', function ($query) {
                 $query->where('code', 'CACHASNACK');
             })
             ->with(['category', 'productImages', 'productUnits', 'discount']);
 
+        // Selected category for SEO
+        $selectedCategory = null;
+
         // Filter by category if provided and not "all"
         if ($request->has('category') && $request->category !== 'all') {
-            $query->whereHas('category', function($q) use ($request) {
-                $q->where('id', $request->category);
-            });
+            $category = Category::find($request->category);
+            if ($category) {
+                $query->whereHas('category', function ($q) use ($request) {
+                    $q->where('id', $request->category);
+                });
+
+                $selectedCategory = $category;
+            }
         }
 
         // Filter by price range if provided
         if ($request->has('price_min') && $request->has('price_max')) {
-            $query->whereHas('productUnits', function($q) use ($request) {
+            $query->whereHas('productUnits', function ($q) use ($request) {
                 $q->where('is_default', true)
                     ->whereBetween('selling_price', [
                         $request->price_min,
@@ -265,11 +292,13 @@ class GuestController extends Controller
                 $query->orderBy('product_units.selling_price', 'desc');
                 break;
             case 'bestseller':
-                $query->withCount(['transactionItems as total_sold' => function($query) {
-                    $query->whereHas('transaction', function($q) {
-                        $q->where('status', 'success');
-                    });
-                }])
+                $query->withCount([
+                    'transactionItems as total_sold' => function ($query) {
+                        $query->whereHas('transaction', function ($q) {
+                            $q->where('status', 'success');
+                        });
+                    }
+                ])
                     ->orderBy('total_sold', 'desc');
                 break;
             default:
@@ -278,17 +307,32 @@ class GuestController extends Controller
 
         $products = $query->paginate(12);
 
+        // Set SEO for the shop page
+        if ($selectedCategory) {
+            $this->setCategorySEO($selectedCategory);
+        } else {
+            $this->setShopSEO();
+        }
+
+        // Add pagination links for SEO
+        if ($products->currentPage() > 1) {
+            SEOTools::metatags()->setPrev($products->previousPageUrl());
+        }
+
+        if ($products->hasMorePages()) {
+            SEOTools::metatags()->setNext($products->nextPageUrl());
+        }
+
         // Get categories with count
-        $categories = Category::whereHas('group', function($query) {
+        $categories = Category::whereHas('group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })->withCount('products')->get();
 
         // Get total products count for "All" category
-        $totalProducts = Product::whereHas('category.group', function($query) {
+        $totalProducts = Product::whereHas('category.group', function ($query) {
             $query->where('code', 'CACHASNACK');
         })->count();
 
         return view('guest.shop', compact('products', 'categories', 'totalProducts'));
     }
 }
-

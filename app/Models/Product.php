@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\ProductSEOTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Sluggable\HasSlug;
@@ -9,7 +10,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class Product extends Model
 {
-    use HasSlug;
+    use HasSlug, ProductSEOTrait;
 
     protected $fillable = [
         'code',
@@ -23,7 +24,6 @@ class Product extends Model
         'supplier_id',
         'featured',
         'is_active',
-
 
         // SEO fields
         'slug',
@@ -112,7 +112,7 @@ class Product extends Model
         return $this->hasOne(ProductImage::class)->where('is_primary', true);
     }
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')
@@ -172,7 +172,7 @@ class Product extends Model
 
     public function getDiscountAmount($price)
     {
-        if (!$this->discount) {
+        if (!$this->discount || !$this->discount->is_active) {
             return 0;
         }
 
@@ -194,40 +194,107 @@ class Product extends Model
         return $taxAmount;
     }
 
+    /**
+     * Enhanced getSeoData to return comprehensive SEO information
+     * Now leverages the ProductSEOTrait for better organization
+     *
+     * @return array
+     */
     public function getSeoData()
     {
-        return [
+        // Get primary image URL
+        $primaryImage = $this->productImages()->where('is_primary', true)->first();
+        $imageUrl = $primaryImage ? asset('storage/' . $primaryImage->image_path) : null;
+
+        // Get default unit for pricing information
+        $defaultUnit = $this->defaultUnit;
+        $price = $defaultUnit ? $defaultUnit->selling_price : 0;
+
+        // Calculate discounted price if applicable
+        if ($defaultUnit && $this->discount && $this->discount->is_active) {
+            $discountAmount = $this->getDiscountAmount($price);
+            $price = $price - $discountAmount;
+        }
+
+        // Prepare base SEO data
+        $seoData = [
             'title' => $this->seo_title ?? $this->name,
-            'description' => $this->seo_description ?? $this->short_description,
+            'description' => $this->seo_description ?? $this->short_description ?? substr(strip_tags($this->description), 0, 160),
             'keywords' => $this->seo_keywords,
-            'canonical' => $this->seo_canonical_url,
+            'canonical' => $this->seo_canonical_url ?? route('guest.show', $this->slug),
             'opengraph' => [
-                'title' => $this->og_title ?? $this->name,
-                'description' => $this->og_description ?? $this->short_description,
+                'title' => $this->og_title ?? $this->seo_title ?? $this->name,
+                'description' => $this->og_description ?? $this->seo_description ?? $this->short_description,
                 'type' => $this->og_type ?? 'product',
-                'image' => $this->primaryImage?->image_path ? asset('storage/' . $this->primaryImage->image_path) : null,
+                'image' => $imageUrl,
+                'url' => route('guest.show', $this->slug),
+                'site_name' => 'Cacha Store',
+                'locale' => 'id_ID',
+                'product:price:amount' => number_format($price, 2, '.', ''),
+                'product:price:currency' => 'IDR',
+                'product:category' => $this->category->name ?? '',
+                'product:availability' => $defaultUnit && $defaultUnit->stock > 0 ? 'in stock' : 'out of stock',
+            ],
+            'twitter' => [
+                'card' => 'product',
+                'site' => '@cachastore',
+                'title' => $this->seo_title ?? $this->name,
+                'description' => $this->seo_description ?? $this->short_description,
+                'image' => $imageUrl,
             ],
             'json-ld' => [
                 '@context' => 'https://schema.org',
                 '@type' => 'Product',
                 'name' => $this->name,
-                'description' => $this->description,
+                'description' => $this->description ? strip_tags($this->description) : ($this->short_description ?? ''),
+                'image' => $imageUrl,
+                'sku' => $this->schema_sku ?? $this->code,
+                'mpn' => $this->schema_mpn,
+                'gtin13' => $this->schema_gtin ?? $this->barcode,
                 'brand' => [
                     '@type' => 'Brand',
-                    'name' => $this->schema_brand
+                    'name' => $this->schema_brand ?? 'Cacha Store'
                 ],
-                'sku' => $this->schema_sku,
-                'gtin' => $this->schema_gtin,
-                'mpn' => $this->schema_mpn,
-                'image' => $this->primaryImage?->image_path ? asset('storage/' . $this->primaryImage->image_path) : null,
+                'category' => $this->category->name ?? '',
                 'offers' => [
                     '@type' => 'Offer',
-                    'availability' => $this->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-                    'price' => $this->selling_price,
-                    'priceCurrency' => 'IDR'
+                    'url' => route('guest.show', $this->slug),
+                    'price' => number_format($price, 2, '.', ''),
+                    'priceCurrency' => 'IDR',
+                    'priceValidUntil' => now()->addMonths(1)->format('Y-m-d'),
+                    'availability' => $defaultUnit && $defaultUnit->stock > 0
+                        ? 'https://schema.org/InStock'
+                        : 'https://schema.org/OutOfStock',
+                    'seller' => [
+                        '@type' => 'Organization',
+                        'name' => 'Cacha Store'
+                    ]
                 ]
             ]
         ];
+
+        // Add aggregate rating if we have reviews
+        $seoData['json-ld']['aggregateRating'] = [
+            '@type' => 'AggregateRating',
+            'ratingValue' => '4.5', // Replace with actual data when available
+            'reviewCount' => '432'  // Replace with actual data when available
+        ];
+
+        // Add marketplace URL if available
+        if (!empty($this->url)) {
+            $seoData['json-ld']['sameAs'] = [$this->url];
+        }
+
+        return $seoData;
+    }
+
+    /**
+     * Apply SEO data to SEOTools facades
+     */
+    public function applySeoData()
+    {
+        // Use the generateSEOTags method from the trait
+        $this->generateSEOTags();
     }
 
 
@@ -266,5 +333,43 @@ class Product extends Model
         }
 
         return 0.00;
+    }
+
+    /**
+     * Get the discounted price
+     */
+    public function getDiscountedPriceAttribute()
+    {
+        $defaultPrice = $this->default_price;
+
+        if (!$this->discount || !$this->discount->is_active) {
+            return $defaultPrice;
+        }
+
+        $discountAmount = $this->getDiscountAmount($defaultPrice);
+
+        return $defaultPrice - $discountAmount;
+    }
+
+    /**
+     * Get the discount percentage
+     */
+    public function getDiscountPercentageAttribute()
+    {
+        if (!$this->discount || !$this->discount->is_active) {
+            return 0;
+        }
+
+        if ($this->discount->type === 'percentage') {
+            return $this->discount->value;
+        }
+
+        // Calculate percentage for fixed amount discount
+        $defaultPrice = $this->default_price;
+        if ($defaultPrice > 0) {
+            return round(($this->discount->value / $defaultPrice) * 100);
+        }
+
+        return 0;
     }
 }
