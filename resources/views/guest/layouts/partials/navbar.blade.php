@@ -37,7 +37,7 @@
                     <a class="x-navbar-link nav-link" href="{{route('guest.home')}}#contact">Kontak</a>
                 </li>
                 <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                    <x-guest.button href="#marketplace" icon="shopping-cart">
+                    <x-guest.button href="https://shopee.co.id/plakatisme" icon="shopping-cart">
                         Beli Sekarang
                     </x-guest.button>
                 </li>
