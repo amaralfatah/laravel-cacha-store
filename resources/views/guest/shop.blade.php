@@ -104,7 +104,7 @@
                 <div class="row g-4">
                     @foreach($products as $product)
                         <div class="col-md-4">
-                            <x-product-card
+                            <x-guest.product-card
                                 :product="$product"
                                 :show-badges="false"
                                 :show-discount="true"
