@@ -12,20 +12,22 @@
                 <p class="lead mb-4 text-white" data-animation="fade-up">
                     Gunakan kode promo
                     <span class="x-cta-promo-code bg-white px-3 py-1 rounded-pill fw-bold mx-2 text-danger">
-            SNACKATTACK
-          </span>
+                        SNACKATTACK
+                    </span>
                     saat checkout
                 </p>
 
                 <!-- CTA Buttons -->
                 <div class="d-flex flex-wrap justify-content-center gap-3 mb-4" data-animation="fade-up">
                     <!-- Main CTA Button -->
-                    <a href="https://shopee.co.id/plakatisme" class="btn btn-light btn-lg fw-bold rounded-pill px-4 py-3 shadow-sm text-danger position-relative overflow-hidden">
+                    <a href="https://shopee.co.id/plakatisme"
+                        class="btn btn-light btn-lg fw-bold rounded-pill px-4 py-3 shadow-sm text-danger position-relative overflow-hidden">
                         <i class="fas fa-shopping-cart me-2"></i>Cobain Sekarang!
                     </a>
 
                     <!-- Secondary CTA Button -->
-                    <a href="https://wa.me/6281323061827" class="btn btn-outline-light btn-lg fw-bold rounded-pill px-4 py-3">
+                    <a href="https://wa.me/6281323061827"
+                        class="btn btn-outline-light btn-lg fw-bold rounded-pill px-4 py-3">
                         <i class="fab fa-whatsapp me-2"></i>Pesan via WhatsApp
                     </a>
                 </div>
@@ -40,21 +42,26 @@
                     </div>
                 </div>
 
+                {{-- MASIH DUMMY --}}
                 <!-- Marketplace links -->
                 <div class="mt-5" data-animation="fade-up">
                     <p class="text-white mb-3">Atau belanja melalui marketplace favorit kamu:</p>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="#" class="bg-white p-2 rounded-pill shadow-sm">
-                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Tokopedia" width="100" height="30" class="img-fluid">
+                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Tokopedia" width="100"
+                                height="30" class="img-fluid">
                         </a>
                         <a href="#" class="bg-white p-2 rounded-pill shadow-sm">
-                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Shopee" width="100" height="30" class="img-fluid">
+                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Shopee" width="100"
+                                height="30" class="img-fluid">
                         </a>
                         <a href="#" class="bg-white p-2 rounded-pill shadow-sm">
-                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Bukalapak" width="100" height="30" class="img-fluid">
+                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Bukalapak" width="100"
+                                height="30" class="img-fluid">
                         </a>
                         <a href="#" class="bg-white p-2 rounded-pill shadow-sm">
-                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Lazada" width="100" height="30" class="img-fluid">
+                            <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Lazada" width="100"
+                                height="30" class="img-fluid">
                         </a>
                     </div>
                 </div>
@@ -150,7 +157,8 @@
                     }
                 }
 
-                timerElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timerElement.textContent =
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }, 1000);
         }
 

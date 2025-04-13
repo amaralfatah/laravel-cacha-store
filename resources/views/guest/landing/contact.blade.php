@@ -22,7 +22,7 @@
                     </div>
                     <div>
                         <h5 class="fw-bold mb-1">Telepon</h5>
-                        <p class="mb-0 text-muted">+62 812-3456-7890</p>
+                        <p class="mb-0 text-muted">081 323 061 827</p>
                     </div>
                 </div>
 
@@ -36,6 +36,7 @@
                     </div>
                 </div>
 
+                {{-- MASIH DUMMY --}}
                 <div class="mt-5">
                     <h5 class="fw-bold mb-3">Ikuti Kami</h5>
                     <div class="d-flex gap-3">
@@ -68,18 +69,20 @@
 
                             <div class="mb-3">
                                 <label for="name" class="form-label fw-medium">Nama Lengkap</label>
-                                <input type="text" class="form-control form-control-lg rounded-pill border-0 bg-light"
-                                       id="name" name="name" placeholder="Masukkan nama lengkap">
+                                <input type="text"
+                                    class="form-control form-control-lg rounded-pill border-0 bg-light" id="name"
+                                    name="name" placeholder="Masukkan nama lengkap">
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label fw-medium">Email</label>
-                                <input type="email" class="form-control form-control-lg rounded-pill border-0 bg-light"
-                                       id="email" name="email" placeholder="Masukkan email">
+                                <input type="email"
+                                    class="form-control form-control-lg rounded-pill border-0 bg-light" id="email"
+                                    name="email" placeholder="Masukkan email">
                             </div>
                             <div class="mb-4">
                                 <label for="message" class="form-label fw-medium">Pesan</label>
                                 <textarea class="form-control border-0 bg-light rounded-4" id="message" name="message" rows="5"
-                                          placeholder="Tulis pesan Anda di sini..."></textarea>
+                                    placeholder="Tulis pesan Anda di sini..."></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary-cacha btn-lg rounded-pill w-100">
                                 Kirim Pesan
@@ -121,11 +124,13 @@
             emailjs.send('service_6sfihlo', 'template_22525qd', templateParams)
                 .then(function(response) {
                     console.log('SUCCESS!', response.status, response.text);
-                    statusDiv.innerHTML = '<div class="alert alert-success">Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.</div>';
+                    statusDiv.innerHTML =
+                        '<div class="alert alert-success">Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.</div>';
                     contactForm.reset();
                 }, function(error) {
                     console.log('FAILED...', error);
-                    statusDiv.innerHTML = '<div class="alert alert-danger">Maaf, terjadi kesalahan saat mengirim pesan. Silakan coba lagi nanti.</div>';
+                    statusDiv.innerHTML =
+                        '<div class="alert alert-danger">Maaf, terjadi kesalahan saat mengirim pesan. Silakan coba lagi nanti.</div>';
                 });
         });
     });

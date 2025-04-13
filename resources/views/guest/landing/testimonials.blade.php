@@ -1,4 +1,6 @@
 <div class="row g-4">
+
+    {{-- MASIH DUMMY --}}
     <!-- Testimonial 1 -->
     <div class="col-md-4">
         <div class="x-testimonial-card">
@@ -18,7 +20,7 @@
             <div class="x-testimonial-footer">
                 <div class="x-testimonial-profile">
                     <div class="x-testimonial-avatar">
-                        <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Testimoni">
+                        <img src="{{ asset('images/profiles/dummy_photo_1.jpg') }}" alt="Testimoni">
                     </div>
                     <div class="x-testimonial-info">
                         <h5 class="x-testimonial-name">Riska Amelia</h5>
@@ -65,7 +67,7 @@
             <div class="x-testimonial-footer">
                 <div class="x-testimonial-profile">
                     <div class="x-testimonial-avatar">
-                        <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Testimoni">
+                        <img src="{{ asset('images/profiles/dummy_photo_3.jpg') }}" alt="Testimoni">
                     </div>
                     <div class="x-testimonial-info">
                         <h5 class="x-testimonial-name">Budi Santoso</h5>
@@ -112,10 +114,10 @@
             <div class="x-testimonial-footer">
                 <div class="x-testimonial-profile">
                     <div class="x-testimonial-avatar">
-                        <img src="{{ asset('images/logo-snack-circle.png') }}" alt="Testimoni">
+                        <img src="{{ asset('images/profiles/dummy_photo_5.jpg') }}" alt="Testimoni">
                     </div>
                     <div class="x-testimonial-info">
-                        <h5 class="x-testimonial-name">Dina Fitriani</h5>
+                        <h5 class="x-testimonial-name">Rizki Fadilah</h5>
                         <div class="x-testimonial-rating">
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
@@ -142,15 +144,9 @@
 </div>
 
 <div class="x-section-action mt-5">
-    <x-guest.button href="#" icon="arrow-right" class="mt-4">
+    <x-guest.button href="#" type="outline" icon="arrow-right" theme="light" class="mt-4">
         Lihat Semua Review
     </x-guest.button>
-</div>
-
-<!-- Social Proof Counter -->
-<div class="x-testimonial-counter">
-    <div class="x-testimonial-counter-value" data-count="2758">2,758+</div>
-    <div class="x-testimonial-counter-label">Happy Customers</div>
 </div>
 
 

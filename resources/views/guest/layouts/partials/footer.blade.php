@@ -257,42 +257,20 @@
         <div class="x-footer-divider"></div>
 
         <!-- Bottom Section -->
-        <div class="row align-items-center x-footer-bottom">
+        <div class="row align-items-center x-footer-bottom d-flex justify-content-between">
             <!-- Copyright Section -->
-            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                <p class="x-footer-copyright">&copy; 2025 Cacha Snack. All rights reserved.</p>
-            </div>
 
-            <!-- Payment Methods -->
-            <div class="col-md-6">
-                <div class="x-footer-payments">
-                    <div class="x-footer-payment-title">Metode Pembayaran</div>
-                    <div class="x-footer-payment-icons">
-                        <img src="{{ asset('images/payment/visa.svg') }}" alt="Visa"
-                            class="x-footer-payment-icon">
-                        <img src="{{ asset('images/payment/mastercard.svg') }}" alt="Mastercard"
-                            class="x-footer-payment-icon">
-                        <img src="{{ asset('images/payment/bca.svg') }}" alt="BCA"
-                            class="x-footer-payment-icon">
-                        <img src="{{ asset('images/payment/mandiri.svg') }}" alt="Mandiri"
-                            class="x-footer-payment-icon">
-                        <img src="{{ asset('images/payment/ovo.svg') }}" alt="OVO"
-                            class="x-footer-payment-icon">
-                        <img src="{{ asset('images/payment/gopay.svg') }}" alt="GoPay"
-                            class="x-footer-payment-icon">
-                        <img src="{{ asset('images/payment/dana.svg') }}" alt="DANA"
-                            class="x-footer-payment-icon">
-                    </div>
-                </div>
+            <p class="x-footer-copyright">&copy; 2025 Cacha Snack. All rights reserved.</p>
 
-                <!-- Admin Login Link -->
-                <div class="x-footer-admin-login">
-                    <a href="{{ route('login') }}" class="x-footer-admin-link">
-                        <i class="fas fa-lock x-footer-admin-icon"></i>
-                        <span class="x-footer-admin-text">Login for admin</span>
-                    </a>
-                </div>
-            </div>
+
+            <!-- Admin Login Link -->
+
+            <a href="{{ route('login') }}" class="x-footer-admin-link">
+                <i class="fas fa-lock x-footer-admin-icon"></i>
+                <span class="x-footer-admin-text">Login for admin</span>
+            </a>
+
+
         </div>
     </div>
 </footer>

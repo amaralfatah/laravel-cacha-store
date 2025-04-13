@@ -38,20 +38,23 @@
                     </div>
 
                     <div class="x-hero-social-proof">
+
+                        {{-- MASIH DUMMY --}}
                         <div class="x-hero-avatars">
                             <div class="x-hero-avatar">
-                                <img src="{{ asset('images/logo-snack-circle-light.png') }}" alt="Customer">
+                                <img src="{{ asset('images/profiles/dummy_photo_1.jpg') }}" alt="Customer">
                             </div>
                             <div class="x-hero-avatar">
-                                <img src="{{ asset('images/logo-snack-circle-light.png') }}" alt="Customer">
+                                <img src="{{ asset('images/profiles/dummy_photo_5.jpg') }}" alt="Customer">
                             </div>
                             <div class="x-hero-avatar">
-                                <img src="{{ asset('images/logo-snack-circle-light.png') }}" alt="Customer">
+                                <img src="{{ asset('images/profiles/dummy_photo_3.jpg') }}" alt="Customer">
                             </div>
                             <div class="x-hero-avatar x-hero-avatar-more">
                                 <span>+2K</span>
                             </div>
                         </div>
+
                         <div class="x-hero-rating">
                             <div class="x-hero-rating-score">
                                 4.9
