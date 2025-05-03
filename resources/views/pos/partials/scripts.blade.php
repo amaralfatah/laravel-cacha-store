@@ -742,8 +742,6 @@
            onchange="updateQuantity(${index}, this.value)">
 </td>
 <td>${formatCurrency(item.unit_price)}</td>
-<td>${formatCurrency(item.discount)}</td>
-<td>${formatCurrency(item.subtotal)}</td>
 <td>
     <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">
         Hapus
