@@ -78,6 +78,26 @@
                 @enderror
             </div>
 
+            {{-- Group Field (New) --}}
+            <div class="col-12 col-md-6">
+                <label for="group_id" class="form-label">Group</label>
+                <select class="form-select @error('group_id') is-invalid @enderror"
+                        id="group_id" name="group_id" onchange="filterCategories()">
+                    <option value="">Select Group</option>
+                    @foreach($groups as $group)
+                        <option value="{{ $group->id }}"
+                                data-code="{{ $group->code ?? 'XX' }}"
+                                {{ old('group_id', isset($product) && isset($product->category->group) ? $product->category->group->id : '') == $group->id ? 'selected' : '' }}>
+                            {{ $group->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('group_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- Updated Category Field --}}
             <div class="col-12 col-md-6">
                 <label for="category_id" class="form-label">Category</label>
                 <select class="form-select @error('category_id') is-invalid @enderror"
@@ -85,9 +105,12 @@
                     <option value="">Select Category</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}"
-                            {{ isset($product) ? '' : 'data-code="' . $category->code . '" data-group-code="' . ($category->group->code ?? 'XX') . '"' }}
-                            {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                            {{ isset($category->group) ? ($category->group->name ?? '') . ' » ' . $category->name : $category->name }}
+                                data-group-id="{{ $category->group_id ?? '' }}"
+                                data-code="{{ $category->code }}"
+                                class="category-option {{ isset($category->group_id) ? 'group-' . $category->group_id : '' }}"
+                                style="{{ old('group_id', isset($product) && isset($product->category->group) ? $product->category->group->id : '') == ($category->group_id ?? '') ? '' : 'display: none;' }}"
+                                {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
                         </option>
                     @endforeach
                 </select>
@@ -348,9 +371,18 @@
             // Run function when page loads
             toggleFeaturedComponents();
 
-            // Run product code generation if category is already selected (for create form)
+            // Initialize category filtering
+            filterCategories();
+
+            // Run product code generation if both group and category are already selected (for create form)
+            const groupSelect = document.getElementById('group_id');
             const categorySelect = document.getElementById('category_id');
-            if (categorySelect && categorySelect.hasAttribute('onchange') && categorySelect.value !== '') {
+
+            if (categorySelect &&
+                categorySelect.hasAttribute('onchange') &&
+                categorySelect.getAttribute('onchange').includes('generateProductCode') &&
+                categorySelect.value !== '' &&
+                groupSelect.value !== '') {
                 generateProductCode();
             }
         });
@@ -394,6 +426,41 @@
             }
         }
 
+        // Function to filter categories based on selected group
+        function filterCategories() {
+            const groupSelect = document.getElementById('group_id');
+            const categorySelect = document.getElementById('category_id');
+            const selectedGroupId = groupSelect.value;
+
+            // First hide all category options
+            const categoryOptions = categorySelect.querySelectorAll('option:not(:first-child)');
+            categoryOptions.forEach(option => {
+                option.style.display = 'none';
+            });
+
+            // Then show only options for the selected group
+            if (selectedGroupId) {
+                const groupOptions = categorySelect.querySelectorAll(`.group-${selectedGroupId}`);
+                groupOptions.forEach(option => {
+                    option.style.display = '';
+                });
+            }
+
+            // Reset category selection if not editing an existing product
+            if (!window.location.href.includes('/edit/')) {
+                categorySelect.value = '';
+            }
+
+            // If we're in create mode and product code generation is enabled
+            if (categorySelect.hasAttribute('onchange') && categorySelect.getAttribute('onchange').includes('generateProductCode')) {
+                // Clear the product code when group changes (only in create mode)
+                if (!window.location.href.includes('/edit/')) {
+                    document.getElementById('code').value = '';
+                    document.getElementById('code-help').textContent = 'Pilih kategori untuk membuat kode produk otomatis.';
+                }
+            }
+        }
+
         // Variable to store auto increment number
         let currentProductCount = 1;
 
@@ -405,21 +472,24 @@
                 now.getDate().toString().padStart(2, '0');
         }
 
-        // Function to generate product code based on category and group
+        // Updated function to generate product code based on group and category
         function generateProductCode() {
+            const groupSelect = document.getElementById('group_id');
             const categorySelect = document.getElementById('category_id');
             const codeInput = document.getElementById('code');
             const codeHelp = document.getElementById('code-help');
 
-            if (categorySelect.value === '') {
+            if (categorySelect.value === '' || groupSelect.value === '') {
                 codeInput.value = '';
-                codeHelp.textContent = 'Pilih kategori untuk membuat kode produk otomatis.';
+                codeHelp.textContent = 'Pilih grup dan kategori untuk membuat kode produk otomatis.';
                 return;
             }
 
-            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-            const groupCode = selectedOption.getAttribute('data-group-code') || 'XX';
-            const categoryCode = selectedOption.getAttribute('data-code') || 'XX';
+            const selectedGroupOption = groupSelect.options[groupSelect.selectedIndex];
+            const selectedCategoryOption = categorySelect.options[categorySelect.selectedIndex];
+
+            const groupCode = selectedGroupOption.getAttribute('data-code') || 'XX';
+            const categoryCode = selectedCategoryOption.getAttribute('data-code') || 'XX';
 
             // Format: GRP-CAT-YYMMDD-001
             const timestamp = getShortTimestamp();

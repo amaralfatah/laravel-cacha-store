@@ -11,53 +11,44 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-bordered table-striped" id="units-table">
                     <thead>
                     <tr>
+                        <th>No</th>
                         <th>Kode</th>
-                        <th>Name</th>
+                        <th>Nama</th>
                         @if(auth()->user()->role === 'admin')
-                            <th>Store</th>
+                            <th>Toko</th>
                         @endif
+                        <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    @forelse($units as $unit)
-                        <tr>
-                            <td>{{ $unit->code }}</td>
-                            <td>{{ $unit->name }}</td>
-                            @if(auth()->user()->role === 'admin')
-                                <td>{{ $unit->store->name }}</td>
-                            @endif
-                            <td>
-                                <a href="{{ route('units.edit', $unit) }}" class="btn btn-sm btn-info">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
-                                <form action="{{ route('units.destroy', $unit) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure you want to delete this unit?')">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ auth()->user()->role === 'admin' ? 4 : 3 }}" class="text-center">
-                                No units found.
-                            </td>
-                        </tr>
-                    @endforelse
-                    </tbody>
                 </table>
-            </div>
-
-            <div class="d-flex justify-content-center mt-3">
-                {{ $units->links() }}
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function() {
+            $('#units-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("units.index") }}',
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'code', name: 'code' },
+                    { data: 'name', name: 'name' },
+                    @if(auth()->user()->role === 'admin')
+                    { data: 'store_name', name: 'store_name' },
+                    @endif
+                    { data: 'status', name: 'status' },
+                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                ],
+                order: [[1, 'asc']],
+            });
+        });
+    </script>
+@endpush

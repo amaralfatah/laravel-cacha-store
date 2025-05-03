@@ -38,7 +38,7 @@ class ProductController extends Controller
                 'store:id,name',
                 'category:id,name,group_id',
                 'category.group:id,name',
-                'productUnits' => function($query) {
+                'productUnits' => function ($query) {
                     $query->where('is_default', true)
                         ->select([
                             'id',
@@ -60,7 +60,7 @@ class ProductController extends Controller
 
             // Filter grup (termasuk kategori yang berhubungan dengan grup)
             if ($request->filled('group_id')) {
-                $products->whereHas('category', function($query) use ($request) {
+                $products->whereHas('category', function ($query) use ($request) {
                     $query->where('group_id', $request->group_id);
                 });
             }
@@ -76,7 +76,7 @@ class ProductController extends Controller
 
             // Filter status stok
             if ($request->filled('stock_status')) {
-                $products->whereHas('productUnits', function($query) use ($request) {
+                $products->whereHas('productUnits', function ($query) use ($request) {
                     if ($request->stock_status === 'low') {
                         $query->whereColumn('stock', '<=', 'min_stock')
                             ->where('stock', '>', 0);
@@ -98,7 +98,7 @@ class ProductController extends Controller
 
             if ($request->filled('search') && $request->search['value'] !== '') {
                 $searchValue = $request->search['value'];
-                $products->where(function($query) use ($searchValue) {
+                $products->where(function ($query) use ($searchValue) {
                     $query->where('products.name', 'like', '%' . $searchValue . '%')
                         ->orWhere('products.code', 'like', '%' . $searchValue . '%')
                         ->orWhere('products.barcode', 'like', '%' . $searchValue . '%'); // Added barcode search
@@ -158,7 +158,7 @@ class ProductController extends Controller
         }
 
         $groups = Group::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->select('id', 'name')
@@ -166,7 +166,7 @@ class ProductController extends Controller
             ->get();
 
         $categories = Category::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->select('id', 'name', 'group_id')
@@ -180,27 +180,34 @@ class ProductController extends Controller
     {
         // Load categories with eager loading group to get code
         $categories = Category::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->with('group') // Eager load group data
             ->get();
 
+        // Get groups for the dropdown
+        $groups = Group::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function ($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->get();
+
         $units = Unit::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->get();
 
         // Add taxes and discounts
         $taxes = Tax::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->get();
 
         $discounts = Discount::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->get();
@@ -209,7 +216,7 @@ class ProductController extends Controller
             ? \App\Models\Store::all()
             : \App\Models\Store::where('id', auth()->user()->store_id)->get();
 
-        return view('products.create', compact('categories', 'units', 'stores', 'taxes', 'discounts'));
+        return view('products.create', compact('categories', 'groups', 'units', 'stores', 'taxes', 'discounts'));
     }
 
     public function store(Request $request)
@@ -345,7 +352,6 @@ class ProductController extends Controller
 
             return redirect()->route('products.index')
                 ->with('success', 'Produk Berhasil Dibuat');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -408,31 +414,44 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         // Access check
-        if (auth()->user()->role !== 'admin' &&
-            $product->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
-        // Load product with its images
-        $product->load(['images' => function($query) {
-            $query->orderBy('is_primary', 'desc')
-                ->orderBy('sort_order', 'asc');
-        }]);
+        // Load product with its images and ensure category.group is loaded
+        $product->load([
+            'images' => function ($query) {
+                $query->orderBy('is_primary', 'desc')
+                    ->orderBy('sort_order', 'asc');
+            },
+            'category.group'
+        ]);
 
         $categories = Category::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
+                return $query->where('store_id', auth()->user()->store_id);
+            })
+            ->with('group')
+            ->get();
+
+        // Get groups for the dropdown
+        $groups = Group::where('is_active', true)
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->get();
 
         $taxes = Tax::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->get();
 
         $discounts = Discount::where('is_active', true)
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->get();
@@ -446,6 +465,7 @@ class ProductController extends Controller
         return view('products.edit', compact(
             'product',
             'categories',
+            'groups',
             'taxes',
             'discounts',
             'defaultUnit',
@@ -456,8 +476,10 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         // Access check
-        if (auth()->user()->role !== 'admin' &&
-            $product->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
@@ -569,7 +591,6 @@ class ProductController extends Controller
 
             return redirect()->route('products.show', $product)
                 ->with('success', 'Produk berhasil diperbarui');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -586,53 +607,55 @@ class ProductController extends Controller
     /**
      * Generate SEO data from product information
      */
-//    private function generateSeoData($name, $shortDescription, $description, $store, $category)
-//    {
-//        // Clean and limit text for SEO
-//        $cleanDescription = strip_tags($description ?? '');
-//        $productName = ucwords(strtolower($name));
-//
-//        // Base URL for canonical
-//        $baseUrl = url('/products');
-//
-//        return [
-//            // SEO - Title max 60 chars
-//            'seo_title' => Str::limit($productName . ' - ' . $store->name, 60),
-//
-//            // SEO - Description max 160 chars
-//            'seo_description' => Str::limit(
-//                $shortDescription ?? $cleanDescription ?? $productName,
-//                160
-//            ),
-//
-//            // SEO - Keywords
-//            'seo_keywords' => implode(', ', [
-//                $productName,
-//                $category->name,
-//                $store->name,
-//                'beli ' . strtolower($productName),
-//                'jual ' . strtolower($productName)
-//            ]),
-//
-//            // SEO - Canonical URL
-//            'seo_canonical_url' => $baseUrl . '/' . Str::slug($name),
-//
-//            // OpenGraph - Title max 95 chars
-//            'og_title' => Str::limit($productName . ' | ' . $store->name, 95),
-//
-//            // OpenGraph - Description max 200 chars
-//            'og_description' => Str::limit(
-//                $shortDescription ?? $cleanDescription ?? $productName,
-//                200
-//            )
-//        ];
-//    }
+    //    private function generateSeoData($name, $shortDescription, $description, $store, $category)
+    //    {
+    //        // Clean and limit text for SEO
+    //        $cleanDescription = strip_tags($description ?? '');
+    //        $productName = ucwords(strtolower($name));
+    //
+    //        // Base URL for canonical
+    //        $baseUrl = url('/products');
+    //
+    //        return [
+    //            // SEO - Title max 60 chars
+    //            'seo_title' => Str::limit($productName . ' - ' . $store->name, 60),
+    //
+    //            // SEO - Description max 160 chars
+    //            'seo_description' => Str::limit(
+    //                $shortDescription ?? $cleanDescription ?? $productName,
+    //                160
+    //            ),
+    //
+    //            // SEO - Keywords
+    //            'seo_keywords' => implode(', ', [
+    //                $productName,
+    //                $category->name,
+    //                $store->name,
+    //                'beli ' . strtolower($productName),
+    //                'jual ' . strtolower($productName)
+    //            ]),
+    //
+    //            // SEO - Canonical URL
+    //            'seo_canonical_url' => $baseUrl . '/' . Str::slug($name),
+    //
+    //            // OpenGraph - Title max 95 chars
+    //            'og_title' => Str::limit($productName . ' | ' . $store->name, 95),
+    //
+    //            // OpenGraph - Description max 200 chars
+    //            'og_description' => Str::limit(
+    //                $shortDescription ?? $cleanDescription ?? $productName,
+    //                200
+    //            )
+    //        ];
+    //    }
 
     public function show(Product $product)
     {
         // Access check
-        if (auth()->user()->role !== 'admin' &&
-            $product->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
@@ -679,8 +702,10 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if (auth()->user()->role !== 'admin' &&
-            $product->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $product->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
@@ -729,7 +754,6 @@ class ProductController extends Controller
             return redirect()
                 ->route('products.index')
                 ->with('success', 'Produk berhasil dihapus');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
@@ -764,7 +788,6 @@ class ProductController extends Controller
 
             DB::commit();
             return back()->with('success', 'Images uploaded successfully');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to upload images: ' . $e->getMessage());
@@ -776,8 +799,10 @@ class ProductController extends Controller
         $image = ProductImage::findOrFail($id);
 
         // Access check
-        if (auth()->user()->role !== 'admin' &&
-            $image->product->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $image->product->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
@@ -812,7 +837,6 @@ class ProductController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'Image deleted successfully']);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => 'Failed to delete image'], 500);

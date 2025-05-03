@@ -5,19 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Discount;
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class DiscountController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Discount::latest();
+        if ($request->ajax()) {
+            $discounts = Discount::with('store'); // Eager load store relationship
 
-        if (auth()->user()->role !== 'admin') {
-            $query->where('store_id', auth()->user()->store_id);
+            if (auth()->user()->role !== 'admin') {
+                $discounts->where('store_id', auth()->user()->store_id);
+            }
+
+            return DataTables::of($discounts)
+                ->addIndexColumn()
+                ->addColumn('store_name', function ($discount) {
+                    return $discount->store ? $discount->store->name : '-';
+                })
+                ->addColumn('type_formatted', function ($discount) {
+                    return ucfirst($discount->type);
+                })
+                ->addColumn('value_formatted', function ($discount) {
+                    if ($discount->type === 'percentage') {
+                        return number_format($discount->value, 2) . '%';
+                    } else {
+                        return 'Rp ' . number_format($discount->value, 0);
+                    }
+                })
+                ->addColumn('status', function ($discount) {
+                    return view('discounts.partials.status', compact('discount'))->render();
+                })
+                ->addColumn('actions', function ($discount) {
+                    return view('discounts.partials.actions', compact('discount'))->render();
+                })
+                ->rawColumns(['status', 'actions'])
+                ->make(true);
         }
 
-        $discounts = $query->paginate(10);
-        return view('discounts.index', compact('discounts'));
+        return view('discounts.index');
     }
 
     public function create()
@@ -41,7 +67,7 @@ class DiscountController extends Controller
         $request->validate($validationRules);
 
         if ($request->type === 'percentage' && $request->value > 100) {
-            return back()->withErrors(['value' => 'Percentage discount cannot exceed 100%'])->withInput();
+            return back()->withErrors(['value' => 'Persentase diskon tidak boleh melebihi 100%'])->withInput();
         }
 
         Discount::create([
@@ -55,7 +81,7 @@ class DiscountController extends Controller
         ]);
 
         return redirect()->route('discounts.index')
-            ->with('success', 'Discount created successfully.');
+            ->with('success', 'Diskon berhasil ditambahkan.');
     }
 
     public function edit(Discount $discount)
@@ -89,7 +115,7 @@ class DiscountController extends Controller
         $request->validate($validationRules);
 
         if ($request->type === 'percentage' && $request->value > 100) {
-            return back()->withErrors(['value' => 'Percentage discount cannot exceed 100%'])->withInput();
+            return back()->withErrors(['value' => 'Persentase diskon tidak boleh melebihi 100%'])->withInput();
         }
 
         $updateData = [
@@ -106,7 +132,7 @@ class DiscountController extends Controller
         $discount->update($updateData);
 
         return redirect()->route('discounts.index')
-            ->with('success', 'Discount updated successfully.');
+            ->with('success', 'Diskon berhasil diperbarui.');
     }
 
     public function destroy(Discount $discount)
@@ -118,11 +144,11 @@ class DiscountController extends Controller
 
         if ($discount->products()->count() > 0 || $discount->transactions()->count() > 0) {
             return redirect()->route('discounts.index')
-                ->with('error', 'Cannot delete discount with associated products or transactions.');
+                ->with('error', 'Tidak dapat menghapus diskon yang memiliki produk atau transaksi terkait.');
         }
 
         $discount->delete();
         return redirect()->route('discounts.index')
-            ->with('success', 'Discount deleted successfully.');
+            ->with('success', 'Diskon berhasil dihapus.');
     }
 }

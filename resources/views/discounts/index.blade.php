@@ -1,8 +1,6 @@
-{{-- // resources/views/discounts/index.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
-
     <x-section-header
         title="Manajemen Diskon"
         :route="route('discounts.create')"
@@ -12,54 +10,47 @@
 
     <div class="card">
         <div class="card-body">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Tipe</th>
-                    <th>Nilai</th>
-                    @if(auth()->user()->role === 'admin')
-                        <th>Toko</th>
-                    @endif
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach ($discounts as $discount)
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="discounts-table">
+                    <thead>
                     <tr>
-                        <td>{{ $discount->name }}</td>
-                        <td>{{ ucfirst($discount->type) }}</td>
-                        <td>
-                            @if ($discount->type === 'percentage')
-                                {{ number_format($discount->value, 2) }}%
-                            @else
-                                Rp {{ number_format($discount->value, 0) }}
-                            @endif
-                        </td>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Tipe</th>
+                        <th>Nilai</th>
                         @if(auth()->user()->role === 'admin')
-                            <td>{{ $discount->store->name }}</td>
+                            <th>Toko</th>
                         @endif
-                        <td>
-                            <span class="badge {{ $discount->is_active ? 'bg-success' : 'bg-danger' }}">
-                                {{ $discount->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ route('discounts.edit', $discount) }}" class="btn btn-sm btn-info">Edit</a>
-                            <form action="{{ route('discounts.destroy', $discount) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure?')">Delete
-                                </button>
-                            </form>
-                        </td>
+                        <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
-                @endforeach
-                </tbody>
-            </table>
-            {{ $discounts->links() }}
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function() {
+            $('#discounts-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("discounts.index") }}',
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'name', name: 'name' },
+                    { data: 'type_formatted', name: 'type' },
+                    { data: 'value_formatted', name: 'value' },
+                    @if(auth()->user()->role === 'admin')
+                    { data: 'store_name', name: 'store_name' },
+                    @endif
+                    { data: 'status', name: 'status' },
+                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                ],
+                order: [[1, 'asc']], 
+            });
+        });
+    </script>
+@endpush

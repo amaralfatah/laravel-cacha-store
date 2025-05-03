@@ -5,19 +5,38 @@ namespace App\Http\Controllers;
 use App\Models\Tax;
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class TaxController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Tax::latest();
+        if ($request->ajax()) {
+            $taxes = Tax::with('store'); // Eager load store relationship
 
-        if (auth()->user()->role !== 'admin') {
-            $query->where('store_id', auth()->user()->store_id);
+            if (auth()->user()->role !== 'admin') {
+                $taxes->where('store_id', auth()->user()->store_id);
+            }
+
+            return DataTables::of($taxes)
+                ->addIndexColumn()
+                ->addColumn('store_name', function ($tax) {
+                    return $tax->store ? $tax->store->name : '-';
+                })
+                ->addColumn('rate_formatted', function ($tax) {
+                    return $tax->rate . '%';
+                })
+                ->addColumn('status', function ($tax) {
+                    return view('taxes.partials.status', compact('tax'))->render();
+                })
+                ->addColumn('actions', function ($tax) {
+                    return view('taxes.partials.actions', compact('tax'))->render();
+                })
+                ->rawColumns(['status', 'actions'])
+                ->make(true);
         }
 
-        $taxes = $query->paginate(10);
-        return view('taxes.index', compact('taxes'));
+        return view('taxes.index');
     }
 
     public function create()
@@ -49,7 +68,7 @@ class TaxController extends Controller
         ]);
 
         return redirect()->route('taxes.index')
-            ->with('success', 'Tax created successfully.');
+            ->with('success', 'Pajak berhasil ditambahkan.');
     }
 
     public function edit(Tax $tax)
@@ -94,7 +113,7 @@ class TaxController extends Controller
         $tax->update($updateData);
 
         return redirect()->route('taxes.index')
-            ->with('success', 'Tax updated successfully.');
+            ->with('success', 'Pajak berhasil diperbarui.');
     }
 
     public function destroy(Tax $tax)
@@ -106,11 +125,11 @@ class TaxController extends Controller
 
         if ($tax->products()->count() > 0 || $tax->transactions()->count() > 0) {
             return redirect()->route('taxes.index')
-                ->with('error', 'Cannot delete tax with associated products or transactions.');
+                ->with('error', 'Tidak dapat menghapus pajak yang memiliki produk atau transaksi terkait.');
         }
 
         $tax->delete();
         return redirect()->route('taxes.index')
-            ->with('success', 'Tax deleted successfully.');
+            ->with('success', 'Pajak berhasil dihapus.');
     }
 }

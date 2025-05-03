@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <x-section-header
         title="Manajemen Pajak"
         :route="route('taxes.create')"
@@ -11,41 +10,45 @@
 
     <div class="card">
         <div class="card-body">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Rate</th>
-                    @if(auth()->user()->role === 'admin')
-                        <th>Store</th>
-                    @endif
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($taxes as $tax)
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="taxes-table">
+                    <thead>
                     <tr>
-                        <td>{{ $tax->name }}</td>
-                        <td>{{ $tax->rate }}%</td>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Tarif</th>
                         @if(auth()->user()->role === 'admin')
-                            <td>{{ $tax->store->name }}</td>
+                            <th>Toko</th>
                         @endif
-                        <td>{{ $tax->is_active ? 'Active' : 'Inactive' }}</td>
-                        <td>
-                            <a href="{{ route('taxes.edit', $tax) }}" class="btn btn-sm btn-info">Edit</a>
-                            <form action="{{ route('taxes.destroy', $tax) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
+                        <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
-                @endforeach
-                </tbody>
-            </table>
-            {{ $taxes->links() }}
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function() {
+            $('#taxes-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("taxes.index") }}',
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'name', name: 'name' },
+                    { data: 'rate_formatted', name: 'rate' },
+                    @if(auth()->user()->role === 'admin')
+                    { data: 'store_name', name: 'store_name' },
+                    @endif
+                    { data: 'status', name: 'status' },
+                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                ],
+                order: [[1, 'asc']], 
+            });
+        });
+    </script>
+@endpush

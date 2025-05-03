@@ -5,20 +5,36 @@ namespace App\Http\Controllers;
 use App\Models\Unit;
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class UnitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Unit::latest();
+        if ($request->ajax()) {
+            $units = Unit::with('store'); // Eager load store
 
-        // Filter by store for non-admin users
-        if (auth()->user()->role !== 'admin') {
-            $query->where('store_id', auth()->user()->store_id);
+            // Filter by store for non-admin users
+            if (auth()->user()->role !== 'admin') {
+                $units->where('store_id', auth()->user()->store_id);
+            }
+
+            return DataTables::of($units)
+                ->addIndexColumn()
+                ->addColumn('store_name', function ($unit) {
+                    return $unit->store ? $unit->store->name : '-';
+                })
+                ->addColumn('status', function ($unit) {
+                    return view('units.partials.status', compact('unit'))->render();
+                })
+                ->addColumn('actions', function ($unit) {
+                    return view('units.partials.actions', compact('unit'))->render();
+                })
+                ->rawColumns(['status', 'actions'])
+                ->make(true);
         }
 
-        $units = $query->paginate(10);
-        return view('units.index', compact('units'));
+        return view('units.index');
     }
 
     public function create()
@@ -33,6 +49,7 @@ class UnitController extends Controller
         $validationRules = [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:units',
+            'is_active' => 'boolean',
         ];
 
         // Add store validation for admin
@@ -51,10 +68,11 @@ class UnitController extends Controller
             'name' => $request->name,
             'code' => $request->code,
             'store_id' => $storeId,
+            'is_active' => $request->has('is_active'),
         ]);
 
         return redirect()->route('units.index')
-            ->with('success', 'Unit created successfully.');
+            ->with('success', 'Satuan berhasil ditambahkan.');
     }
 
     public function edit(Unit $unit)
@@ -78,6 +96,7 @@ class UnitController extends Controller
         $validationRules = [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:units,code,' . $unit->id,
+            'is_active' => 'boolean',
         ];
 
         if (auth()->user()->role === 'admin') {
@@ -89,6 +108,7 @@ class UnitController extends Controller
         $updateData = [
             'name' => $request->name,
             'code' => $request->code,
+            'is_active' => $request->has('is_active'),
         ];
 
         if (auth()->user()->role === 'admin') {
@@ -98,7 +118,7 @@ class UnitController extends Controller
         $unit->update($updateData);
 
         return redirect()->route('units.index')
-            ->with('success', 'Unit updated successfully.');
+            ->with('success', 'Satuan berhasil diperbarui.');
     }
 
     public function destroy(Unit $unit)
@@ -110,11 +130,11 @@ class UnitController extends Controller
 
         if ($unit->productUnits()->count() > 0) {
             return redirect()->route('units.index')
-                ->with('error', 'Cannot delete unit with associated products.');
+                ->with('error', 'Tidak dapat menghapus satuan yang memiliki produk terkait.');
         }
 
         $unit->delete();
         return redirect()->route('units.index')
-            ->with('success', 'Unit deleted successfully.');
+            ->with('success', 'Satuan berhasil dihapus.');
     }
 }
