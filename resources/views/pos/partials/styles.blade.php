@@ -18,9 +18,9 @@
 <link rel="stylesheet" href="{{ asset('sneat/assets/css/demo.css') }}" />
 
 <!-- Vendors CSS -->
-<link rel="stylesheet" href="{{ asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+{{-- <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" /> --}}
 
-<link rel="stylesheet" href="{{ asset('sneat/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+{{-- <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/libs/apex-charts/apex-charts.css') }}" /> --}}
 
 <!-- Page CSS -->
 
@@ -32,72 +32,6 @@
 <script src="{{ asset('sneat/assets/js/config.js') }}"></script>
 
 @include('layouts.partials.vite')
-
-
-<style>
-    /* Essential Transaction Ticker Styles */
-    .transaction-ticker {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1030;
-        background: linear-gradient(45deg, #696cff, #5f65f4);
-        height: 45px;
-        box-shadow: 0 2px 8px rgba(105, 108, 255, 0.15);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .ticker-content {
-        height: 100%;
-        padding: 0 1rem;
-        font-size: 0.9rem;
-        letter-spacing: 0.2px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-    }
-
-    .ticker-item {
-        padding: 0 1rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: white;
-        font-weight: 500;
-    }
-
-    .ticker-item i {
-        font-size: 1.1rem;
-        opacity: 0.9;
-    }
-
-    .ticker-divider {
-        height: 20px;
-        width: 1px;
-        background: rgba(255, 255, 255, 0.2);
-        margin: 0 0.5rem;
-    }
-
-    /* Responsive Animation */
-    @media (max-width: 768px) {
-        .ticker-content {
-            animation: ticker 20s linear infinite;
-            justify-content: flex-start;
-            width: max-content;
-        }
-
-        @keyframes ticker {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-    }
-
-    /* Minimal Layout Adjustments */
-    .content-wrapper {
-        padding-top: 45px;
-    }
-</style>
 
 
 

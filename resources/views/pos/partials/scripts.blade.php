@@ -9,13 +9,13 @@
 <!-- endbuild -->
 
 <!-- Vendors JS -->
-{{--<script src="{{ asset('sneat/assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>--}}
+{{-- <script src="{{ asset('sneat/assets/vendor/libs/apex-charts/apexcharts.js') }}"></script> --}}
 
 <!-- Main JS -->
 <script src="{{ asset('sneat/assets/js/main.js') }}"></script>
 
 <!-- Page JS -->
-{{--<script src="{{ asset('sneat/assets/js/dashboards-analytics.js') }}"></script>--}}
+{{-- <script src="{{ asset('sneat/assets/js/dashboards-analytics.js') }}"></script> --}}
 
 
 
@@ -47,12 +47,6 @@
 
     // Initialize everything when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
-        // Initialize transaction summary functionality
-        updateTransactionSummary();
-        setInterval(updateTransactionSummary, 300000); // 5 minutes
-        adjustTickerAnimation();
-        window.addEventListener('resize', adjustTickerAnimation);
-
         // Initialize Select2 and other POS functionality
         initializePOS();
     });
@@ -74,7 +68,7 @@
             }
         });
 
-        document.getElementById('pos_search_product').addEventListener('input', async function () {
+        document.getElementById('pos_search_product').addEventListener('input', async function() {
             const productList = document.getElementById('pos_product_list');
 
             if (this.value.length >= 3) {
@@ -88,7 +82,8 @@
                         productList.style.display = 'block';
 
                         result.data.forEach(product => {
-                            const defaultUnit = product.available_units.find(unit => unit.is_default === 1);
+                            const defaultUnit = product.available_units.find(unit => unit
+                                .is_default === 1);
                             if (defaultUnit) {
                                 const div = document.createElement('div');
                                 div.className = 'product-item';
@@ -120,7 +115,7 @@
             }
         });
 
-        document.getElementById('pos_search_product').addEventListener('keydown', function (e) {
+        document.getElementById('pos_search_product').addEventListener('keydown', function(e) {
             const productList = document.getElementById('pos_product_list');
             if (productList.style.display === 'block') {
                 handleProductListNavigation(e, productList);
@@ -142,17 +137,21 @@
                 customer_id: document.getElementById('pos_customer_id').value,
                 items: cart,
                 payment_type: paymentType,
-                total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
-                tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
-                discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
-                final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
+                total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(
+                    /[^0-9.-]+/g, "")),
+                tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(
+                    /[^0-9.-]+/g, "")),
+                discount_amount: parseFloat(document.getElementById('pos_discount_amount').value
+                    .replace(/[^0-9.-]+/g, "")),
+                final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(
+                    /[^0-9.-]+/g, "")),
                 pending_transaction_id: pendingTransactionId,
                 status: 'success',
                 cash_amount: parseFloat(document.getElementById('pos_cash_amount').value || 0)
             };
 
             try {
-                const response = await fetch('{{ route("pos.store") }}', {
+                const response = await fetch('{{ route('pos.store') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -193,16 +192,20 @@
                     customer_id: document.getElementById('pos_customer_id').value,
                     items: cart,
                     payment_type: document.getElementById('pos_payment_type').value,
-                    total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(/[^0-9.-]+/g, "")),
-                    tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(/[^0-9.-]+/g, "")),
-                    discount_amount: parseFloat(document.getElementById('pos_discount_amount').value.replace(/[^0-9.-]+/g, "")),
-                    final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(/[^0-9.-]+/g, "")),
+                    total_amount: parseFloat(document.getElementById('pos_subtotal').value.replace(
+                        /[^0-9.-]+/g, "")),
+                    tax_amount: parseFloat(document.getElementById('pos_tax_amount').value.replace(
+                        /[^0-9.-]+/g, "")),
+                    discount_amount: parseFloat(document.getElementById('pos_discount_amount').value
+                        .replace(/[^0-9.-]+/g, "")),
+                    final_amount: parseFloat(document.getElementById('pos_final_amount').value.replace(
+                        /[^0-9.-]+/g, "")),
                     pending_transaction_id: pendingTransactionId,
                     status: 'pending',
                     cash_amount: parseFloat(document.getElementById('pos_cash_amount').value || 0)
                 };
 
-                const response = await fetch('{{ route("pos.store") }}', {
+                const response = await fetch('{{ route('pos.store') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -215,7 +218,7 @@
 
                 if (result.success) {
                     showSuccessModal('Transaksi Pending berhasil disimpan', () => {
-                        window.location.href = '{{ route("pos.index") }}';
+                        window.location.href = '{{ route('pos.index') }}';
                     });
                 } else {
                     showErrorModal(result.message || 'Terjadi kesalahan saat menyimpan transaksi');
@@ -228,7 +231,7 @@
 
         document.getElementById('btn-show-pending').addEventListener('click', async function() {
             try {
-                const response = await fetch('{{ route("transactions.index") }}?' + new URLSearchParams({
+                const response = await fetch('{{ route('transactions.index') }}?' + new URLSearchParams({
                     status: 'pending'
                 }), {
                     headers: {
@@ -276,13 +279,13 @@
         });
 
         // Add keyboard navigation for the modal
-        document.getElementById('pendingTransactionsModal').addEventListener('shown.bs.modal', function () {
+        document.getElementById('pendingTransactionsModal').addEventListener('shown.bs.modal', function() {
             const modal = this;
             const links = modal.querySelectorAll('a.btn-primary');
             let currentIndex = -1;
 
             modal.addEventListener('keydown', function(e) {
-                switch(e.key) {
+                switch (e.key) {
                     case 'ArrowDown':
                         e.preventDefault();
                         currentIndex = Math.min(currentIndex + 1, links.length - 1);
@@ -377,9 +380,9 @@
 
             // Remove currency symbol, dots, and replace comma with dot
             const cleanAmount = finalAmountStr
-                .replace(/[Rp\s]/g, '')  // Remove 'Rp' and spaces
-                .replace(/\./g, '')      // Remove dots (thousand separators)
-                .replace(/,/g, '.');     // Replace comma with dot for decimal
+                .replace(/[Rp\s]/g, '') // Remove 'Rp' and spaces
+                .replace(/\./g, '') // Remove dots (thousand separators)
+                .replace(/,/g, '.'); // Replace comma with dot for decimal
 
             const finalAmount = parseFloat(cleanAmount) || 0;
             console.log('Parsed Final Amount:', finalAmount);
@@ -405,7 +408,7 @@
             allowClear: true,
             minimumInputLength: 2,
             ajax: {
-                url: '{{ route("pos.search-product") }}',
+                url: '{{ route('pos.search-product') }}',
                 dataType: 'json',
                 delay: 250,
                 data: function(params) {
@@ -445,7 +448,8 @@
 
             const defaultUnit = product.product.default_unit;
             const stockClass = defaultUnit.stock <= 0 ? 'text-danger' : 'text-muted';
-            const stockText = defaultUnit.stock <= 0 ? `Stock: ${defaultUnit.stock} (Minus)` : `Stock: ${defaultUnit.stock}`;
+            const stockText = defaultUnit.stock <= 0 ? `Stock: ${defaultUnit.stock} (Minus)` :
+                `Stock: ${defaultUnit.stock}`;
 
             return $(`
 <div class="product-info">
@@ -502,7 +506,9 @@
         if (nextActive) {
             if (activeItem) activeItem.classList.remove('active');
             nextActive.classList.add('active');
-            nextActive.scrollIntoView({block: 'nearest'});
+            nextActive.scrollIntoView({
+                block: 'nearest'
+            });
         }
     }
 
@@ -639,14 +645,14 @@
 
         document.getElementById('successOkButton').addEventListener('click', handleSuccess);
 
-        document.getElementById('successModal').addEventListener('keydown', function (e) {
+        document.getElementById('successModal').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 handleSuccess();
             }
         });
 
-        document.getElementById('successModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
             this.remove();
         });
 
@@ -678,14 +684,14 @@
 
         document.getElementById('errorOkButton').addEventListener('click', handleError);
 
-        document.getElementById('errorModal').addEventListener('keydown', function (e) {
+        document.getElementById('errorModal').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 handleError();
             }
         });
 
-        document.getElementById('errorModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('errorModal').addEventListener('hidden.bs.modal', function() {
             this.remove();
         });
 
@@ -702,13 +708,13 @@
             const unit = item.available_units.find(u => u.unit_id === item.unit_id);
 
             // Check if stock is negative or zero
-            const stockWarning = parseFloat(unit.stock) <= 0
-                ? `<span class="text-danger">(Stok: ${unit.stock})</span>`
-                : '';
+            const stockWarning = parseFloat(unit.stock) <= 0 ?
+                `<span class="text-danger">(Stok: ${unit.stock})</span>` :
+                '';
 
-            const conversionInfo = parseFloat(unit.conversion_factor) > 1
-                ? `(1 ${unit.unit_name} = ${unit.conversion_factor} ${unit.unit_name})`
-                : '';
+            const conversionInfo = parseFloat(unit.conversion_factor) > 1 ?
+                `(1 ${unit.unit_name} = ${unit.conversion_factor} ${unit.unit_name})` :
+                '';
 
             tr.innerHTML = `
 <td>
@@ -753,9 +759,9 @@
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                     const currentIndex = Array.from(quantityInputs).indexOf(input);
-                    const nextIndex = e.key === 'ArrowDown'
-                        ? (currentIndex + 1) % quantityInputs.length
-                        : (currentIndex - 1 + quantityInputs.length) % quantityInputs.length;
+                    const nextIndex = e.key === 'ArrowDown' ?
+                        (currentIndex + 1) % quantityInputs.length :
+                        (currentIndex - 1 + quantityInputs.length) % quantityInputs.length;
                     quantityInputs[nextIndex].focus();
                     e.preventDefault();
                 }
@@ -924,62 +930,6 @@
     document.head.appendChild(style);
 
 
-
-    //================================================================================================
-
-    async function updateTransactionSummary() {
-        try {
-            const response = await fetch('/pos/today-summary', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            const data = await response.json();
-
-            // Update all values
-            document.getElementById('today_total').textContent = formatCurrency(data.total_amount);
-            document.getElementById('today_count').textContent = data.transaction_count;
-            document.getElementById('cash_total').textContent = formatCurrency(data.cash_amount);
-            document.getElementById('transfer_total').textContent = formatCurrency(data.transfer_amount);
-            document.getElementById('average_transaction').textContent = formatCurrency(data.average_transaction);
-
-            document.getElementById('today_date').textContent = new Date().toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long'
-            });
-
-            document.getElementById('last_update').textContent = data.last_updated;
-
-            // Optional: Add tooltip with more details
-            const tickerContent = document.querySelector('.ticker-content');
-            tickerContent.title = `
-            Transaksi Tunai: ${data.cash_transactions}
-            Transaksi Transfer: ${data.transfer_transactions}
-            Total Pajak: ${formatCurrency(data.total_tax)}
-            Total Diskon: ${formatCurrency(data.total_discount)}
-            Transaksi Terakhir: ${data.latest_transaction}
-            ${data.peak_hour ? `Jam Tersibuk: ${data.peak_hour.hour}:00 (${data.peak_hour.count} transaksi)` : ''}
-        `;
-        } catch (error) {
-            console.error('Error fetching transaction summary:', error);
-        }
-    }
-
-    function adjustTickerAnimation() {
-        const tickerContent = document.querySelector('.ticker-content');
-        const contentWidth = tickerContent.scrollWidth;
-        const containerWidth = document.querySelector('.transaction-ticker').offsetWidth;
-
-        if (contentWidth > containerWidth) {
-            const duration = Math.max(20, contentWidth / containerWidth * 10);
-            tickerContent.style.animationDuration = `${duration}s`;
-        } else {
-            tickerContent.style.animation = 'none';
-        }
-    }
-
     //================================================================================================
 
     // Add this separate script at the bottom of your body tag
@@ -996,7 +946,7 @@
                 e.preventDefault();
 
                 // Detect which function key was pressed
-                switch(e.key) {
+                switch (e.key) {
                     case 'F2': // New Transaction
                         console.log('F2 pressed - Clear Cart');
                         const clearBtn = document.getElementById('btn-clear-cart');
