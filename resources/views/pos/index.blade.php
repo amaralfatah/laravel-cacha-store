@@ -77,7 +77,7 @@
             font-weight: 600;
             margin-bottom: 1.25rem;
             padding-bottom: 0.625rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         /* Section cart header */
@@ -499,35 +499,34 @@
                     </div>
 
                     <!-- Product Search -->
-                    <div class="mb-4 pb-3 border-bottom">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label d-flex align-items-center fw-semibold text-uppercase small"
-                                    for="pos_barcode">
-                                    <i class='bx bx-barcode text-primary me-1'></i> Scan Barcode
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class='bx bx-scan'></i></span>
-                                    <input type="text" class="form-control" id="pos_barcode"
-                                        placeholder="Scan atau masukkan barcode" autofocus>
-                                    <button class="btn btn-outline-primary" type="button" id="btn-camera">
-                                        <i class='bx bx-camera'></i>
-                                    </button>
+                    <div class="mb-4 card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6 pe-md-3">
+                                    <label class="form-label d-flex align-items-center fw-semibold text-uppercase small mb-2"
+                                        for="pos_barcode">
+                                        <i class='bx bx-barcode text-primary me-1'></i> Scan Barcode
+                                    </label>
+                                    <div class="input-group" style="height: 38px;">
+                                        <span class="input-group-text"><i class='bx bx-scan'></i></span>
+                                        <input type="text" class="form-control" id="pos_barcode"
+                                            placeholder="Scan atau masukkan barcode" autofocus>
+                                        <button class="btn btn-outline-primary" type="button" id="btn-camera">
+                                            <i class='bx bx-camera'></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">Tekan Enter setelah scan</small>
                                 </div>
-                                <small class="text-muted mt-1 d-block">Tekan Enter setelah scan</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label d-flex align-items-center fw-semibold text-uppercase small"
-                                    for="pos_search_product">
-                                    <i class='bx bx-search text-primary me-1'></i> Cari Produk
-                                </label>
-                                <div class="position-relative">
-                                    <select class="form-select" id="pos_search_product"></select>
-                                    <div id="pos_product_list"></div>
-                                </div>
-
-                                <div class="mt-2 text-end">
-                                    <small class="text-muted">
+                                <div class="col-md-6 ps-md-3">
+                                    <label class="form-label d-flex align-items-center fw-semibold text-uppercase small mb-2"
+                                        for="pos_search_product">
+                                        <i class='bx bx-search text-primary me-1'></i> Cari Produk
+                                    </label>
+                                    <div class="position-relative" style="height: 38px;">
+                                        <select class="form-control form-select" id="pos_search_product"></select>
+                                        <div id="pos_product_list"></div>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block text-end">
                                         <span class="shortcut-badge">F2</span> Hapus
                                         <span class="shortcut-badge">F3</span> Barcode
                                         <span class="shortcut-badge">F8</span> Bayar
@@ -540,9 +539,9 @@
                     <!-- Shopping Cart -->
                     <div>
                         <h6 class="card-header mb-3">Keranjang Belanja</h6>
-                        <div class="cart-container">
-                            <div class="table-responsive shadow-sm">
-                                <table class="table table-bordered mb-0" id="cart-table">
+                        <div class="cart-container card">
+                            <div class="table-responsive ">
+                                <table class="table mb-0" id="cart-table">
                                     <thead>
                                         <tr>
                                             <th>PRODUK</th>
