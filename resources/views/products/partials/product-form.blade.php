@@ -11,22 +11,22 @@
     </style>
 @endpush
 
-{{-- Basic Information Card --}}
+{{-- Kartu Informasi Dasar --}}
 <div class="card border mb-4">
     <div class="card-header bg-transparent">
         <h6 class="card-title mb-0">
             <i class='bx bx-info-circle me-2 text-primary'></i>
-            Basic Information
+            Informasi Dasar
         </h6>
     </div>
     <div class="card-body">
         <div class="row g-3">
             @if(auth()->user()->role === 'admin')
                 <div class="col-12">
-                    <label for="store_id" class="form-label">Store</label>
+                    <label for="store_id" class="form-label">Toko</label>
                     <select class="form-select @error('store_id') is-invalid @enderror"
                             id="store_id" name="store_id" required>
-                        <option value="">Select Store</option>
+                        <option value="">Pilih Toko</option>
                         @foreach($stores as $store)
                             <option value="{{ $store->id }}" {{ old('store_id', $product->store_id ?? '') == $store->id ? 'selected' : '' }}>
                                 {{ $store->name }}
@@ -40,7 +40,7 @@
             @endif
 
             <div class="col-12 col-md-6">
-                <label for="name" class="form-label">Product Name</label>
+                <label for="name" class="form-label">Nama Produk</label>
                 <input type="text" class="form-control @error('name') is-invalid @enderror"
                        id="name" name="name" value="{{ old('name', $product->name ?? '') }}" required>
                 @error('name')
@@ -49,7 +49,7 @@
             </div>
 
             <div class="col-12 col-md-6">
-                <label for="code" class="form-label">Product Code</label>
+                <label for="code" class="form-label">Kode Produk</label>
                 <div class="input-group">
                     <input type="text" class="form-control @error('code') is-invalid @enderror"
                            id="code" name="code" value="{{ old('code', $product->code ?? '') }}" required>
@@ -78,12 +78,12 @@
                 @enderror
             </div>
 
-            {{-- Group Field (New) --}}
+            {{-- Kolom Kelompok (Baru) --}}
             <div class="col-12 col-md-6">
-                <label for="group_id" class="form-label">Group</label>
+                <label for="group_id" class="form-label">Kelompok</label>
                 <select class="form-select @error('group_id') is-invalid @enderror"
                         id="group_id" name="group_id" onchange="filterCategories()">
-                    <option value="">Select Group</option>
+                    <option value="">Pilih Kelompok</option>
                     @foreach($groups as $group)
                         <option value="{{ $group->id }}"
                                 data-code="{{ $group->code ?? 'XX' }}"
@@ -97,12 +97,12 @@
                 @enderror
             </div>
 
-            {{-- Updated Category Field --}}
+            {{-- Kolom Kategori yang Diperbarui --}}
             <div class="col-12 col-md-6">
-                <label for="category_id" class="form-label">Category</label>
+                <label for="category_id" class="form-label">Kategori</label>
                 <select class="form-select @error('category_id') is-invalid @enderror"
                         id="category_id" name="category_id" required {{ isset($product) ? '' : 'onchange="generateProductCode()"' }}>
-                    <option value="">Select Category</option>
+                    <option value="">Pilih Kategori</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}"
                                 data-group-id="{{ $category->group_id ?? '' }}"
@@ -119,13 +119,13 @@
                 @enderror
             </div>
 
-            {{-- Pricing & Stock fields - Only for Create mode --}}
+            {{-- Kolom Harga & Stok - Hanya untuk mode Buat --}}
             @if(!isset($product))
-                {{-- Create mode - show unit, stock, pricing, tax and discount fields --}}
+                {{-- Mode Buat - tampilkan satuan, stok, harga, pajak dan kolom diskon --}}
                 <div class="col-12 col-md-6">
-                    <label for="default_unit_id" class="form-label">Default Unit</label>
+                    <label for="default_unit_id" class="form-label">Satuan Default</label>
                     <select name="default_unit_id" id="default_unit_id" class="form-select @error('default_unit_id') is-invalid @enderror" required>
-                        <option value="">Select Unit</option>
+                        <option value="">Pilih Satuan</option>
                         @foreach ($units as $unit)
                             <option value="{{ $unit->id }}" {{ old('default_unit_id') == $unit->id ? 'selected' : '' }}>
                                 {{ $unit->name }}
@@ -138,7 +138,7 @@
                 </div>
 
                 <div class="col-12 col-md-6">
-                    <label for="stock" class="form-label">Initial Stock</label>
+                    <label for="stock" class="form-label">Stok Awal</label>
                     <input type="number" step="1" min="0" class="form-control @error('stock') is-invalid @enderror"
                            id="stock" name="stock" value="{{ old('stock', 0) }}" required>
                     @error('stock')
@@ -147,7 +147,7 @@
                 </div>
 
                 <div class="col-12 col-md-6">
-                    <label for="purchase_price" class="form-label">Purchase Price</label>
+                    <label for="purchase_price" class="form-label">Harga Beli</label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
                         <input type="number" step="0.01" min="0" class="form-control @error('purchase_price') is-invalid @enderror"
@@ -159,7 +159,7 @@
                 </div>
 
                 <div class="col-12 col-md-6">
-                    <label for="selling_price" class="form-label">Selling Price</label>
+                    <label for="selling_price" class="form-label">Harga Jual</label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
                         <input type="number" step="0.01" min="0" class="form-control @error('selling_price') is-invalid @enderror"
@@ -171,7 +171,7 @@
                 </div>
 
                 <div class="col-12 col-md-6">
-                    <label for="min_stock" class="form-label">Minimum Stock</label>
+                    <label for="min_stock" class="form-label">Stok Minimum</label>
                     <input type="number" step="1" min="0" class="form-control @error('min_stock') is-invalid @enderror"
                            id="min_stock" name="min_stock" value="{{ old('min_stock', 0) }}">
                     @error('min_stock')
@@ -180,12 +180,12 @@
                 </div>
             @endif
 
-            {{-- Tax and discount fields for both create and edit --}}
+            {{-- Kolom pajak dan diskon untuk mode buat dan edit --}}
             <div class="col-12 col-md-6">
-                <label for="tax_id" class="form-label">Tax</label>
+                <label for="tax_id" class="form-label">Pajak</label>
                 <select class="form-select @error('tax_id') is-invalid @enderror"
                         id="tax_id" name="tax_id">
-                    <option value="">Select Tax</option>
+                    <option value="">Pilih Pajak</option>
                     @foreach ($taxes as $tax)
                         <option value="{{ $tax->id }}"
                             {{ old('tax_id', $product->tax_id ?? null) == $tax->id ? 'selected' : '' }}>
@@ -199,10 +199,10 @@
             </div>
 
             <div class="col-12 col-md-6">
-                <label for="discount_id" class="form-label">Discount</label>
+                <label for="discount_id" class="form-label">Diskon</label>
                 <select class="form-select @error('discount_id') is-invalid @enderror"
                         id="discount_id" name="discount_id">
-                    <option value="">Select Discount</option>
+                    <option value="">Pilih Diskon</option>
                     @foreach ($discounts as $discount)
                         <option value="{{ $discount->id }}"
                             {{ old('discount_id', $product->discount_id ?? null) == $discount->id ? 'selected' : '' }}>
@@ -219,12 +219,12 @@
     </div>
 </div>
 
-{{-- Status Card --}}
+{{-- Kartu Status --}}
 <div class="card border mb-4">
     <div class="card-header bg-transparent">
         <h6 class="card-title mb-0">
             <i class='bx bx-toggle-left me-2 text-primary'></i>
-            Product Status
+            Status Produk
         </h6>
     </div>
     <div class="card-body">
@@ -233,9 +233,9 @@
                 <div class="form-check mb-3">
                     <input type="checkbox" class="form-check-input" id="featured" name="featured"
                            value="1" {{ old('featured', $product->featured ?? 0) ? 'checked' : '' }} onchange="toggleFeaturedComponents()">
-                    <label class="form-check-label" for="featured">Show on Landing Page</label>
+                    <label class="form-check-label" for="featured">Tampilkan di Halaman Utama</label>
                     <div class="form-text text-primary" id="featured-info">
-                        Produk yang ditampilkan di landing page membutuhkan informasi lebih lengkap.
+                        Produk yang ditampilkan di halaman utama membutuhkan informasi lebih lengkap.
                     </div>
                 </div>
             </div>
@@ -244,25 +244,25 @@
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
                            value="1" {{ old('is_active', isset($product) ? $product->is_active : 1) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="is_active">Active</label>
+                    <label class="form-check-label" for="is_active">Aktif</label>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Description Card --}}
+{{-- Kartu Deskripsi --}}
 <div class="card border mb-4" id="description-card">
     <div class="card-header bg-transparent">
         <h6 class="card-title mb-0">
             <i class='bx bx-text me-2 text-primary'></i>
-            Product Description
+            Deskripsi Produk
         </h6>
     </div>
     <div class="card-body">
         <div class="row g-3">
             <div class="col-12">
-                <label for="short_description" class="form-label">Short Description</label>
+                <label for="short_description" class="form-label">Deskripsi Singkat</label>
                 <input type="text" class="form-control @error('short_description') is-invalid @enderror"
                        id="short_description" name="short_description" value="{{ old('short_description', $product->short_description ?? '') }}">
                 @error('short_description')
@@ -271,7 +271,7 @@
             </div>
 
             <div class="col-12">
-                <label for="description" class="form-label">Full Description</label>
+                <label for="description" class="form-label">Deskripsi Lengkap</label>
                 <textarea class="form-control @error('description') is-invalid @enderror"
                           id="description" name="description" rows="4">{{ old('description', $product->description ?? '') }}</textarea>
                 @error('description')
@@ -282,16 +282,16 @@
     </div>
 </div>
 
-{{-- Images Card --}}
+{{-- Kartu Gambar --}}
 <div class="card border mb-4" id="images-card">
     <div class="card-header bg-transparent">
         <h6 class="card-title mb-0">
             <i class='bx bx-image me-2 text-primary'></i>
-            Product Images
+            Gambar Produk
         </h6>
     </div>
     <div class="card-body">
-        {{-- Show existing images only in edit mode --}}
+        {{-- Tampilkan gambar yang ada hanya dalam mode edit --}}
         @if(isset($product) && $product->images->count() > 0)
             <div class="row g-3 mb-4">
                 @foreach($product->images as $image)
@@ -301,7 +301,7 @@
                                  class="img-thumbnail w-100"
                                  alt="{{ $image->alt_text }}">
                             @if($image->is_primary)
-                                <span class="badge bg-primary position-absolute top-0 end-0 m-2">Primary</span>
+                                <span class="badge bg-primary position-absolute top-0 end-0 m-2">Utama</span>
                             @endif
                             <button type="button" class="btn btn-danger btn-sm position-absolute bottom-0 end-0 m-2"
                                     onclick="deleteImage({{ $image->id }})">
@@ -313,17 +313,17 @@
             </div>
         @endif
 
-        {{-- Upload images section --}}
+        {{-- Bagian unggah gambar --}}
         <div class="mb-3">
             <label for="images" class="form-label">
-                {{ isset($product) ? 'Upload New Images' : 'Upload Images' }}
+                {{ isset($product) ? 'Unggah Gambar Baru' : 'Unggah Gambar' }}
             </label>
             <input type="file" class="form-control @error('images.*') is-invalid @enderror"
                    id="images" name="images[]" multiple accept="image/*">
             <div class="form-text">
                 {{ isset($product)
-                    ? 'You can select multiple images. First new image will be set as primary if no primary image exists.'
-                    : 'You can select multiple images. First image will be set as primary.'
+                    ? 'Anda dapat memilih beberapa gambar. Gambar baru pertama akan ditetapkan sebagai utama jika tidak ada gambar utama.'
+                    : 'Anda dapat memilih beberapa gambar. Gambar pertama akan ditetapkan sebagai utama.'
                 }}
             </div>
             @error('images.*')
@@ -333,12 +333,12 @@
     </div>
 </div>
 
-{{-- Link Card --}}
+{{-- Kartu Tautan --}}
 <div class="card border mb-4" id="link-card">
     <div class="card-header bg-transparent">
         <h6 class="card-title mb-0">
             <i class='bx bx-link me-2 text-primary'></i>
-            Product Link
+            Tautan Produk
         </h6>
     </div>
     <div class="card-body">
@@ -355,12 +355,12 @@
     </div>
 </div>
 
-{{-- Form Actions --}}
+{{-- Tombol Aksi Form --}}
 <div class="text-end">
-    <a href="{{ route('products.index') }}" class="btn btn-secondary me-2">Cancel</a>
+    <a href="{{ route('products.index') }}" class="btn btn-secondary me-2">Batal</a>
     <button type="submit" class="btn btn-primary">
         <i class='bx bx-save me-1'></i>
-        {{ isset($product) ? 'Update Product' : 'Create Product' }}
+        {{ isset($product) ? 'Perbarui Produk' : 'Buat Produk' }}
     </button>
 </div>
 
