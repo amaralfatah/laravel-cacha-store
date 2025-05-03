@@ -540,8 +540,8 @@
                     <div>
                         <h6 class="card-header mb-3">Keranjang Belanja</h6>
                         <div class="cart-container card">
-                            <div class="table-responsive ">
-                                <table class="table mb-0" id="cart-table">
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0" id="cart-table">
                                     <thead>
                                         <tr>
                                             <th>PRODUK</th>
