@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - Styled like CACHA receipt with aligned colons -->
+<!-- resources/views/pos/invoice.blade.php - Optimized for better readability -->
 <!DOCTYPE html>
 <html>
 
@@ -8,10 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Strict dimensions for thermal printer */
+        /* Page Settings - Adjusted width for better visibility */
         @page {
             margin: 0;
-            size: {{ request('size') == '57' ? '57mm' : '68mm' }} auto;
+            size: {{ request('size') == '57' ? '57mm' : '76mm' }} auto;
+            /* Increased width */
         }
 
         /* Reset and base styles */
@@ -22,19 +23,24 @@
         }
 
         body {
-            /* Font mirip struk CACHA */
+            /* Font and text contrast adjustment */
             font-family: 'Courier New', Courier, monospace;
-            font-size: 10px;
-            line-height: 1.2;
-            width: {{ request('size') == '57' ? '57mm' : '65mm' }};
+            font-size: 11px;
+            /* Slightly larger for better readability */
+            line-height: 1.4;
+            /* Increased line height */
+            width: {{ request('size') == '57' ? '57mm' : '72mm' }};
+            /* Increased width */
             max-width: 100%;
-            padding: 0;
+            padding: 1mm;
             color: black;
             margin: 0 auto;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            font-weight: normal;
-            letter-spacing: 0;
+            font-weight: bold;
+            /* Make all text bold for better contrast */
+            letter-spacing: 0.3px;
+            /* Slightly increased letter spacing */
         }
 
         /* Core container */
@@ -52,43 +58,51 @@
 
         .company-name {
             font-weight: bold;
-            font-size: 12px;
-            letter-spacing: 0;
+            font-size: 14px;
+            /* Larger font for company name */
+            letter-spacing: 1px;
+            /* More spacing for header */
             margin-bottom: 2px;
             text-transform: uppercase;
         }
 
-        /* CLEAR DIVIDERS - Dotted line like CACHA */
+        /* CLEAR DIVIDERS - Changed to more visible styling */
         .divider {
             border-bottom: 1px dotted black;
-            margin: 5px 0;
+            margin: 7px 0;
+            /* Increased margin */
             clear: both;
             width: 100%;
             overflow: hidden;
+            border-width: 2px;
+            /* Thicker border */
         }
 
-        /* TRANSACTION INFO - Similar to CACHA */
+        /* TRANSACTION INFO - Adjusted layout */
         .info-section {
-            margin-bottom: 5px;
+            margin-bottom: 7px;
         }
 
         .info-row {
             display: flex;
-            margin: 2px 0;
+            margin: 3px 0;
+            /* Increased margin */
             white-space: nowrap;
         }
 
         .info-label {
-            width: 80px;
+            width: 70px;
+            /* Adjusted width */
             text-align: left;
-            font-weight: normal;
-            letter-spacing: 0;
-            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+            font-size: 11px;
         }
 
         .info-colon {
-            width: 15px;
+            width: 10px;
             text-align: left;
+            padding-right: 5px;
         }
 
         .info-value {
@@ -99,70 +113,83 @@
         .info-date {
             text-align: right;
             margin-left: auto;
+            padding-right: 2px;
+            /* Ensure not cut off */
         }
 
-        /* ITEMS SECTION */
+        /* ITEMS SECTION - Better spacing */
         .items-section {
             width: 100%;
         }
 
         .item-row {
-            margin-bottom: 2px;
+            margin-bottom: 5px;
+            /* Increased space between items */
         }
 
         .item-name {
             font-weight: bold;
             overflow: hidden;
             text-overflow: ellipsis;
-            letter-spacing: 0;
-            font-size: 10px;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            /* Larger font for item name */
             text-transform: uppercase;
         }
 
         .item-detail {
             display: flex;
             justify-content: space-between;
-            padding-left: 3px;
-            font-size: 10px;
-            font-weight: normal;
+            padding-left: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 2px;
         }
 
         .item-quantity {
-            width: 65%;
+            width: 60%;
+            /* Adjusted width */
             text-align: left;
         }
 
         .item-total {
-            width: 35%;
+            width: 40%;
+            /* Adjusted width */
             text-align: right;
+            padding-right: 2px;
+            /* Prevent cutoff */
         }
 
         .item-discount {
             display: flex;
             justify-content: space-between;
             padding-left: 30px;
-            font-size: 10px;
-            font-weight: normal;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 2px;
         }
 
         .item-discount-label {
-            width: 65%;
+            width: 60%;
             text-align: left;
         }
 
         .item-discount-value {
-            width: 35%;
+            width: 40%;
             text-align: right;
+            padding-right: 2px;
+            /* Prevent cutoff */
         }
 
-        /* SUMMARY SECTION */
+        /* SUMMARY SECTION - Better alignment */
         .summary-section {
-            margin-top: 5px;
+            margin-top: 7px;
+            margin-bottom: 5px;
         }
 
         .summary-row {
             display: flex;
-            margin: 2px 0;
+            margin: 3px 0;
         }
 
         .summary-label {
@@ -171,43 +198,51 @@
         }
 
         .summary-colon {
-            width: 15px;
+            width: 10px;
             text-align: left;
         }
 
         .summary-value {
             flex: 1;
             text-align: right;
+            padding-right: 2px;
+            /* Prevent cutoff */
         }
 
-        /* PAYMENT INFO */
+        /* PAYMENT INFO - Better spacing */
         .payment-info {
-            margin-top: 5px;
+            margin-top: 7px;
+            margin-bottom: 5px;
         }
 
-        /* FOOTER */
+        /* FOOTER - Adjusted styling */
         .footer {
             text-align: center;
             margin-top: 10px;
             padding-top: 5px;
             padding-bottom: 5px;
+            font-size: 11px;
+            line-height: 1.5;
         }
 
         .footer-divider {
             border-bottom: 1px dotted black;
-            margin: 5px 0;
+            margin: 7px 0;
             clear: both;
             width: 100%;
             overflow: hidden;
+            border-width: 2px;
+            /* Thicker border */
         }
 
         /* PRINT CONTROLS */
         @media print {
+
             html,
             body {
-                width: {{ request('size') == '57' ? '57mm' : '65mm' }};
+                width: {{ request('size') == '57' ? '57mm' : '72mm' }};
                 margin: 0 auto;
-                padding: 0;
+                padding: 1mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -270,19 +305,22 @@
 
         <div class="divider"></div>
 
-        <!-- ITEMS - Each on a separate row like CACHA -->
+        <!-- ITEMS - Each on a separate row with better spacing -->
         <div class="items-section">
             @foreach ($transaction->items as $item)
                 <div class="item-row">
                     <div class="item-name">{{ strtoupper($item->product->name) }}</div>
                     <div class="item-detail">
-                        <div class="item-quantity">{{ number_format($item->quantity, 2) }} {{ strtoupper($item->unit->name ?? 'PCS') }} x {{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                        <div class="item-quantity">{{ number_format($item->quantity, 2) }}
+                            {{ strtoupper($item->unit->name ?? 'PCS') }} x
+                            {{ number_format($item->unit_price, 0, ',', '.') }}</div>
                         <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
                     </div>
                     @if ($item->discount > 0)
                         <div class="item-discount">
                             <div class="item-discount-label">Potongan</div>
-                            <div class="item-discount-value">-{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
+                            <div class="item-discount-value">
+                                -{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
                         </div>
                     @endif
                 </div>
@@ -291,7 +329,7 @@
 
         <div class="divider"></div>
 
-        <!-- SUMMARY SECTION - Like CACHA with aligned colons -->
+        <!-- SUMMARY SECTION - With aligned colons -->
         <div class="summary-section">
             <div class="summary-row">
                 <span class="summary-label">Total Jenis</span>
@@ -312,7 +350,7 @@
 
         <div class="divider"></div>
 
-        <!-- PAYMENT INFO - Like CACHA with aligned colons -->
+        <!-- PAYMENT INFO - With aligned colons -->
         <div class="payment-info">
             <div class="summary-row">
                 <span class="summary-label">Total</span>
@@ -336,7 +374,7 @@
         <div class="footer-divider"></div>
         <div class="footer-divider"></div>
 
-        <!-- FOOTER - Like CACHA -->
+        <!-- FOOTER -->
         <div class="footer">
             <div>Terima kasih telah belanja di toko {{ $company['name'] }}</div>
             <div>Kami tunggu kedatangannya kembali</div>
@@ -349,6 +387,9 @@
     <div class="no-print">
         <button onclick="window.print()">Cetak Struk</button>
         <button onclick="window.close()">Tutup</button>
+        <p style="margin-top: 10px; font-size: 12px;">
+            <b>Catatan:</b> Untuk hasil terbaik, pastikan pengaturan printer tidak memotong isi.
+        </p>
     </div>
 </body>
 
