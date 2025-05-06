@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - Optimized for POS Thermal Printers -->
+<!-- resources/views/pos/invoice.blade.php - Styled like CACHA receipt with aligned colons -->
 <!DOCTYPE html>
 <html>
 
@@ -22,10 +22,9 @@
         }
 
         body {
-            /* Font yang lebih mirip aplikasi kasir lama - lebih monospace dan lebih gelap */
-            font-family: consolas, monospace;
+            /* Font mirip struk CACHA */
+            font-family: 'Courier New', Courier, monospace;
             font-size: 10px;
-            /* Diubah menjadi 10px untuk semua ukuran */
             line-height: 1.2;
             width: {{ request('size') == '57' ? '57mm' : '65mm' }};
             max-width: 100%;
@@ -34,7 +33,7 @@
             margin: 0 auto;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            font-weight: 700;
+            font-weight: normal;
             letter-spacing: 0;
         }
 
@@ -44,7 +43,7 @@
             padding: 1px;
         }
 
-        /* HEADER SECTION */
+        /* HEADER SECTION - Centered */
         .header {
             text-align: center;
             padding: 2px 0 5px 0;
@@ -53,76 +52,62 @@
 
         .company-name {
             font-weight: bold;
-            font-size: 13px;
-            /* Diubah menjadi 13px untuk konsistensi */
+            font-size: 12px;
             letter-spacing: 0;
             margin-bottom: 2px;
             text-transform: uppercase;
         }
 
-        /* CLEAR DIVIDERS */
+        /* CLEAR DIVIDERS - Dotted line like CACHA */
         .divider {
-            border-bottom: 1px dashed black;
+            border-bottom: 1px dotted black;
             margin: 5px 0;
             clear: both;
+            width: 100%;
+            overflow: hidden;
         }
 
-        /* TRANSACTION INFO */
+        /* TRANSACTION INFO - Similar to CACHA */
         .info-section {
             margin-bottom: 5px;
         }
 
         .info-row {
             display: flex;
-            justify-content: space-between;
             margin: 2px 0;
-            overflow: hidden;
             white-space: nowrap;
         }
 
         .info-label {
-            font-weight: bold;
+            width: 80px;
+            text-align: left;
+            font-weight: normal;
             letter-spacing: 0;
             font-size: 10px;
-            /* Diubah menjadi 10px */
-            text-transform: uppercase;
         }
 
-        /* ITEMS TABLE - Traditional format with no borders */
-        .items-table {
-            width: 100%;
-            margin: 5px 0;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .items-table th {
+        .info-colon {
+            width: 15px;
             text-align: left;
-            padding: 2px 1px;
-            font-weight: bold;
-            font-size: 10px;
-            border-bottom: 1px dashed black;
-            text-transform: uppercase;
         }
 
-        .items-table td {
-            padding: 2px 1px;
-            vertical-align: top;
-            word-break: break-word;
-            font-size: 10px;
-            /* Diubah menjadi 10px */
+        .info-value {
+            flex: 1;
+            text-align: left;
         }
 
-        /* Adjusted width proportions */
-        .items-table th:first-child,
-        .items-table td:first-child {
-            width: 70%;
-        }
-
-        .items-table th:last-child,
-        .items-table td:last-child {
-            width: 30%;
+        .info-date {
             text-align: right;
+            margin-left: auto;
+        }
+
+        /* ITEMS SECTION */
+        .items-section {
+            width: 100%;
+        }
+
+        .item-row {
+            margin-bottom: 2px;
         }
 
         .item-name {
@@ -131,14 +116,43 @@
             text-overflow: ellipsis;
             letter-spacing: 0;
             font-size: 10px;
-            /* Diubah menjadi 10px */
+            text-transform: uppercase;
         }
 
         .item-detail {
+            display: flex;
+            justify-content: space-between;
             padding-left: 3px;
             font-size: 10px;
-            /* Diubah menjadi 10px */
             font-weight: normal;
+        }
+
+        .item-quantity {
+            width: 65%;
+            text-align: left;
+        }
+
+        .item-total {
+            width: 35%;
+            text-align: right;
+        }
+
+        .item-discount {
+            display: flex;
+            justify-content: space-between;
+            padding-left: 30px;
+            font-size: 10px;
+            font-weight: normal;
+        }
+
+        .item-discount-label {
+            width: 65%;
+            text-align: left;
+        }
+
+        .item-discount-value {
+            width: 35%;
+            text-align: right;
         }
 
         /* SUMMARY SECTION */
@@ -148,49 +162,47 @@
 
         .summary-row {
             display: flex;
-            justify-content: space-between;
             margin: 2px 0;
-            padding-right: 1px;
         }
 
-        /* GRAND TOTAL - Very clear */
-        .grand-total {
-            font-weight: bold;
-            font-size: 11px;
-            /* Diubah menjadi 11px untuk konsistensi */
-            border-top: 1px dashed black;
-            border-bottom: 1px dashed black;
-            padding: 3px 0;
-            margin: 5px 0;
-            letter-spacing: 0;
-            text-transform: uppercase;
+        .summary-label {
+            width: 130px;
+            text-align: left;
         }
 
-        /* PAYMENT METHOD */
-        .payment-method {
-            text-align: center;
-            font-weight: bold;
-            margin: 5px 0;
+        .summary-colon {
+            width: 15px;
+            text-align: left;
+        }
+
+        .summary-value {
+            flex: 1;
+            text-align: right;
+        }
+
+        /* PAYMENT INFO */
+        .payment-info {
+            margin-top: 5px;
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
             margin-top: 10px;
-            border-top: 1px dashed black;
             padding-top: 5px;
+            padding-bottom: 5px;
         }
 
-        .footer-text {
-            font-weight: bold;
-            font-size: 10px;
-            letter-spacing: 0;
-            text-transform: uppercase;
+        .footer-divider {
+            border-bottom: 1px dotted black;
+            margin: 5px 0;
+            clear: both;
+            width: 100%;
+            overflow: hidden;
         }
 
         /* PRINT CONTROLS */
         @media print {
-
             html,
             body {
                 width: {{ request('size') == '57' ? '57mm' : '65mm' }};
@@ -202,12 +214,6 @@
 
             .no-print {
                 display: none;
-            }
-
-            /* Improve print quality */
-            * {
-                text-rendering: optimizeLegibility;
-                -webkit-font-smoothing: antialiased;
             }
 
             /* Space for paper cutting */
@@ -222,7 +228,7 @@
             text-align: center;
             margin-top: 15px;
             padding: 5px;
-            border-top: 1px dashed black;
+            border-top: 1px dotted black;
         }
 
         .no-print button {
@@ -235,128 +241,108 @@
 
 <body>
     <div class="invoice-box">
-        <!-- HEADER - Simple centered logo and text -->
+        <!-- HEADER - Centered shop name and address -->
         <div class="header">
-            <div class="company-name">{{ $company['name'] }}</div>
+            <div class="company-name">TOKO {{ $company['name'] }}</div>
             <div>{{ $company['address'] }}</div>
-            <div>Telp: {{ $company['phone'] }}</div>
+            <div>Telp/WA {{ $company['phone'] }}</div>
         </div>
 
-        <!-- TRANSACTION INFO - Standard format -->
+        <!-- TRANSACTION INFO - Left aligned with colon -->
         <div class="info-section">
             <div class="info-row">
-                <span class="info-label">STRUK</span>
-                <span>#{{ $transaction->invoice_number }}</span>
+                <span class="info-label">No</span>
+                <span class="info-colon">:</span>
+                <span class="info-value">{{ $transaction->invoice_number }}</span>
+                <span class="info-date">{{ $transaction->invoice_date->format('#d/m/Y') }}</span>
             </div>
             <div class="info-row">
-                <span class="info-label">TANGGAL</span>
-                <span>{{ $transaction->invoice_date->format('d/m/Y H:i') }}</span>
+                <span class="info-label">Kasir</span>
+                <span class="info-colon">:</span>
+                <span class="info-value">{{ $transaction->user->name }}</span>
             </div>
             <div class="info-row">
-                <span class="info-label">KASIR</span>
-                <span>{{ $transaction->user->name }}</span>
+                <span class="info-label">Pel.</span>
+                <span class="info-colon">:</span>
+                <span class="info-value">{{ strtoupper($transaction->payment_type) }}</span>
             </div>
-
-            @if ($transaction->customer && $transaction->customer_id != 1)
-                <div class="info-row">
-                    <span class="info-label">PELANGGAN</span>
-                    <span>{{ $transaction->customer->name }}</span>
-                </div>
-            @endif
         </div>
 
         <div class="divider"></div>
 
-        <!-- ITEMS TABLE - Simplified traditional format -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>ITEM</th>
-                    <th>TOTAL</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($transaction->items as $item)
-                    <tr>
-                        <td>
-                            <div class="item-name">{{ $item->product->name }}</div>
-                            <div class="item-detail">
-                                {{ number_format($item->quantity, 0) }} {{ $item->unit->name ?? 'pcs' }}
-                                x
-                                {{ number_format($item->unit_price, 0, ',', '.') }}
-                            </div>
-                        </td>
-                        <td>
-                            {{ number_format($item->subtotal, 0, ',', '.') }}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <!-- ITEMS - Each on a separate row like CACHA -->
+        <div class="items-section">
+            @foreach ($transaction->items as $item)
+                <div class="item-row">
+                    <div class="item-name">{{ strtoupper($item->product->name) }}</div>
+                    <div class="item-detail">
+                        <div class="item-quantity">{{ number_format($item->quantity, 2) }} {{ strtoupper($item->unit->name ?? 'PCS') }} x {{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                        <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
+                    </div>
+                    @if ($item->discount > 0)
+                        <div class="item-discount">
+                            <div class="item-discount-label">Potongan</div>
+                            <div class="item-discount-value">-{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
 
         <div class="divider"></div>
 
-        <!-- SUMMARY SECTION - Traditional format with right-aligned values -->
+        <!-- SUMMARY SECTION - Like CACHA with aligned colons -->
         <div class="summary-section">
             <div class="summary-row">
-                <span>Subtotal</span>
-                <span>{{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+                <span class="summary-label">Total Jenis</span>
+                <span class="summary-colon">:</span>
+                <span class="summary-value">{{ $transaction->items->count() }}</span>
             </div>
-
-            @if ($transaction->discount_amount > 0)
-                <div class="summary-row">
-                    <span>Diskon</span>
-                    <span>-{{ number_format($transaction->discount_amount, 0, ',', '.') }}</span>
-                </div>
-            @endif
-
-            @if ($transaction->tax_amount > 0)
-                <div class="summary-row">
-                    <span>Pajak (10%)</span>
-                    <span>{{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
-                </div>
-            @endif
-
-            <!-- GRAND TOTAL - Emphasized with dashed borders -->
-            <div class="grand-total">
-                <div class="summary-row">
-                    <span>TOTAL BAYAR</span>
-                    <span>{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
-                </div>
+            <div class="summary-row">
+                <span class="summary-label">Total Item</span>
+                <span class="summary-colon">:</span>
+                <span class="summary-value">{{ number_format($transaction->items->sum('quantity'), 2) }}</span>
             </div>
-
-            <!-- PAYMENT INFO -->
-            <div class="payment-method">
-                {{ strtoupper($transaction->payment_type) }}
+            <div class="summary-row">
+                <span class="summary-label">Total Jual</span>
+                <span class="summary-colon">:</span>
+                <span class="summary-value">{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
             </div>
+        </div>
 
+        <div class="divider"></div>
+
+        <!-- PAYMENT INFO - Like CACHA with aligned colons -->
+        <div class="payment-info">
+            <div class="summary-row">
+                <span class="summary-label">Total</span>
+                <span class="summary-colon">:</span>
+                <span class="summary-value">{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
+            </div>
             @if ($transaction->payment_type === 'cash')
                 <div class="summary-row">
-                    <span>Tunai</span>
-                    <span>{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
+                    <span class="summary-label">Tunai</span>
+                    <span class="summary-colon">:</span>
+                    <span class="summary-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
                 </div>
                 <div class="summary-row">
-                    <span>Kembalian</span>
-                    <span>{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
-                </div>
-            @endif
-
-            @if ($transaction->reference_number)
-                <div class="summary-row">
-                    <span>No. Ref</span>
-                    <span>{{ $transaction->reference_number }}</span>
+                    <span class="summary-label">Kembali</span>
+                    <span class="summary-colon">:</span>
+                    <span class="summary-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
         </div>
 
-        <!-- FOOTER - Traditional with thankful message -->
+        <div class="footer-divider"></div>
+        <div class="footer-divider"></div>
+
+        <!-- FOOTER - Like CACHA -->
         <div class="footer">
-            <div class="footer-text">TERIMA KASIH</div>
-            <div>Barang yang sudah dibeli tidak dapat dikembalikan</div>
-            <div style="font-size: 7px; margin-top: 3px">
-                {{ $transaction->store_id }}/{{ $transaction->id }}/{{ now()->format('YmdHi') }}
-            </div>
+            <div>Terima kasih telah belanja di toko {{ $company['name'] }}</div>
+            <div>Kami tunggu kedatangannya kembali</div>
         </div>
+
+        <div class="footer-divider"></div>
     </div>
 
     <!-- PRINT CONTROLS - Not visible when printed -->
