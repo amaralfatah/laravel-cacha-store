@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - With 4px section spacing -->
+<!-- resources/views/pos/invoice.blade.php - With increased width -->
 <!DOCTYPE html>
 <html>
 
@@ -8,11 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Narrower fixed width */
+        /* Page Settings - Slightly increased width */
         @page {
             margin: 0;
-            size: 58mm auto;
-            /* Fixed small size for standard thermal printers */
+            size: 62mm auto;
+            /* Increased from 58mm to 62mm for thermal printers */
         }
 
         /* Reset and base styles */
@@ -23,15 +23,14 @@
         }
 
         body {
-            /* Font settings - smaller for narrow width */
+            /* Main font settings - this controls all text */
             font-family: 'Courier New', Courier, monospace;
-            font-size: 9px;
-            /* Smaller font */
-            line-height: 1.1;
-            /* Tighter line height */
-            width: 56mm;
-            /* Fixed width for narrow thermal printer */
-            max-width: 56mm;
+            font-size: 11px;
+            /* Main font size control */
+            line-height: 1.2;
+            width: 60mm;
+            /* Increased from 56mm to 60mm */
+            max-width: 60mm;
             padding: 1mm;
             color: black;
             margin: 0 auto;
@@ -42,7 +41,8 @@
 
         /* Core container */
         .invoice-box {
-            width: 54mm;
+            width: 58mm;
+            /* Increased from 54mm to 58mm */
             padding: 0;
             margin: 0 auto;
         }
@@ -52,14 +52,11 @@
             text-align: center;
             padding: 1px 0 2px 0;
             margin-bottom: 4px;
-            /* Adjusted to 4px */
             width: 100%;
         }
 
         .company-name {
             font-weight: bold;
-            font-size: 10px;
-            /* Smaller company name */
             margin-bottom: 1px;
             text-transform: uppercase;
             width: 100%;
@@ -69,7 +66,6 @@
         .divider {
             border-bottom: 1px dotted black;
             margin: 4px 0;
-            /* Adjusted to 4px */
             clear: both;
             width: 100%;
         }
@@ -77,7 +73,6 @@
         /* TRANSACTION INFO - More compact */
         .info-section {
             margin-bottom: 4px;
-            /* Adjusted to 4px */
             width: 100%;
         }
 
@@ -89,7 +84,6 @@
 
         .info-label {
             width: 35px;
-            /* Very small width */
             text-align: left;
         }
 
@@ -100,13 +94,11 @@
 
         .info-value {
             width: calc(100% - 103px);
-            /* Calculated width */
             text-align: left;
         }
 
         .info-date {
             width: 60px;
-            /* Fixed width */
             text-align: right;
         }
 
@@ -114,18 +106,15 @@
         .items-section {
             width: 100%;
             margin-bottom: 4px;
-            /* Added 4px margin bottom */
         }
 
         .item-row {
             margin-bottom: 4px;
-            /* Adjusted to 4px */
             width: 100%;
         }
 
         .item-name {
             font-weight: bold;
-            font-size: 9px;
             text-transform: uppercase;
             width: 100%;
             white-space: nowrap;
@@ -141,13 +130,11 @@
         .item-quantity {
             width: 60%;
             text-align: left;
-            font-size: 9px;
         }
 
         .item-total {
             width: 40%;
             text-align: right;
-            font-size: 9px;
         }
 
         .item-discount {
@@ -159,22 +146,17 @@
             width: 60%;
             text-align: left;
             padding-left: 20px;
-            /* Less padding */
-            font-size: 9px;
         }
 
         .item-discount-value {
             width: 40%;
             text-align: right;
-            font-size: 9px;
         }
 
         /* SUMMARY SECTION - Compact */
         .summary-section {
             margin-top: 4px;
-            /* Adjusted to 4px */
             margin-bottom: 4px;
-            /* Adjusted to 4px */
             width: 100%;
         }
 
@@ -186,29 +168,23 @@
 
         .summary-label {
             width: 70px;
-            /* Reduced width */
             text-align: left;
-            font-size: 9px;
         }
 
         .summary-colon {
             width: 8px;
             text-align: left;
-            font-size: 9px;
         }
 
         .summary-value {
             width: calc(100% - 78px);
             text-align: right;
-            font-size: 9px;
         }
 
         /* PAYMENT INFO */
         .payment-info {
             margin-top: 4px;
-            /* Adjusted to 4px */
             margin-bottom: 4px;
-            /* Adjusted to 4px */
             width: 100%;
         }
 
@@ -216,18 +192,15 @@
         .footer {
             text-align: center;
             margin-top: 4px;
-            /* Adjusted to 4px */
             padding-top: 2px;
             padding-bottom: 2px;
-            font-size: 9px;
-            line-height: 1.1;
+            line-height: 1.2;
             width: 100%;
         }
 
         .footer-divider {
             border-bottom: 1px dotted black;
             margin: 4px 0;
-            /* Adjusted to 4px */
             clear: both;
             width: 100%;
         }
@@ -242,16 +215,15 @@
 
             html,
             body {
-                width: 58mm;
-                max-width: 58mm;
+                width: 62mm;
+                max-width: 62mm;
                 margin: 0 auto;
-                padding: 1mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
             .invoice-box {
-                width: 54mm;
+                width: 58mm;
             }
 
             .no-print {
@@ -278,7 +250,6 @@
             padding: 5px;
             margin: 0 2px;
             cursor: pointer;
-            font-size: 9px;
         }
     </style>
 </head>
