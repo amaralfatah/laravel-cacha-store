@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - Compact but readable -->
+<!-- resources/views/pos/invoice.blade.php - Narrower but still not cut off -->
 <!DOCTYPE html>
 <html>
 
@@ -8,10 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Adjusted width */
+        /* Page Settings - Narrower fixed width */
         @page {
             margin: 0;
-            size: {{ request('size') == '57' ? '57mm' : '72mm' }} auto; /* Slightly wider */
+            size: 58mm auto;
+            /* Fixed small size for standard thermal printers */
         }
 
         /* Reset and base styles */
@@ -22,200 +23,223 @@
         }
 
         body {
-            /* Font settings */
+            /* Font settings - smaller for narrow width */
             font-family: 'Courier New', Courier, monospace;
-            font-size: 10px; /* Back to original size */
-            line-height: 1.2; /* Compact line height */
-            width: {{ request('size') == '57' ? '57mm' : '70mm' }}; /* Slightly wider */
-            max-width: 100%;
-            padding: 0mm;
+            font-size: 9px;
+            /* Smaller font */
+            line-height: 1.1;
+            /* Tighter line height */
+            width: 56mm;
+            /* Fixed width for narrow thermal printer */
+            max-width: 56mm;
+            padding: 1mm;
             color: black;
             margin: 0 auto;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            font-weight: bold; /* Keep bold for readability */
-            letter-spacing: 0;
+            font-weight: bold;
         }
 
         /* Core container */
         .invoice-box {
-            width: 100%;
-            padding: 1px;
+            width: 54mm;
+            padding: 0;
+            margin: 0 auto;
         }
 
-        /* HEADER SECTION - Centered */
+        /* HEADER SECTION */
         .header {
             text-align: center;
-            padding: 2px 0 3px 0; /* Reduced padding */
-            margin-bottom: 3px; /* Reduced margin */
+            padding: 1px 0 2px 0;
+            margin-bottom: 2px;
+            width: 100%;
         }
 
         .company-name {
             font-weight: bold;
-            font-size: 12px;
-            letter-spacing: 0;
-            margin-bottom: 1px; /* Reduced margin */
+            font-size: 10px;
+            /* Smaller company name */
+            margin-bottom: 1px;
             text-transform: uppercase;
+            width: 100%;
         }
 
         /* CLEAR DIVIDERS */
         .divider {
             border-bottom: 1px dotted black;
-            margin: 3px 0; /* Reduced margin */
+            margin: 2px 0;
             clear: both;
             width: 100%;
-            overflow: hidden;
         }
 
-        /* TRANSACTION INFO */
+        /* TRANSACTION INFO - More compact */
         .info-section {
-            margin-bottom: 3px; /* Reduced margin */
+            margin-bottom: 2px;
+            width: 100%;
         }
 
         .info-row {
             display: flex;
-            margin: 2px 0; /* Compact margin */
-            white-space: nowrap;
+            margin: 1px 0;
+            width: 100%;
         }
 
         .info-label {
-            width: 70px;
+            width: 35px;
+            /* Very small width */
             text-align: left;
-            font-weight: bold;
-            font-size: 10px;
         }
 
         .info-colon {
-            width: 10px;
+            width: 8px;
             text-align: left;
         }
 
         .info-value {
-            flex: 1;
+            width: calc(100% - 103px);
+            /* Calculated width */
             text-align: left;
         }
 
         .info-date {
+            width: 60px;
+            /* Fixed width */
             text-align: right;
-            margin-left: auto;
-            padding-right: 1px; /* Small padding to prevent cutoff */
         }
 
-        /* ITEMS SECTION */
+        /* ITEMS SECTION - Compact */
         .items-section {
             width: 100%;
         }
 
         .item-row {
-            margin-bottom: 1px; /* Minimal spacing */
+            margin-bottom: 1px;
+            width: 100%;
         }
 
         .item-name {
             font-weight: bold;
+            font-size: 9px;
+            text-transform: uppercase;
+            width: 100%;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: 10px;
-            text-transform: uppercase;
         }
 
         .item-detail {
             display: flex;
-            justify-content: space-between;
-            padding-left: 3px;
-            font-size: 10px;
-            font-weight: bold;
+            width: 100%;
         }
 
         .item-quantity {
-            width: 65%;
+            width: 60%;
             text-align: left;
+            font-size: 9px;
         }
 
         .item-total {
-            width: 35%;
+            width: 40%;
             text-align: right;
-            padding-right: 1px; /* Small padding to prevent cutoff */
+            font-size: 9px;
         }
 
         .item-discount {
             display: flex;
-            justify-content: space-between;
-            padding-left: 30px;
-            font-size: 10px;
-            font-weight: bold;
+            width: 100%;
         }
 
         .item-discount-label {
-            width: 65%;
+            width: 60%;
             text-align: left;
+            padding-left: 20px;
+            /* Less padding */
+            font-size: 9px;
         }
 
         .item-discount-value {
-            width: 35%;
+            width: 40%;
             text-align: right;
-            padding-right: 1px; /* Small padding to prevent cutoff */
+            font-size: 9px;
         }
 
-        /* SUMMARY SECTION */
+        /* SUMMARY SECTION - Compact */
         .summary-section {
-            margin-top: 3px;
-            margin-bottom: 3px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            width: 100%;
         }
 
         .summary-row {
             display: flex;
-            margin: 2px 0;
+            margin: 1px 0;
+            width: 100%;
         }
 
         .summary-label {
-            width: 110px; /* Reduced width */
+            width: 70px;
+            /* Reduced width */
             text-align: left;
+            font-size: 9px;
         }
 
         .summary-colon {
-            width: 10px;
+            width: 8px;
             text-align: left;
+            font-size: 9px;
         }
 
         .summary-value {
-            flex: 1;
+            width: calc(100% - 78px);
             text-align: right;
-            padding-right: 1px; /* Small padding to prevent cutoff */
+            font-size: 9px;
         }
 
         /* PAYMENT INFO */
         .payment-info {
-            margin-top: 3px;
-            margin-bottom: 3px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            width: 100%;
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
-            margin-top: 5px;
-            padding-top: 3px;
-            padding-bottom: 3px;
-            font-size: 10px;
-            line-height: 1.2;
+            margin-top: 3px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            font-size: 9px;
+            line-height: 1.1;
+            width: 100%;
         }
 
         .footer-divider {
             border-bottom: 1px dotted black;
-            margin: 3px 0;
+            margin: 2px 0;
             clear: both;
             width: 100%;
-            overflow: hidden;
+        }
+
+        /* Tighter text */
+        .text-tight {
+            letter-spacing: -0.2px;
         }
 
         /* PRINT CONTROLS */
         @media print {
+
             html,
             body {
-                width: {{ request('size') == '57' ? '57mm' : '70mm' }};
+                width: 56mm;
+                max-width: 56mm;
                 margin: 0 auto;
-                padding: 0;
+                padding: 1mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            .invoice-box {
+                width: 54mm;
             }
 
             .no-print {
@@ -226,69 +250,74 @@
             body::after {
                 content: "";
                 display: block;
-                height: 15mm;
+                height: 10mm;
             }
         }
 
         .no-print {
             text-align: center;
-            margin-top: 10px;
-            padding: 5px;
+            margin-top: 8px;
+            padding: 3px;
             border-top: 1px dotted black;
+            width: 100%;
         }
 
         .no-print button {
-            padding: 8px;
-            margin: 0 3px;
+            padding: 5px;
+            margin: 0 2px;
             cursor: pointer;
+            font-size: 9px;
         }
     </style>
 </head>
 
 <body>
     <div class="invoice-box">
-        <!-- HEADER - Centered shop name and address -->
+        <!-- HEADER -->
         <div class="header">
             <div class="company-name">TOKO {{ $company['name'] }}</div>
-            <div>{{ $company['address'] }}</div>
-            <div>Telp/WA {{ $company['phone'] }}</div>
+            <div class="text-tight">{{ $company['address'] }}</div>
+            <div class="text-tight">Telp/WA {{ $company['phone'] }}</div>
         </div>
 
-        <!-- TRANSACTION INFO - Left aligned with colon -->
+        <!-- TRANSACTION INFO -->
         <div class="info-section">
             <div class="info-row">
                 <span class="info-label">No</span>
                 <span class="info-colon">:</span>
-                <span class="info-value">{{ $transaction->invoice_number }}</span>
+                <span class="info-value text-tight">{{ $transaction->invoice_number }}</span>
                 <span class="info-date">{{ $transaction->invoice_date->format('#d/m/Y') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Kasir</span>
                 <span class="info-colon">:</span>
-                <span class="info-value">{{ $transaction->user->name }}</span>
+                <span class="info-value text-tight">{{ $transaction->user->name }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Pel.</span>
                 <span class="info-colon">:</span>
-                <span class="info-value">{{ strtoupper($transaction->payment_type) }}</span>
+                <span class="info-value text-tight">{{ strtoupper($transaction->payment_type) }}</span>
             </div>
         </div>
 
         <div class="divider"></div>
 
-        <!-- ITEMS - Compact layout -->
+        <!-- ITEMS -->
         <div class="items-section">
             @foreach ($transaction->items as $item)
                 <div class="item-row">
-                    <div class="item-name">{{ strtoupper($item->product->name) }}</div>
+                    <div class="item-name text-tight">{{ strtoupper($item->product->name) }}</div>
                     <div class="item-detail">
-                        <div class="item-quantity">{{ number_format($item->quantity, 2) }} {{ strtoupper($item->unit->name ?? 'PCS') }} x {{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                        <div class="item-quantity text-tight">{{ number_format($item->quantity, 2) }}
+                            {{ strtoupper($item->unit->name ?? 'PCS') }} x
+                            {{ number_format($item->unit_price, 0, ',', '.') }}</div>
                         <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
                     </div>
                     @if ($item->discount > 0)
                         <div class="item-discount">
                             <div class="item-discount-label">Potongan</div>
-                            <div class="item-discount-value">-{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
+                            <div class="item-discount-value">
+                                -{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
                         </div>
                     @endif
                 </div>
@@ -308,11 +337,6 @@
                 <span class="summary-label">Total Item</span>
                 <span class="summary-colon">:</span>
                 <span class="summary-value">{{ number_format($transaction->items->sum('quantity'), 2) }}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Total Jual</span>
-                <span class="summary-colon">:</span>
-                <span class="summary-value">{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
             </div>
         </div>
 
@@ -344,14 +368,14 @@
 
         <!-- FOOTER -->
         <div class="footer">
-            <div>Terima kasih telah belanja di toko {{ $company['name'] }}</div>
-            <div>Kami tunggu kedatangannya kembali</div>
+            <div class="text-tight">Terima kasih telah belanja di toko {{ $company['name'] }}</div>
+            <div class="text-tight">Jangan lupa kunjungi tokocacha.com</div>
         </div>
 
         <div class="footer-divider"></div>
     </div>
 
-    <!-- PRINT CONTROLS - Not visible when printed -->
+    <!-- PRINT CONTROLS -->
     <div class="no-print">
         <button onclick="window.print()">Cetak Struk</button>
         <button onclick="window.close()">Tutup</button>
