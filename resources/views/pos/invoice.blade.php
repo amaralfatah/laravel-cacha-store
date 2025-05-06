@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - Narrower but still not cut off -->
+<!-- resources/views/pos/invoice.blade.php - Balanced spacing -->
 <!DOCTYPE html>
 <html>
 
@@ -8,11 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Narrower fixed width */
+        /* Page Settings */
         @page {
             margin: 0;
             size: 58mm auto;
-            /* Fixed small size for standard thermal printers */
         }
 
         /* Reset and base styles */
@@ -21,18 +20,15 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
 
         body {
-            /* Font settings - smaller for narrow width */
             font-family: 'Courier New', Courier, monospace;
             font-size: 9px;
-            /* Smaller font */
             line-height: 1.1;
-            /* Tighter line height */
             width: 56mm;
-            /* Fixed width for narrow thermal printer */
             max-width: 56mm;
-            padding: 1mm;
+            padding: 0.5mm; /* Reduced padding */
             color: black;
             margin: 0 auto;
             -webkit-print-color-adjust: exact;
@@ -42,7 +38,7 @@
 
         /* Core container */
         .invoice-box {
-            width: 54mm;
+            width: 55mm; /* Slightly wider */
             padding: 0;
             margin: 0 auto;
         }
@@ -58,7 +54,6 @@
         .company-name {
             font-weight: bold;
             font-size: 10px;
-            /* Smaller company name */
             margin-bottom: 1px;
             text-transform: uppercase;
             width: 100%;
@@ -72,7 +67,7 @@
             width: 100%;
         }
 
-        /* TRANSACTION INFO - More compact */
+        /* TRANSACTION INFO - Adjusted spacing */
         .info-section {
             margin-bottom: 2px;
             width: 100%;
@@ -85,31 +80,32 @@
         }
 
         .info-label {
-            width: 35px;
-            /* Very small width */
+            width: 32px; /* Even smaller width */
             text-align: left;
+            padding-left: 0; /* No left padding */
         }
 
         .info-colon {
-            width: 8px;
+            width: 6px; /* Narrower colon */
             text-align: left;
+            padding-left: 0; /* No left padding */
         }
 
         .info-value {
-            width: calc(100% - 103px);
-            /* Calculated width */
+            width: calc(100% - 98px); /* Adjusted width */
             text-align: left;
+            padding-left: 0; /* No left padding */
         }
 
         .info-date {
             width: 60px;
-            /* Fixed width */
             text-align: right;
         }
 
-        /* ITEMS SECTION - Compact */
+        /* ITEMS SECTION - Adjusted spacing */
         .items-section {
             width: 100%;
+            padding-left: 0; /* No left padding */
         }
 
         .item-row {
@@ -125,6 +121,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-left: 0; /* No left padding */
         }
 
         .item-detail {
@@ -136,6 +133,7 @@
             width: 60%;
             text-align: left;
             font-size: 9px;
+            padding-left: 0; /* No left padding */
         }
 
         .item-total {
@@ -152,8 +150,7 @@
         .item-discount-label {
             width: 60%;
             text-align: left;
-            padding-left: 20px;
-            /* Less padding */
+            padding-left: 15px; /* Further reduced padding */
             font-size: 9px;
         }
 
@@ -163,7 +160,7 @@
             font-size: 9px;
         }
 
-        /* SUMMARY SECTION - Compact */
+        /* SUMMARY SECTION - Adjusted spacing */
         .summary-section {
             margin-top: 2px;
             margin-bottom: 2px;
@@ -177,20 +174,21 @@
         }
 
         .summary-label {
-            width: 70px;
-            /* Reduced width */
+            width: 68px; /* Slightly reduced width */
             text-align: left;
             font-size: 9px;
+            padding-left: 0; /* No left padding */
         }
 
         .summary-colon {
-            width: 8px;
+            width: 6px; /* Narrower colon */
             text-align: left;
             font-size: 9px;
+            padding-left: 0; /* No left padding */
         }
 
         .summary-value {
-            width: calc(100% - 78px);
+            width: calc(100% - 74px);
             text-align: right;
             font-size: 9px;
         }
@@ -222,24 +220,23 @@
 
         /* Tighter text */
         .text-tight {
-            letter-spacing: -0.2px;
+            letter-spacing: -0.3px; /* More negative letter spacing */
         }
 
         /* PRINT CONTROLS */
         @media print {
-
             html,
             body {
                 width: 56mm;
                 max-width: 56mm;
                 margin: 0 auto;
-                padding: 1mm;
+                padding: 0.5mm; /* Reduced padding */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
             .invoice-box {
-                width: 54mm;
+                width: 55mm;
             }
 
             .no-print {
