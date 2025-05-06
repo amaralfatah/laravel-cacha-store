@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - With increased width -->
+<!-- resources/views/pos/invoice.blade.php - With date overflow fix -->
 <!DOCTYPE html>
 <html>
 
@@ -12,7 +12,7 @@
         @page {
             margin: 0;
             size: 62mm auto;
-            /* Increased from 58mm to 62mm for thermal printers */
+            /* Increased width for thermal printers */
         }
 
         /* Reset and base styles */
@@ -29,7 +29,7 @@
             /* Main font size control */
             line-height: 1.2;
             width: 60mm;
-            /* Increased from 56mm to 60mm */
+            /* Increased width */
             max-width: 60mm;
             padding: 1mm;
             color: black;
@@ -42,7 +42,6 @@
         /* Core container */
         .invoice-box {
             width: 58mm;
-            /* Increased from 54mm to 58mm */
             padding: 0;
             margin: 0 auto;
         }
@@ -98,8 +97,11 @@
         }
 
         .info-date {
-            width: 60px;
+            width: 65px;
+            /* Increased from 60px to 65px */
             text-align: right;
+            font-size: 10px;
+            /* Slightly smaller font for date */
         }
 
         /* ITEMS SECTION - Compact */
@@ -218,6 +220,7 @@
                 width: 62mm;
                 max-width: 62mm;
                 margin: 0 auto;
+                padding: 1mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -269,7 +272,7 @@
                 <span class="info-label">No</span>
                 <span class="info-colon">:</span>
                 <span class="info-value text-tight">{{ $transaction->invoice_number }}</span>
-                <span class="info-date">{{ $transaction->invoice_date->format('#d/m/Y') }}</span>
+                <span class="info-date">{{ $transaction->invoice_date->format('d/m/Y') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Kasir</span>
