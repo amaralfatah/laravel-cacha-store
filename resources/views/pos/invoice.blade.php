@@ -23,9 +23,10 @@
 
         body {
             /* Font yang lebih mirip aplikasi kasir lama - lebih monospace dan lebih gelap */
-            font-family: "Lucida Console", Monaco, monospace;
-            font-size: {{ request('size') == '57' ? '9px' : '10px' }};
-            line-height: 1.4; /* Increased line height */
+            font-family: consolas, monospace;
+            font-size: 10px;
+            /* Diubah menjadi 10px untuk semua ukuran */
+            line-height: 1.2;
             width: {{ request('size') == '57' ? '57mm' : '65mm' }};
             max-width: 100%;
             padding: 0;
@@ -46,34 +47,35 @@
         /* HEADER SECTION */
         .header {
             text-align: center;
-            padding: 4px 0 8px 0; /* Increased padding */
-            margin-bottom: 8px; /* Increased margin */
+            padding: 2px 0 5px 0;
+            margin-bottom: 5px;
         }
 
         .company-name {
             font-weight: bold;
-            font-size: {{ request('size') == '57' ? '12px' : '13px' }};
+            font-size: 13px;
+            /* Diubah menjadi 13px untuk konsistensi */
             letter-spacing: 0;
-            margin-bottom: 5px; /* Increased margin */
+            margin-bottom: 2px;
             text-transform: uppercase;
         }
 
         /* CLEAR DIVIDERS */
         .divider {
             border-bottom: 1px dashed black;
-            margin: 8px 0; /* Increased margin */
+            margin: 5px 0;
             clear: both;
         }
 
         /* TRANSACTION INFO */
         .info-section {
-            margin-bottom: 10px; /* Increased margin */
+            margin-bottom: 5px;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin: 4px 0; /* Increased margin */
+            margin: 2px 0;
             overflow: hidden;
             white-space: nowrap;
         }
@@ -81,21 +83,22 @@
         .info-label {
             font-weight: bold;
             letter-spacing: 0;
-            font-size: 9px;
+            font-size: 10px;
+            /* Diubah menjadi 10px */
             text-transform: uppercase;
         }
 
         /* ITEMS TABLE - Traditional format with no borders */
         .items-table {
             width: 100%;
-            margin: 8px 0; /* Increased margin */
+            margin: 5px 0;
             border-collapse: collapse;
             table-layout: fixed;
         }
 
         .items-table th {
             text-align: left;
-            padding: 3px 1px; /* Increased padding */
+            padding: 2px 1px;
             font-weight: bold;
             font-size: 10px;
             border-bottom: 1px dashed black;
@@ -103,18 +106,21 @@
         }
 
         .items-table td {
-            padding: 4px 1px 4px 1px; /* Increased padding */
+            padding: 2px 1px;
             vertical-align: top;
             word-break: break-word;
-            font-size: 9px;
+            font-size: 10px;
+            /* Diubah menjadi 10px */
         }
 
         /* Adjusted width proportions */
-        .items-table th:first-child, .items-table td:first-child {
+        .items-table th:first-child,
+        .items-table td:first-child {
             width: 70%;
         }
 
-        .items-table th:last-child, .items-table td:last-child {
+        .items-table th:last-child,
+        .items-table td:last-child {
             width: 30%;
             text-align: right;
         }
@@ -124,36 +130,38 @@
             overflow: hidden;
             text-overflow: ellipsis;
             letter-spacing: 0;
-            font-size: 9px;
-            margin-bottom: 3px; /* Added margin between item name and details */
+            font-size: 10px;
+            /* Diubah menjadi 10px */
         }
 
         .item-detail {
             padding-left: 3px;
-            font-size: 8px;
+            font-size: 10px;
+            /* Diubah menjadi 10px */
             font-weight: normal;
         }
 
         /* SUMMARY SECTION */
         .summary-section {
-            margin-top: 8px; /* Increased margin */
+            margin-top: 5px;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin: 4px 0; /* Increased margin */
+            margin: 2px 0;
             padding-right: 1px;
         }
 
         /* GRAND TOTAL - Very clear */
         .grand-total {
             font-weight: bold;
-            font-size: {{ request('size') == '57' ? '10px' : '11px' }};
+            font-size: 11px;
+            /* Diubah menjadi 11px untuk konsistensi */
             border-top: 1px dashed black;
             border-bottom: 1px dashed black;
-            padding: 6px 0; /* Increased padding */
-            margin: 8px 0; /* Increased margin */
+            padding: 3px 0;
+            margin: 5px 0;
             letter-spacing: 0;
             text-transform: uppercase;
         }
@@ -162,15 +170,15 @@
         .payment-method {
             text-align: center;
             font-weight: bold;
-            margin: 8px 0; /* Increased margin */
+            margin: 5px 0;
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
-            margin-top: 15px; /* Increased margin */
+            margin-top: 10px;
             border-top: 1px dashed black;
-            padding-top: 8px; /* Increased padding */
+            padding-top: 5px;
         }
 
         .footer-text {
@@ -178,11 +186,11 @@
             font-size: 10px;
             letter-spacing: 0;
             text-transform: uppercase;
-            margin-bottom: 3px; /* Added margin */
         }
 
-        /* Space for paper cutting and spacing between items */
+        /* PRINT CONTROLS */
         @media print {
+
             html,
             body {
                 width: {{ request('size') == '57' ? '57mm' : '65mm' }};
@@ -206,12 +214,7 @@
             body::after {
                 content: "";
                 display: block;
-                height: 30mm; /* Increased height for better paper cutting */
-            }
-
-            /* Ensure each item has adequate space */
-            tr {
-                page-break-inside: avoid;
+                height: 20mm;
             }
         }
 
