@@ -32,11 +32,12 @@ class ProductUnitController extends Controller
             'unit_id' => [
                 'required',
                 'exists:units,id',
-                Rule::unique('product_units')->where(fn ($query) =>
-                $query->where('product_id', $product->id)
+                Rule::unique('product_units')->where(
+                    fn($query) =>
+                    $query->where('product_id', $product->id)
                 ),
             ],
-            'conversion_factor' => 'required|integer|min:1',
+            'conversion_factor' => 'required|numeric|min:0.01',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
@@ -55,9 +56,12 @@ class ProductUnitController extends Controller
                 // Reset other units' default status
                 $product->productUnits()->update(['is_default' => false]);
                 $validated['is_default'] = true;
-                $validated['conversion_factor'] = 1;
+                $validated['conversion_factor'] = 1.00;
                 $product->update(['default_unit_id' => $validated['unit_id']]);
             }
+
+            // Format nilai desimal
+            $validated['conversion_factor'] = number_format((float) $validated['conversion_factor'], 2, '.', '');
 
             $product->productUnits()->create($validated);
 
@@ -76,13 +80,29 @@ class ProductUnitController extends Controller
 
     public function edit(Product $product, ProductUnit $unit)
     {
-        return view('products.product_units.edit', compact('product', 'unit'));
+        // Mendapatkan semua unit yang tersedia (yang aktif dan tidak digunakan oleh produk ini, atau unit yang sedang diedit)
+        $availableUnits = Unit::where('is_active', true)
+            ->where(function ($query) use ($product, $unit) {
+                $query->whereNotIn('id', $product->productUnits()->where('id', '!=', $unit->id)->pluck('unit_id'))
+                    ->orWhere('id', $unit->unit_id);
+            })
+            ->get();
+
+        return view('products.product_units.edit', compact('product', 'unit', 'availableUnits'));
     }
 
     public function update(Request $request, Product $product, ProductUnit $unit)
     {
         $validated = $request->validate([
-            'conversion_factor' => 'required|integer|min:1',
+            'unit_id' => [
+                'required',
+                'exists:units,id',
+                Rule::unique('product_units')->where(
+                    fn($query) =>
+                    $query->where('product_id', $product->id)
+                )->ignore($unit->id),
+            ],
+            'conversion_factor' => 'required|numeric|min:0.01',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'stock' => 'required|numeric', // Hapus min:0 agar dapat menerima nilai negatif
@@ -103,9 +123,12 @@ class ProductUnitController extends Controller
                     ->update(['is_default' => false]);
 
                 $validated['is_default'] = true;
-                $validated['conversion_factor'] = 1;
-                $product->update(['default_unit_id' => $unit->unit_id]);
+                $validated['conversion_factor'] = 1.00;
+                $product->update(['default_unit_id' => $validated['unit_id']]);
             }
+
+            // Format nilai desimal
+            $validated['conversion_factor'] = number_format((float) $validated['conversion_factor'], 2, '.', '');
 
             $unit->update($validated);
 
