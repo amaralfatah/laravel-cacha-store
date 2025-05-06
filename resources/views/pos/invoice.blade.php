@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - Optimized for better readability -->
+<!-- resources/views/pos/invoice.blade.php - Compact but readable -->
 <!DOCTYPE html>
 <html>
 
@@ -8,11 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Adjusted width for better visibility */
+        /* Page Settings - Adjusted width */
         @page {
             margin: 0;
-            size: {{ request('size') == '57' ? '57mm' : '76mm' }} auto;
-            /* Increased width */
+            size: {{ request('size') == '57' ? '57mm' : '72mm' }} auto; /* Slightly wider */
         }
 
         /* Reset and base styles */
@@ -23,24 +22,19 @@
         }
 
         body {
-            /* Font and text contrast adjustment */
+            /* Font settings */
             font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            /* Slightly larger for better readability */
-            line-height: 1.4;
-            /* Increased line height */
-            width: {{ request('size') == '57' ? '57mm' : '72mm' }};
-            /* Increased width */
+            font-size: 10px; /* Back to original size */
+            line-height: 1.2; /* Compact line height */
+            width: {{ request('size') == '57' ? '57mm' : '70mm' }}; /* Slightly wider */
             max-width: 100%;
-            padding: 1mm;
+            padding: 0mm;
             color: black;
             margin: 0 auto;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            font-weight: bold;
-            /* Make all text bold for better contrast */
-            letter-spacing: 0.3px;
-            /* Slightly increased letter spacing */
+            font-weight: bold; /* Keep bold for readability */
+            letter-spacing: 0;
         }
 
         /* Core container */
@@ -52,57 +46,48 @@
         /* HEADER SECTION - Centered */
         .header {
             text-align: center;
-            padding: 2px 0 5px 0;
-            margin-bottom: 5px;
+            padding: 2px 0 3px 0; /* Reduced padding */
+            margin-bottom: 3px; /* Reduced margin */
         }
 
         .company-name {
             font-weight: bold;
-            font-size: 14px;
-            /* Larger font for company name */
-            letter-spacing: 1px;
-            /* More spacing for header */
-            margin-bottom: 2px;
+            font-size: 12px;
+            letter-spacing: 0;
+            margin-bottom: 1px; /* Reduced margin */
             text-transform: uppercase;
         }
 
-        /* CLEAR DIVIDERS - Changed to more visible styling */
+        /* CLEAR DIVIDERS */
         .divider {
             border-bottom: 1px dotted black;
-            margin: 7px 0;
-            /* Increased margin */
+            margin: 3px 0; /* Reduced margin */
             clear: both;
             width: 100%;
             overflow: hidden;
-            border-width: 2px;
-            /* Thicker border */
         }
 
-        /* TRANSACTION INFO - Adjusted layout */
+        /* TRANSACTION INFO */
         .info-section {
-            margin-bottom: 7px;
+            margin-bottom: 3px; /* Reduced margin */
         }
 
         .info-row {
             display: flex;
-            margin: 3px 0;
-            /* Increased margin */
+            margin: 2px 0; /* Compact margin */
             white-space: nowrap;
         }
 
         .info-label {
             width: 70px;
-            /* Adjusted width */
             text-align: left;
             font-weight: bold;
-            letter-spacing: 0.3px;
-            font-size: 11px;
+            font-size: 10px;
         }
 
         .info-colon {
             width: 10px;
             text-align: left;
-            padding-right: 5px;
         }
 
         .info-value {
@@ -113,87 +98,77 @@
         .info-date {
             text-align: right;
             margin-left: auto;
-            padding-right: 2px;
-            /* Ensure not cut off */
+            padding-right: 1px; /* Small padding to prevent cutoff */
         }
 
-        /* ITEMS SECTION - Better spacing */
+        /* ITEMS SECTION */
         .items-section {
             width: 100%;
         }
 
         .item-row {
-            margin-bottom: 5px;
-            /* Increased space between items */
+            margin-bottom: 1px; /* Minimal spacing */
         }
 
         .item-name {
             font-weight: bold;
             overflow: hidden;
             text-overflow: ellipsis;
-            letter-spacing: 0.5px;
-            font-size: 12px;
-            /* Larger font for item name */
+            font-size: 10px;
             text-transform: uppercase;
         }
 
         .item-detail {
             display: flex;
             justify-content: space-between;
-            padding-left: 5px;
-            font-size: 11px;
+            padding-left: 3px;
+            font-size: 10px;
             font-weight: bold;
-            margin-top: 2px;
         }
 
         .item-quantity {
-            width: 60%;
-            /* Adjusted width */
+            width: 65%;
             text-align: left;
         }
 
         .item-total {
-            width: 40%;
-            /* Adjusted width */
+            width: 35%;
             text-align: right;
-            padding-right: 2px;
-            /* Prevent cutoff */
+            padding-right: 1px; /* Small padding to prevent cutoff */
         }
 
         .item-discount {
             display: flex;
             justify-content: space-between;
             padding-left: 30px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
-            margin-top: 2px;
         }
 
         .item-discount-label {
-            width: 60%;
+            width: 65%;
             text-align: left;
         }
 
         .item-discount-value {
-            width: 40%;
+            width: 35%;
             text-align: right;
-            padding-right: 2px;
-            /* Prevent cutoff */
+            padding-right: 1px; /* Small padding to prevent cutoff */
         }
 
-        /* SUMMARY SECTION - Better alignment */
+        /* SUMMARY SECTION */
         .summary-section {
-            margin-top: 7px;
-            margin-bottom: 5px;
+            margin-top: 3px;
+            margin-bottom: 3px;
         }
 
         .summary-row {
             display: flex;
-            margin: 3px 0;
+            margin: 2px 0;
         }
 
         .summary-label {
-            width: 130px;
+            width: 110px; /* Reduced width */
             text-align: left;
         }
 
@@ -205,44 +180,40 @@
         .summary-value {
             flex: 1;
             text-align: right;
-            padding-right: 2px;
-            /* Prevent cutoff */
+            padding-right: 1px; /* Small padding to prevent cutoff */
         }
 
-        /* PAYMENT INFO - Better spacing */
+        /* PAYMENT INFO */
         .payment-info {
-            margin-top: 7px;
-            margin-bottom: 5px;
+            margin-top: 3px;
+            margin-bottom: 3px;
         }
 
-        /* FOOTER - Adjusted styling */
+        /* FOOTER */
         .footer {
             text-align: center;
-            margin-top: 10px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            font-size: 11px;
-            line-height: 1.5;
+            margin-top: 5px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+            font-size: 10px;
+            line-height: 1.2;
         }
 
         .footer-divider {
             border-bottom: 1px dotted black;
-            margin: 7px 0;
+            margin: 3px 0;
             clear: both;
             width: 100%;
             overflow: hidden;
-            border-width: 2px;
-            /* Thicker border */
         }
 
         /* PRINT CONTROLS */
         @media print {
-
             html,
             body {
-                width: {{ request('size') == '57' ? '57mm' : '72mm' }};
+                width: {{ request('size') == '57' ? '57mm' : '70mm' }};
                 margin: 0 auto;
-                padding: 1mm;
+                padding: 0;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -255,13 +226,13 @@
             body::after {
                 content: "";
                 display: block;
-                height: 20mm;
+                height: 15mm;
             }
         }
 
         .no-print {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 10px;
             padding: 5px;
             border-top: 1px dotted black;
         }
@@ -305,22 +276,19 @@
 
         <div class="divider"></div>
 
-        <!-- ITEMS - Each on a separate row with better spacing -->
+        <!-- ITEMS - Compact layout -->
         <div class="items-section">
             @foreach ($transaction->items as $item)
                 <div class="item-row">
                     <div class="item-name">{{ strtoupper($item->product->name) }}</div>
                     <div class="item-detail">
-                        <div class="item-quantity">{{ number_format($item->quantity, 2) }}
-                            {{ strtoupper($item->unit->name ?? 'PCS') }} x
-                            {{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                        <div class="item-quantity">{{ number_format($item->quantity, 2) }} {{ strtoupper($item->unit->name ?? 'PCS') }} x {{ number_format($item->unit_price, 0, ',', '.') }}</div>
                         <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
                     </div>
                     @if ($item->discount > 0)
                         <div class="item-discount">
                             <div class="item-discount-label">Potongan</div>
-                            <div class="item-discount-value">
-                                -{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
+                            <div class="item-discount-value">-{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
                         </div>
                     @endif
                 </div>
@@ -329,7 +297,7 @@
 
         <div class="divider"></div>
 
-        <!-- SUMMARY SECTION - With aligned colons -->
+        <!-- SUMMARY SECTION -->
         <div class="summary-section">
             <div class="summary-row">
                 <span class="summary-label">Total Jenis</span>
@@ -350,7 +318,7 @@
 
         <div class="divider"></div>
 
-        <!-- PAYMENT INFO - With aligned colons -->
+        <!-- PAYMENT INFO -->
         <div class="payment-info">
             <div class="summary-row">
                 <span class="summary-label">Total</span>
@@ -387,9 +355,6 @@
     <div class="no-print">
         <button onclick="window.print()">Cetak Struk</button>
         <button onclick="window.close()">Tutup</button>
-        <p style="margin-top: 10px; font-size: 12px;">
-            <b>Catatan:</b> Untuk hasil terbaik, pastikan pengaturan printer tidak memotong isi.
-        </p>
     </div>
 </body>
 
