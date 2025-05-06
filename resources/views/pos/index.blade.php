@@ -9,233 +9,6 @@
     <meta name="description" content="" />
     @include('pos.partials.styles')
 
-    <style>
-        /* Grid-based layout */
-        body,
-        html {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .layout-page {
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-wrapper {
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Main section */
-        .pos-main-column {
-            height: 100vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        /* Payment section */
-        .pos-bill-column {
-            height: 100vh;
-            overflow: hidden;
-            background-color: #fff;
-        }
-
-        /* Grid containers */
-        .grid-container {
-            display: grid;
-            gap: 1rem;
-            padding: 1rem;
-        }
-
-        /* Main area grid */
-        .main-grid {
-            grid-template-rows: auto auto 1fr;
-        }
-
-        /* Bill area grid */
-        .bill-grid {
-            height: 100%;
-            grid-template-rows: auto auto auto auto auto auto 1fr auto;
-            background-color: #fff;
-            border-left: 1px solid #d9dee3;
-            padding: 1.25rem;
-        }
-
-        /* Section styling */
-        .grid-section {
-            border: 1px solid #d9dee3;
-            background: #fff;
-            border-radius: 0.375rem;
-        }
-
-        .grid-section-header {
-            background-color: #f5f5f9;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #d9dee3;
-            font-weight: 600;
-            border-radius: 0.375rem 0.375rem 0 0;
-        }
-
-        .grid-section-body {
-            padding: 1rem;
-        }
-
-        /* Bill header */
-        .bill-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 0.75rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #d9dee3;
-        }
-
-        .bill-title {
-            font-weight: 600;
-            font-size: 1.125rem;
-            color: #566a7f;
-        }
-
-        /* Summary section */
-        .bill-summary {
-            background-color: #eceef1;
-            border: 1px solid #d9dee3;
-            border-radius: 0.375rem;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.375rem 0;
-            border-bottom: 1px solid #d9dee3;
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-        }
-
-        .summary-label {
-            color: #566a7f;
-            font-weight: 500;
-        }
-
-        .summary-value {
-            font-weight: 600;
-            text-align: right;
-            min-width: 90px;
-        }
-
-        /* Total section */
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.675rem 0.75rem;
-            margin: 0.5rem 0;
-            border: 1px solid #d9dee3;
-            background-color: #f0f2f4;
-            border-radius: 0.375rem;
-        }
-
-        /* Form elements */
-        .form-group {
-            margin-bottom: 0.75rem;
-        }
-
-        .form-label {
-            margin-bottom: 0.25rem;
-            font-weight: 500;
-            color: #566a7f;
-        }
-
-        /* Input styling */
-        .value-input,
-        .total-input,
-        .change-input {
-            border: none;
-            background: transparent;
-            text-align: right;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-            font-weight: 600;
-        }
-
-        .total-input {
-            color: #696cff;
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .discount {
-            color: #ff3e1d;
-            font-weight: 600;
-        }
-
-        /* Change container */
-        .change-container {
-            background-color: #e7e7ff;
-            border: 1px solid #d1d1ff;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-        }
-
-        /* Page header */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 0.75rem;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #d9dee3;
-        }
-
-        /* Action buttons */
-        .action-buttons {
-            margin-top: auto;
-        }
-
-
-        .table {
-            margin-bottom: 0;
-        }
-
-        .table thead {
-            background-color: #f5f5f9;
-        }
-
-        .table th {
-            border-bottom: 1px solid #d9dee3;
-            font-weight: 600;
-            color: #566a7f;
-        }
-
-        /* Empty cart styling */
-        .empty-cart {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 991.98px) {
-
-            .pos-main-column,
-            .pos-bill-column {
-                height: auto;
-                overflow-y: auto;
-            }
-
-            .bill-grid {
-                height: auto;
-                border-left: none;
-                border-top: 2px solid #d9dee3;
-                margin-top: 1rem;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -256,16 +29,14 @@
                                         <h4 class="fw-bold mb-0">Kasir Toko Cacha</h4>
                                         <div class="d-flex gap-2">
                                             <a href="{{ url('/dashboard') }}"
-                                                class="btn btn-sm btn-primary d-flex align-items-center">
+                                                class="btn btn-primary d-flex align-items-center">
                                                 <i class='bx bx-home-alt me-1'></i> Dashboard
                                             </a>
-                                            <button type="button"
-                                                class="btn btn-sm btn-warning d-flex align-items-center"
+                                            <button type="button" class="btn btn-warning d-flex align-items-center"
                                                 id="btn-show-pending">
                                                 <i class='bx bx-time me-1'></i> Tertunda
                                             </button>
-                                            <button type="button"
-                                                class="btn btn-sm btn-danger d-flex align-items-center"
+                                            <button type="button" class="btn btn-danger d-flex align-items-center"
                                                 id="btn-clear-cart">
                                                 <i class='bx bx-trash me-1'></i> Hapus
                                             </button>
@@ -294,39 +65,38 @@
                                     <!-- Product Search Section -->
                                     <div class="grid-section">
                                         <div class="grid-section-header">
-                                            <i class='bx bx-search text-primary me-1'></i> Pencarian Produk
+                                            <i class='bx bx-search me-1'></i> Pencarian Produk
                                         </div>
                                         <div class="grid-section-body">
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label
-                                                        class="form-label d-flex align-items-center fw-semibold text-uppercase small mb-1"
+                                                        class="form-label d-flex align-items-center fw-bold text-uppercase mb-1"
                                                         for="pos_barcode">
-                                                        <i class='bx bx-barcode text-primary me-1'></i> Scan Barcode
+                                                        <i class='bx bx-barcode me-1'></i> Scan Barcode
                                                     </label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class='bx bx-scan'></i></span>
                                                         <input type="text" class="form-control" id="pos_barcode"
                                                             placeholder="Scan atau masukkan barcode" autofocus>
-                                                        <button class="btn btn-outline-primary" type="button"
+                                                        <button class="btn btn-outline-secondary" type="button"
                                                             id="btn-camera">
                                                             <i class='bx bx-camera'></i>
                                                         </button>
                                                     </div>
-                                                    <small class="text-muted mt-1 d-block">Tekan Enter setelah
-                                                        scan</small>
+                                                    <small class="mt-1 d-block">Tekan Enter setelah scan</small>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label
-                                                        class="form-label d-flex align-items-center fw-semibold text-uppercase small mb-1"
+                                                        class="form-label d-flex align-items-center fw-bold text-uppercase mb-1"
                                                         for="pos_search_product">
-                                                        <i class='bx bx-search text-primary me-1'></i> Cari Produk
+                                                        <i class='bx bx-search me-1'></i> Cari Produk
                                                     </label>
                                                     <div class="position-relative">
                                                         <select class="form-select" id="pos_search_product"></select>
                                                         <div id="pos_product_list"></div>
                                                     </div>
-                                                    <small class="text-muted mt-1 d-block text-end">
+                                                    <small class="mt-1 d-block text-end">
                                                         <span class="badge bg-label-secondary">F2</span> Hapus
                                                         <span class="badge bg-label-secondary">F3</span> Barcode
                                                         <span class="badge bg-label-secondary">F8</span> Bayar
@@ -339,11 +109,11 @@
                                     <!-- Shopping Cart Section -->
                                     <div class="grid-section d-flex flex-column">
                                         <div class="grid-section-header">
-                                            <i class='bx bx-cart text-primary me-1'></i> Keranjang Belanja
+                                            <i class='bx bx-cart me-1'></i> Keranjang Belanja
                                         </div>
                                         <div class="table-container flex-grow-1">
                                             <div class="table-responsive">
-                                                <table class="table table-borderless mb-0" id="cart-table">
+                                                <table class="table mb-0" id="cart-table">
                                                     <thead>
                                                         <tr>
                                                             <th>PRODUK</th>
@@ -359,11 +129,11 @@
 
                                             <!-- Empty Cart Message -->
                                             <div id="empty-cart-message" class="empty-cart">
-                                                <i class='bx bx-cart-alt fs-1 text-muted mb-2'></i>
+                                                <i class='bx bx-cart-alt fs-1 mb-2'></i>
                                                 <h5 class="mb-2">Keranjang Belanja Kosong</h5>
-                                                <p class="text-muted mb-3">Silakan scan barcode atau cari produk untuk
+                                                <p class="mb-3">Silakan scan barcode atau cari produk untuk
                                                     memulai transaksi</p>
-                                                <button class="btn btn-primary btn-sm" id="btn-start-shopping">
+                                                <button class="btn btn-primary" id="btn-start-shopping">
                                                     <i class='bx bx-search me-1'></i> Cari Produk
                                                 </button>
                                             </div>
@@ -384,7 +154,7 @@
                                     <!-- Customer Selection -->
                                     <div class="form-group">
                                         <label class="form-label">Pelanggan</label>
-                                        <select class="form-select form-select" id="pos_customer_id">
+                                        <select class="form-select" id="pos_customer_id">
                                             @foreach ($customers as $customer)
                                                 <option value="{{ $customer->id }}"
                                                     {{ $customer->id === 1 ? 'selected' : '' }}>
@@ -436,7 +206,7 @@
                                     <!-- Payment Method -->
                                     <div class="form-group">
                                         <label class="form-label">Metode Pembayaran</label>
-                                        <select class="form-select form-select" id="pos_payment_type">
+                                        <select class="form-select" id="pos_payment_type">
                                             <option value="cash">Tunai</option>
                                             <option value="transfer">Transfer</option>
                                         </select>
@@ -445,7 +215,7 @@
                                     <!-- Cash Amount -->
                                     <div id="pos_cash_amount_container" class="form-group">
                                         <label class="form-label">Jumlah Tunai</label>
-                                        <div class="input-group input-group">
+                                        <div class="input-group">
                                             <span class="input-group-text">Rp</span>
                                             <input type="number" class="form-control" id="pos_cash_amount"
                                                 placeholder="0">
@@ -460,22 +230,19 @@
                                         </div>
                                     </div>
 
-                                    <!-- Spacer that will grow to fill available space -->
-                                    <div class="flex-grow-1"></div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="action-buttons mt-4">
+                                    <!-- Action Buttons - uses margin-top:auto instead of a spacer -->
+                                    <div class="action-buttons">
                                         <div class="row g-2">
                                             <div class="col-6">
                                                 <button type="button"
-                                                    class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center fw-semibold"
+                                                    class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center fw-bold"
                                                     id="btn-pending">
                                                     <i class='bx bx-time-five me-1'></i> Pending
                                                 </button>
                                             </div>
                                             <div class="col-6">
                                                 <button type="button"
-                                                    class="btn btn-primary w-100 d-flex align-items-center justify-content-center fw-semibold"
+                                                    class="btn btn-primary w-100 d-flex align-items-center justify-content-center fw-bold"
                                                     id="btn-save">
                                                     <i class='bx bx-check-circle me-1'></i> Bayar
                                                 </button>
@@ -492,51 +259,7 @@
     </div>
 
     <!-- Modal Transaksi Tertunda -->
-    <div class="modal fade" id="pendingTransactionsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class='bx bx-time-five me-2'></i>
-                        Transaksi Tertunda
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <!-- Search bar untuk transaksi tertunda -->
-                <div class="px-4 py-3 border-bottom">
-                    <div class="input-group input-group-merge">
-                        <span class="input-group-text">
-                            <i class='bx bx-search'></i>
-                        </span>
-                        <input type="text" id="pending-search" class="form-control"
-                            placeholder="Cari berdasarkan faktur atau pelanggan...">
-                    </div>
-                </div>
-
-                <div class="modal-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="pending-transactions-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Faktur</th>
-                                    <th>Tanggal</th>
-                                    <th>Pelanggan</th>
-                                    <th>Total</th>
-                                    <th class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('pos.partials.pending-modal')
 
     <!-- Toast Notifications -->
     @include('components.toast')
@@ -544,7 +267,7 @@
     <!-- Scripts -->
     @include('pos.partials.scripts')
 
-    <!-- Script untuk perhitungan kembalian dan inisialisasi lainnya -->
+    <!-- Script for initializing POS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Event listener untuk payment type

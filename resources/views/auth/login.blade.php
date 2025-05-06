@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <!-- =========================================================
@@ -18,7 +17,7 @@
     class="light-style customizer-hide"
     dir="ltr"
     data-theme="theme-default"
-    data-assets-path="{{asset('sneat/assets/')}}"
+    data-assets-path="{{ asset('sneat/assets/') }}"
     data-template="vertical-menu-template-free"
 >
 <head>
@@ -33,7 +32,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{asset('images/logo-cacha.png')}}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-cacha.png') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -44,25 +43,25 @@
     />
 
     <!-- Icons. Uncomment required icon fonts -->
-    <link rel="stylesheet" href="{{asset('sneat/assets/vendor/fonts/boxicons.css')}}" />
+    <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/fonts/boxicons.css') }}" />
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="{{asset('sneat/assets/vendor/css/core.css ')}}" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{asset('sneat/assets/vendor/css/theme-default.css ')}}" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{asset('sneat/assets/css/demo.css')}}" />
+    <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/core.css ') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/theme-default.css ') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ asset('sneat/assets/css/demo.css') }}" />
 
     <!-- Vendors CSS -->
-    <link rel="stylesheet" href="{{asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css')}}" />
+    <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
 
     <!-- Page CSS -->
     <!-- Page -->
-    <link rel="stylesheet" href="{{asset('sneat/assets/vendor/css/pages/page-auth.css')}}" />
+    <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/pages/page-auth.css') }}" />
     <!-- Helpers -->
-    <script src="{{asset('sneat/assets/vendor/js/helpers.js')}}"></script>
+    <script src="{{ asset('sneat/assets/vendor/js/helpers.js') }}"></script>
 
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script src="{{asset('sneat/assets/js/config.js')}}"></script>
+    <script src="{{ asset('sneat/assets/js/config.js') }}"></script>
 </head>
 
 <body>
@@ -76,11 +75,11 @@
                 <div class="card-body">
                     <!-- Logo -->
                     <div class="app-brand justify-content-center">
-                        <a href="{{route('guest.home')}}" class="app-brand-link gap-2">
+                        <a href="{{ route('guest.home') }}" class="app-brand-link gap-2">
                   <span class="app-brand-logo demo">
-                                    <img src="{{asset('images/logo-cacha-119x48px.png')}}" alt="toko cacha">
+                                    <img src="{{ asset('images/logo-cacha-119x48px.png') }}" alt="toko cacha">
                   </span>
-{{--                            <span class="app-brand-text demo text-body fw-bolder">Sneat</span>--}}
+{{--                            <span class="app-brand-text demo text-body fw-bolder">Sneat</span> --}}
                         </a>
                     </div>
                     <!-- /Logo -->
@@ -88,14 +87,14 @@
                     <p class="mb-4">Please sign-in to your account and start the adventure</p>
 
                     @if ($errors->any())
-                        <div class="alert alert-danger">
+<div class="alert alert-danger">
                             <ul class="mb-0">
                                 @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
+<li>{{ $error }}</li>
+@endforeach
                             </ul>
                         </div>
-                    @endif
+@endif
 
                     <form id="formAuthentication" class="mb-3" method="POST" action="{{ route('login') }}">
                         @csrf
@@ -157,27 +156,27 @@
 
 <div class="buy-now">
     <a
-        href="https://themeselection.com/products/sneat-bootstrap-html-admin-template/"
+        href="https://wa.me/6285819450001"
         target="_blank"
         class="btn btn-danger btn-buy-now"
-    >Upgrade to Pro</a
+    >Hubungi Admin</a
     >
 </div>
 
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/core.js -->
-<script src="{{asset('sneat/assets/vendor/libs/jquery/jquery.js')}}"></script>
-<script src="{{asset('sneat/assets/vendor/libs/popper/popper.js')}}"></script>
-<script src="{{asset('sneat/assets/vendor/js/bootstrap.js')}}"></script>
-<script src="{{asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js')}}"></script>
+<script src="{{ asset('sneat/assets/vendor/libs/jquery/jquery.js') }}"></script>
+<script src="{{ asset('sneat/assets/vendor/libs/popper/popper.js') }}"></script>
+<script src="{{ asset('sneat/assets/vendor/js/bootstrap.js') }}"></script>
+<script src="{{ asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
 
-<script src="{{asset('sneat/assets/vendor/js/menu.js')}}"></script>
+<script src="{{ asset('sneat/assets/vendor/js/menu.js') }}"></script>
 <!-- endbuild -->
 
 <!-- Vendors JS -->
 
 <!-- Main JS -->
-<script src="{{asset('sneat/assets/js/main.js')}}"></script>
+<script src="{{ asset('sneat/assets/js/main.js') }}"></script>
 
 <!-- Page JS -->
 
