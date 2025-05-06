@@ -11,7 +11,7 @@
         /* Page Settings - Strict dimensions for thermal printer */
         @page {
             margin: 0;
-            size: {{ request('size') == '57' ? '57mm' : '72mm' }} auto; /* Reduced from 78mm to 72mm */
+            size: {{ request('size') == '57' ? '57mm' : '68mm' }} auto;
         }
 
         /* Reset and base styles */
@@ -22,148 +22,170 @@
         }
 
         body {
-            font-family: "Courier New", Courier, monospace;
-            font-size: {{ request('size') == '57' ? '9px' : '10px' }}; /* Increased for better clarity */
-            line-height: 1.3; /* Increased line height for better readability */
-            width: {{ request('size') == '57' ? '57mm' : '70mm' }}; /* Reduced from 78mm to 70mm */
+            /* Font yang lebih mirip aplikasi kasir lama - lebih monospace dan lebih gelap */
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: {{ request('size') == '57' ? '9px' : '10px' }};
+            line-height: 1.4; /* Increased line height */
+            width: {{ request('size') == '57' ? '57mm' : '65mm' }};
             max-width: 100%;
             padding: 0;
             color: black;
-            margin: 0 auto; /* Center content */
+            margin: 0 auto;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            font-weight: 500; /* Slightly bold all text for better printing */
+            font-weight: 700;
+            letter-spacing: 0;
         }
 
         /* Core container */
         .invoice-box {
             width: 100%;
-            padding: 1px; /* Reduced padding from 2px to 1px */
+            padding: 1px;
         }
 
         /* HEADER SECTION */
         .header {
             text-align: center;
-            padding: 2px 0;
-            border-bottom: 1px solid black;
-            margin-bottom: 3px; /* Reduced margin */
+            padding: 4px 0 8px 0; /* Increased padding */
+            margin-bottom: 8px; /* Increased margin */
         }
 
         .company-name {
             font-weight: bold;
-            font-size: {{ request('size') == '57' ? '12px' : '13px' }}; /* Increased for better visibility */
-            letter-spacing: 0.5px; /* Add slight letter spacing for clarity */
+            font-size: {{ request('size') == '57' ? '12px' : '13px' }};
+            letter-spacing: 0;
+            margin-bottom: 5px; /* Increased margin */
+            text-transform: uppercase;
         }
 
         /* CLEAR DIVIDERS */
         .divider {
-            border-bottom: 1px solid black;
-            margin: 3px 0; /* Reduced margin from 5px to 3px */
+            border-bottom: 1px dashed black;
+            margin: 8px 0; /* Increased margin */
             clear: both;
         }
 
         /* TRANSACTION INFO */
         .info-section {
-            margin-bottom: 3px; /* Reduced margin */
+            margin-bottom: 10px; /* Increased margin */
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin: 1px 0; /* Reduced margin */
-            overflow: hidden; /* Prevent overflow */
-            white-space: nowrap; /* Prevent line breaks in important info */
+            margin: 4px 0; /* Increased margin */
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         .info-label {
             font-weight: bold;
-            letter-spacing: 0.3px;
-            font-size: 10px; /* Ensure clear visibility */
+            letter-spacing: 0;
+            font-size: 9px;
+            text-transform: uppercase;
         }
 
-        /* ITEMS TABLE - Minimal borders for clarity */
+        /* ITEMS TABLE - Traditional format with no borders */
         .items-table {
             width: 100%;
-            margin: 3px 0; /* Reduced margin */
+            margin: 8px 0; /* Increased margin */
             border-collapse: collapse;
-            table-layout: fixed; /* Fixed table layout */
+            table-layout: fixed;
         }
 
         .items-table th {
             text-align: left;
-            padding: 2px 1px; /* Added vertical padding */
-            border-bottom: 1px solid black;
+            padding: 3px 1px; /* Increased padding */
             font-weight: bold;
-            font-size: 11px; /* Increased font size for headers */
+            font-size: 10px;
+            border-bottom: 1px dashed black;
+            text-transform: uppercase;
         }
 
         .items-table td {
-            padding: 2px 1px; /* Increased vertical padding */
+            padding: 4px 1px 4px 1px; /* Increased padding */
             vertical-align: top;
-            word-break: break-word; /* Break words if too long */
+            word-break: break-word;
+            font-size: 9px;
+        }
+
+        /* Adjusted width proportions */
+        .items-table th:first-child, .items-table td:first-child {
+            width: 70%;
+        }
+
+        .items-table th:last-child, .items-table td:last-child {
+            width: 30%;
+            text-align: right;
         }
 
         .item-name {
             font-weight: bold;
             overflow: hidden;
-            text-overflow: ellipsis; /* Add ellipsis for long text */
-            letter-spacing: 0.3px; /* Better letter spacing */
+            text-overflow: ellipsis;
+            letter-spacing: 0;
+            font-size: 9px;
+            margin-bottom: 3px; /* Added margin between item name and details */
         }
 
         .item-detail {
-            padding-left: 3px; /* Reduced padding */
-            font-size: 9px; /* Slightly larger than before */
-            font-weight: normal; /* Normal weight for details */
+            padding-left: 3px;
+            font-size: 8px;
+            font-weight: normal;
         }
 
         /* SUMMARY SECTION */
         .summary-section {
-            margin-top: 3px; /* Reduced margin */
+            margin-top: 8px; /* Increased margin */
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin: 1px 0; /* Reduced margin */
+            margin: 4px 0; /* Increased margin */
+            padding-right: 1px;
         }
 
         /* GRAND TOTAL - Very clear */
         .grand-total {
             font-weight: bold;
-            font-size: {{ request('size') == '57' ? '11px' : '12px' }}; /* Increased for better visibility */
-            border-top: 1px solid black;
-            border-bottom: 1px solid black;
-            padding: 3px 0; /* Increased padding for emphasis */
-            margin: 4px 0; /* Slightly more space around total */
-            letter-spacing: 0.5px; /* Better letter spacing */
+            font-size: {{ request('size') == '57' ? '10px' : '11px' }};
+            border-top: 1px dashed black;
+            border-bottom: 1px dashed black;
+            padding: 6px 0; /* Increased padding */
+            margin: 8px 0; /* Increased margin */
+            letter-spacing: 0;
+            text-transform: uppercase;
         }
 
         /* PAYMENT METHOD */
         .payment-method {
             text-align: center;
             font-weight: bold;
-            margin: 3px 0; /* Reduced margin */
+            margin: 8px 0; /* Increased margin */
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
-            margin-top: 5px; /* Reduced margin */
-            border-top: 1px solid black;
-            padding-top: 3px; /* Reduced padding */
+            margin-top: 15px; /* Increased margin */
+            border-top: 1px dashed black;
+            padding-top: 8px; /* Increased padding */
         }
 
         .footer-text {
             font-weight: bold;
-            font-size: 11px; /* Larger size for thank you message */
-            letter-spacing: 0.5px; /* Better letter spacing */
+            font-size: 10px;
+            letter-spacing: 0;
+            text-transform: uppercase;
+            margin-bottom: 3px; /* Added margin */
         }
 
-        /* PRINT CONTROLS */
+        /* Space for paper cutting and spacing between items */
         @media print {
             html,
             body {
-                width: {{ request('size') == '57' ? '57mm' : '70mm' }}; /* Reduced from 78mm to 70mm */
+                width: {{ request('size') == '57' ? '57mm' : '65mm' }};
                 margin: 0 auto;
                 padding: 0;
                 -webkit-print-color-adjust: exact;
@@ -184,156 +206,161 @@
             body::after {
                 content: "";
                 display: block;
-                height: 10mm; /* Reduced from 15mm to 10mm */
+                height: 30mm; /* Increased height for better paper cutting */
+            }
+
+            /* Ensure each item has adequate space */
+            tr {
+                page-break-inside: avoid;
             }
         }
 
         .no-print {
             text-align: center;
-            margin-top: 15px; /* Reduced margin */
-            padding: 5px; /* Reduced padding */
+            margin-top: 15px;
+            padding: 5px;
             border-top: 1px dashed black;
         }
 
         .no-print button {
-            padding: 8px; /* Reduced padding */
-            margin: 0 3px; /* Reduced margin */
+            padding: 8px;
+            margin: 0 3px;
             cursor: pointer;
         }
     </style>
 </head>
 
 <body>
-<div class="invoice-box">
-    <!-- HEADER -->
-    <div class="header">
-        <div class="company-name">{{ $company['name'] }}</div>
-        <div>{{ $company['address'] }}</div>
-        <div>Telp: {{ $company['phone'] }}</div>
-    </div>
-
-    <!-- TRANSACTION INFO -->
-    <div class="info-section">
-        <div class="info-row">
-            <span class="info-label">INVOICE:</span>
-            <span>#{{ $transaction->invoice_number }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">TANGGAL:</span>
-            <span>{{ $transaction->invoice_date->format('d/m/Y H:i') }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">KASIR:</span>
-            <span>{{ $transaction->user->name }}</span>
+    <div class="invoice-box">
+        <!-- HEADER - Simple centered logo and text -->
+        <div class="header">
+            <div class="company-name">{{ $company['name'] }}</div>
+            <div>{{ $company['address'] }}</div>
+            <div>Telp: {{ $company['phone'] }}</div>
         </div>
 
-        @if ($transaction->customer && $transaction->customer_id != 1)
+        <!-- TRANSACTION INFO - Standard format -->
+        <div class="info-section">
             <div class="info-row">
-                <span class="info-label">PELANGGAN:</span>
-                <span>{{ $transaction->customer->name }}</span>
+                <span class="info-label">STRUK</span>
+                <span>#{{ $transaction->invoice_number }}</span>
             </div>
-        @endif
+            <div class="info-row">
+                <span class="info-label">TANGGAL</span>
+                <span>{{ $transaction->invoice_date->format('d/m/Y H:i') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">KASIR</span>
+                <span>{{ $transaction->user->name }}</span>
+            </div>
+
+            @if ($transaction->customer && $transaction->customer_id != 1)
+                <div class="info-row">
+                    <span class="info-label">PELANGGAN</span>
+                    <span>{{ $transaction->customer->name }}</span>
+                </div>
+            @endif
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ITEMS TABLE - Simplified traditional format -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>ITEM</th>
+                    <th>TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($transaction->items as $item)
+                    <tr>
+                        <td>
+                            <div class="item-name">{{ $item->product->name }}</div>
+                            <div class="item-detail">
+                                {{ number_format($item->quantity, 0) }} {{ $item->unit->name ?? 'pcs' }}
+                                x
+                                {{ number_format($item->unit_price, 0, ',', '.') }}
+                            </div>
+                        </td>
+                        <td>
+                            {{ number_format($item->subtotal, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <!-- SUMMARY SECTION - Traditional format with right-aligned values -->
+        <div class="summary-section">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>{{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+            </div>
+
+            @if ($transaction->discount_amount > 0)
+                <div class="summary-row">
+                    <span>Diskon</span>
+                    <span>-{{ number_format($transaction->discount_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            @if ($transaction->tax_amount > 0)
+                <div class="summary-row">
+                    <span>Pajak (10%)</span>
+                    <span>{{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            <!-- GRAND TOTAL - Emphasized with dashed borders -->
+            <div class="grand-total">
+                <div class="summary-row">
+                    <span>TOTAL BAYAR</span>
+                    <span>{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
+                </div>
+            </div>
+
+            <!-- PAYMENT INFO -->
+            <div class="payment-method">
+                {{ strtoupper($transaction->payment_type) }}
+            </div>
+
+            @if ($transaction->payment_type === 'cash')
+                <div class="summary-row">
+                    <span>Tunai</span>
+                    <span>{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Kembalian</span>
+                    <span>{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            @if ($transaction->reference_number)
+                <div class="summary-row">
+                    <span>No. Ref</span>
+                    <span>{{ $transaction->reference_number }}</span>
+                </div>
+            @endif
+        </div>
+
+        <!-- FOOTER - Traditional with thankful message -->
+        <div class="footer">
+            <div class="footer-text">TERIMA KASIH</div>
+            <div>Barang yang sudah dibeli tidak dapat dikembalikan</div>
+            <div style="font-size: 7px; margin-top: 3px">
+                {{ $transaction->store_id }}/{{ $transaction->id }}/{{ now()->format('YmdHi') }}
+            </div>
+        </div>
     </div>
 
-    <div class="divider"></div>
-
-    <!-- ITEMS TABLE -->
-    <table class="items-table">
-        <thead>
-        <tr>
-            <th style="width: 65%">ITEM</th>
-            <th style="width: 35%; text-align: right">TOTAL</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach ($transaction->items as $item)
-            <tr>
-                <td style="width: 65%">
-                    <div class="item-name">{{ $item->product->name }}</div>
-                    <div class="item-detail">
-                        {{ number_format($item->quantity, 0) }} {{ $item->unit->name ?? 'pcs' }}
-                        x
-                        {{ number_format($item->unit_price, 0, ',', '.') }}
-                    </div>
-                </td>
-                <td style="width: 35%; text-align: right">
-                    {{ number_format($item->subtotal, 0, ',', '.') }}
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
-
-    <div class="divider"></div>
-
-    <!-- SUMMARY SECTION -->
-    <div class="summary-section">
-        <div class="summary-row">
-            <span>Subtotal:</span>
-            <span>{{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
-        </div>
-
-        @if ($transaction->discount_amount > 0)
-            <div class="summary-row">
-                <span>Diskon:</span>
-                <span>-{{ number_format($transaction->discount_amount, 0, ',', '.') }}</span>
-            </div>
-        @endif
-
-        @if ($transaction->tax_amount > 0)
-            <div class="summary-row">
-                <span>Pajak (10%):</span>
-                <span>{{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
-            </div>
-        @endif
-
-        <!-- GRAND TOTAL -->
-        <div class="grand-total">
-            <div class="summary-row">
-                <span>TOTAL BAYAR:</span>
-                <span>{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
-            </div>
-        </div>
-
-        <!-- PAYMENT INFO -->
-        <div class="payment-method">
-            {{ strtoupper($transaction->payment_type) }}
-        </div>
-
-        @if ($transaction->payment_type === 'cash')
-            <div class="summary-row">
-                <span>Tunai:</span>
-                <span>{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
-            </div>
-            <div class="summary-row">
-                <span>Kembalian:</span>
-                <span>{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
-            </div>
-        @endif
-
-        @if ($transaction->reference_number)
-            <div class="summary-row">
-                <span>No. Ref:</span>
-                <span>{{ $transaction->reference_number }}</span>
-            </div>
-        @endif
+    <!-- PRINT CONTROLS - Not visible when printed -->
+    <div class="no-print">
+        <button onclick="window.print()">Cetak Struk</button>
+        <button onclick="window.close()">Tutup</button>
     </div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-        <div class="footer-text">TERIMA KASIH</div>
-        <div>Barang yang sudah dibeli tidak dapat dikembalikan</div>
-        <div style="font-size: 7px; margin-top: 3px">
-            {{ $transaction->store_id }}/{{ $transaction->id }}/{{ now()->format('YmdHi') }}
-        </div>
-    </div>
-</div>
-
-<!-- PRINT CONTROLS - Not visible when printed -->
-<div class="no-print">
-    <button onclick="window.print()">Cetak Struk</button>
-    <button onclick="window.close()">Tutup</button>
-</div>
 </body>
 
 </html>
