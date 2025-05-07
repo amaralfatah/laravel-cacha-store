@@ -1,6 +1,7 @@
 <!-- resources/views/pos/invoice.blade.php - Optimized for both thermal and dot matrix printers at 76mm -->
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -10,7 +11,8 @@
         /* Reset & Page Settings */
         @page {
             margin: 0;
-            size: 76mm auto; /* Fixed to 76mm as requested */
+            size: 76mm auto;
+            /* Fixed to 76mm as requested */
         }
 
         * {
@@ -25,7 +27,8 @@
             font-size: 12px;
             font-weight: bold;
             line-height: 1.2;
-            width: 72mm; /* 76mm - 4mm margin */
+            width: 72mm;
+            /* 76mm - 4mm margin */
             max-width: 72mm;
             padding: 2mm 2mm;
             color: black;
@@ -134,35 +137,44 @@
         .total-row {
             display: flex;
             margin: 2px 0;
+            width: 100%;
         }
 
         .total-label {
-            width: 100px;
+            width: 88px;
+            /* Increased width for consistent alignment */
             text-align: left;
         }
 
         .total-colon {
-            width: 10px;
+            width: 8px;
             text-align: left;
         }
 
         .total-value {
-            flex: 1;
+            width: calc(100% - 96px);
+            /* Adjusted to accommodate label and colon */
             text-align: right;
         }
 
-        /* Footer */
+        /* Footer - improved to prevent cutoff */
         .footer {
             text-align: center;
             margin-top: 5px;
             margin-bottom: 5px;
             font-size: 11px;
             line-height: 1.3;
+            width: 100%;
+            /* Critical for preventing cutoff */
+            overflow: hidden;
+            word-wrap: break-word;
         }
 
         /* Print Specific Styles */
         @media print {
-            html, body {
+
+            html,
+            body {
                 width: 76mm !important;
                 max-width: 76mm !important;
                 margin: 0 auto !important;
@@ -264,19 +276,21 @@
 
             <div class="divider"></div>
 
-            <!-- PRODUCTS - Exact format like the thermal receipt example -->
+            <!-- PRODUCTS - Exact format with consistent formatting -->
             @foreach ($transaction->items as $item)
                 <div class="product-name">{{ strtoupper($item->product->name) }}</div>
                 <div class="product-price-row">
-                    <div class="product-quantity">{{ number_format($item->quantity, 2) }} {{ $item->unit->name ?? 'PCS' }} x {{ number_format($item->unit_price, 0, ',', '.') }} :</div>
+                    <div class="product-quantity">{{ number_format($item->quantity, 2) }}
+                        {{ $item->unit->name ?? 'PCS' }} x {{ number_format($item->unit_price, 0, ',', '.') }} :</div>
                     <div class="product-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
                 </div>
 
                 @if ($item->discount > 0)
-                <div class="product-price-row">
-                    <div class="product-quantity" style="padding-left: 20px;">Potongan :</div>
-                    <div class="product-total">-{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
-                </div>
+                    <div class="product-price-row">
+                        <div class="product-quantity" style="padding-left: 20px;">Potongan :</div>
+                        <div class="product-total">-{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}
+                        </div>
+                    </div>
                 @endif
             @endforeach
 
@@ -311,23 +325,23 @@
             </div>
 
             @if ($transaction->payment_type == 'cash')
-            <div class="total-row">
-                <span class="total-label">Tunai</span>
-                <span class="total-colon">:</span>
-                <span class="total-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
-            </div>
+                <div class="total-row">
+                    <span class="total-label">Tunai</span>
+                    <span class="total-colon">:</span>
+                    <span class="total-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
+                </div>
 
-            <div class="total-row">
-                <span class="total-label">Kembali</span>
-                <span class="total-colon">:</span>
-                <span class="total-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
-            </div>
+                <div class="total-row">
+                    <span class="total-label">Kembali</span>
+                    <span class="total-colon">:</span>
+                    <span class="total-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+                </div>
             @else
-            <div class="total-row">
-                <span class="total-label">Pembayaran</span>
-                <span class="total-colon">:</span>
-                <span class="total-value">Transfer</span>
-            </div>
+                <div class="total-row">
+                    <span class="total-label">Pembayaran</span>
+                    <span class="total-colon">:</span>
+                    <span class="total-value">Transfer</span>
+                </div>
             @endif
 
             <div class="divider"></div>
@@ -357,15 +371,16 @@
         }
 
         @if ($setting->auto_print ?? false)
-        window.onload = function() {
-            setTimeout(function() {
-                printInvoice();
+            window.onload = function() {
                 setTimeout(function() {
-                    window.close();
-                }, 1000);
-            }, 300);
-        };
+                    printInvoice();
+                    setTimeout(function() {
+                        window.close();
+                    }, 1000);
+                }, 300);
+            };
         @endif
     </script>
 </body>
+
 </html>
