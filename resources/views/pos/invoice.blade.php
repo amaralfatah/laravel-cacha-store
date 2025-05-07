@@ -3,19 +3,18 @@
 <html>
 
 <head>
-    <title>Invoice #{{ $transaction->invoice_number }}</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ isset($is_test) ? 'Test Print' : 'Invoice ' . $transaction->invoice_number }}</title>
 
     <style>
-        /* Page Settings - Adjusted for 78mm dot matrix printer */
+        /* Page Settings - Precisely optimized for 80mm dot matrix printer */
         @page {
             margin: 0;
-            size: 78mm auto;
-            /* Set width to 78mm for dot matrix printer */
+            size: {{ $setting->paper_size ?? '80mm' }} auto;
+            /* Set width based on settings, defaulting to 80mm */
         }
 
-        /* Reset and base styles */
+        /* Reset and base styles with improved precision */
         * {
             margin: 0;
             padding: 0;
@@ -26,59 +25,85 @@
             /* Optimized font settings for dot matrix */
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
-            /* Increased font size for better readability on dot matrix */
-            line-height: 1.4;
-            /* Increased line height for dot matrix */
-            width: 76mm;
-            /* Adjusted width for content area */
-            max-width: 76mm;
-            padding: 2mm;
-            /* Increased padding */
+            /* Better readability on dot matrix */
+            line-height: 1.5;
+            /* Increased line height for better separation */
+            letter-spacing: 0.3px;
+            /* Slightly increased letter spacing to prevent character overlap */
+            width: calc({{ str_replace('mm', '', $setting->paper_size ?? '80') - 6 }}mm);
+            /* Reduced width to ensure content stays within printable area */
+            max-width: calc({{ str_replace('mm', '', $setting->paper_size ?? '80') - 6 }}mm);
+            padding: 3mm 3mm;
+            /* Increased and evenly distributed padding */
             color: black;
             margin: 0 auto;
+            /* Center alignment */
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             font-weight: bold;
-            /* Kept bold for better visibility on dot matrix */
+            /* Bold text to avoid faded/broken characters */
         }
 
-        /* Core container */
+        /* Core container - improved centering and stability */
         .invoice-box {
-            width: 72mm;
-            /* Increased width */
+            width: calc({{ str_replace('mm', '', $setting->paper_size ?? '80') - 10 }}mm);
+            /* Adjusted width for better centering */
             padding: 0;
             margin: 0 auto;
+            position: relative;
+            /* Added positioning context */
+            left: 0;
+            /* Ensure left alignment at start */
+            transform: translateX(0);
+            /* No transformation by default */
         }
 
-        /* HEADER SECTION */
+        /* HEADER SECTION - improved for dot matrix */
         .header {
             text-align: center;
-            padding: 2px 0 3px 0;
-            /* Increased padding */
-            margin-bottom: 5px;
-            /* Increased margin */
+            padding: 3px 0 4px 0;
+            /* Better padding for header */
+            margin-bottom: 6px;
+            /* Increased margin for better separation */
             width: 100%;
         }
 
         .company-name {
             font-weight: bold;
-            margin-bottom: 2px;
-            /* Increased spacing */
+            margin-bottom: 3px;
+            /* Better spacing */
             text-transform: uppercase;
             width: 100%;
-            font-size: 14px;
-            /* Larger font for company name */
+            font-size: 16px;
+            /* Larger font for better visibility */
+            letter-spacing: 0.5px;
+            /* Better character separation */
         }
 
-        /* CLEAR DIVIDERS - Dot matrix friendly */
+        /* CLEAR DIVIDERS - Optimized for dot matrix */
         .divider {
             border-bottom: none;
             border-top: none;
             height: 1px;
+            background-image: repeating-linear-gradient(to right, #000, #000 3px, transparent 3px, transparent 6px);
+            /* Optimized dot pattern - shorter spacing for clearer printing */
+            margin: 8px 0;
+            /* Increased margin for better section separation */
+            clear: both;
+            width: 100%;
+            position: relative;
+            left: 0;
+            /* Ensure proper alignment */
+        }
+
+        /* Add more prominent dividers for clearer section separation */
+        .footer-divider {
+            border-bottom: none;
+            border-top: none;
+            height: 2px;
+            /* Slightly thicker for better visibility */
             background-image: repeating-linear-gradient(to right, #000, #000 4px, transparent 4px, transparent 8px);
-            /* Clearer dot pattern for dot matrix */
-            margin: 6px 0;
-            /* Increased margin */
+            margin: 8px 0;
             clear: both;
             width: 100%;
         }
@@ -246,34 +271,86 @@
             width: 100%;
         }
 
-        /* PRINT CONTROLS */
+        /* Text utilities */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .mb-1 {
+            margin-bottom: 5px;
+        }
+
+        .mb-2 {
+            margin-bottom: 10px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+        }
+
+        table.items td {
+            padding: 3px 0;
+        }
+
+        /* PRINT CONTROLS - Enhanced for dot matrix printing */
         @media print {
 
             html,
             body {
-                width: 78mm;
-                max-width: 78mm;
+                width: {{ $setting->paper_size ?? '80mm' }};
+                max-width: {{ $setting->paper_size ?? '80mm' }};
                 margin: 0 auto;
-                padding: 2mm;
+                padding: 3mm 3mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                font-weight: bold !important;
+                /* Force bold in print */
+                letter-spacing: 0.3px !important;
+                /* Force letter spacing in print */
             }
 
             .invoice-box {
-                width: 74mm;
-                /* Adjusted width */
+                width: calc({{ str_replace('mm', '', $setting->paper_size ?? '80') - 10 }}mm);
+                /* Adjusted width for better centering */
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                /* Center perfectly on print */
             }
 
             .no-print {
                 display: none;
             }
 
+            /* Ensure all text is bold for better print quality */
+            * {
+                font-weight: bold !important;
+                color: black !important;
+            }
+
+            /* Better contrast for important elements */
+            .company-name,
+            .item-name,
+            .summary-row.font-bold {
+                font-weight: 900 !important;
+                /* Extra bold */
+            }
+
             /* Space for paper cutting */
             body::after {
                 content: "";
                 display: block;
-                height: 15mm;
-                /* Increased height */
+                height: 18mm;
+                /* Increased height for better paper cutting space */
             }
         }
 
@@ -304,99 +381,133 @@
         <div class="header">
             <div class="company-name">{{ $company['name'] }}</div>
             <div>{{ $company['address'] }}</div>
-            <div>Telp/WA {{ $company['phone'] }}</div>
-        </div>
-
-        <!-- TRANSACTION INFO -->
-        <div class="info-section">
-            <div class="info-row">
-                <span class="info-label">No</span>
-                <span class="info-colon">:</span>
-                <span class="info-value">{{ $transaction->invoice_number }}</span>
-                <span class="info-date">{{ $transaction->invoice_date->format('d/m/Y') }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Kasir</span>
-                <span class="info-colon">:</span>
-                <span class="info-value">{{ $transaction->user->name }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Pembaya</span>
-                <span class="info-colon">:</span>
-                <span class="info-value">{{ strtoupper($transaction->payment_type) }}</span>
-            </div>
+            <div>Telp: {{ $company['phone'] }}</div>
         </div>
 
         <div class="divider"></div>
 
-        <!-- ITEMS -->
-        <div class="items-section">
-            @foreach ($transaction->items as $item)
-                <div class="item-row">
-                    <div class="item-name">{{ strtoupper($item->product->name) }}</div>
-                    <div class="item-detail">
-                        <div class="item-quantity">{{ number_format($item->quantity, 2) }}
-                            {{ strtoupper($item->unit->name ?? 'PCS') }} x
-                            {{ number_format($item->unit_price, 0, ',', '.') }}</div>
-                        <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
-                    </div>
-                    @if ($item->discount > 0)
-                        <div class="item-discount">
-                            <div class="item-discount-label">Potongan</div>
-                            <div class="item-discount-value">
-                                -{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
+        @if (isset($is_test))
+            <!-- TEST PRINT SECTION -->
+            <div class="text-center mb-2">
+                <div class="font-bold">TEST PRINT</div>
+                <div>{{ $test_time->format('d/m/Y H:i:s') }}</div>
+            </div>
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">Paper Size</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $setting->paper_size }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Printer</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $setting->printer_name ?? 'Default Printer' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Auto Print</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $setting->auto_print ? 'Yes' : 'No' }}</span>
+                </div>
+            </div>
+        @else
+            <!-- TRANSACTION INFO -->
+            <div class="info-section">
+                <div class="info-row">
+                    <span class="info-label">No Invoice</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $transaction->invoice_number }}</span>
+                    <span class="info-date">{{ $transaction->created_at->format('d/m/Y') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tanggal</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $transaction->created_at->format('H:i:s') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Kasir</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $transaction->user->name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Customer</span>
+                    <span class="info-colon">:</span>
+                    <span class="info-value">{{ $transaction->customer->name }}</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- ITEMS -->
+            <div class="items-section">
+                @foreach ($transaction->items as $item)
+                    <div class="item-row">
+                        <div class="item-name">{{ $item->product->name }}</div>
+                        <div class="item-detail">
+                            <div class="item-quantity">{{ number_format($item->quantity, 2) }}
+                                {{ $item->unit->name ?? 'PCS' }} x
+                                {{ number_format($item->unit_price, 0, ',', '.') }}</div>
+                            <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
                         </div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- SUMMARY SECTION -->
-        <div class="summary-section">
-            <div class="summary-row">
-                <span class="summary-label">Total Jenis</span>
-                <span class="summary-colon">:</span>
-                <span class="summary-value">{{ $transaction->items->count() }}</span>
+                    </div>
+                @endforeach
             </div>
-            <div class="summary-row">
-                <span class="summary-label">Total Item</span>
-                <span class="summary-colon">:</span>
-                <span class="summary-value">{{ number_format($transaction->items->sum('quantity'), 2) }}</span>
-            </div>
-        </div>
 
-        <div class="divider"></div>
+            <div class="divider"></div>
 
-        <!-- PAYMENT INFO -->
-        <div class="payment-info">
-            <div class="summary-row">
-                <span class="summary-label">Total</span>
-                <span class="summary-colon">:</span>
-                <span class="summary-value">{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
-            </div>
-            @if ($transaction->payment_type === 'cash')
+            <!-- SUMMARY SECTION -->
+            <div class="payment-info">
                 <div class="summary-row">
-                    <span class="summary-label">Tunai</span>
+                    <span class="summary-label">Subtotal</span>
                     <span class="summary-colon">:</span>
-                    <span class="summary-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
+                    <span class="summary-value">{{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
                 </div>
-                <div class="summary-row">
-                    <span class="summary-label">Kembali</span>
+                @if ($transaction->tax_amount > 0)
+                    <div class="summary-row">
+                        <span class="summary-label">Pajak</span>
+                        <span class="summary-colon">:</span>
+                        <span class="summary-value">{{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
+                    </div>
+                @endif
+                @if ($transaction->discount_amount > 0)
+                    <div class="summary-row">
+                        <span class="summary-label">Diskon</span>
+                        <span class="summary-colon">:</span>
+                        <span
+                            class="summary-value">{{ number_format($transaction->discount_amount, 0, ',', '.') }}</span>
+                    </div>
+                @endif
+                <div class="summary-row font-bold">
+                    <span class="summary-label">Total</span>
                     <span class="summary-colon">:</span>
-                    <span class="summary-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+                    <span class="summary-value">{{ number_format($transaction->final_amount, 0, ',', '.') }}</span>
                 </div>
-            @endif
-        </div>
+                @if ($transaction->payment_type == 'cash')
+                    <div class="summary-row">
+                        <span class="summary-label">Tunai</span>
+                        <span class="summary-colon">:</span>
+                        <span class="summary-value">{{ number_format($transaction->cash_amount, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Kembali</span>
+                        <span class="summary-colon">:</span>
+                        <span
+                            class="summary-value">{{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+                    </div>
+                @else
+                    <div class="summary-row">
+                        <span class="summary-label">Pembayaran</span>
+                        <span class="summary-colon">:</span>
+                        <span class="summary-value">Transfer</span>
+                    </div>
+                @endif
+            </div>
 
-        <div class="footer-divider"></div>
-        <div class="footer-divider"></div>
+            <div class="footer-divider"></div>
+        @endif
 
         <!-- FOOTER -->
         <div class="footer">
-            <div>Terima kasih telah belanja di toko {{ $company['name'] }}</div>
-            <div>Jangan lupa kunjungi tokocacha.com</div>
+            <div>Terima kasih atas kunjungan Anda</div>
         </div>
 
         <div class="footer-divider"></div>
@@ -407,6 +518,37 @@
         <button onclick="window.print()">Cetak Struk</button>
         <button onclick="window.close()">Tutup</button>
     </div>
+
+    @if ($setting->auto_print ?? false)
+        <script>
+            window.onload = function() {
+                // Add a small delay before printing to ensure full rendering
+                setTimeout(function() {
+                    window.print();
+                    // Add longer delay before closing to ensure print completes
+                    setTimeout(function() {
+                        window.close();
+                    }, 1000);
+                }, 300);
+            };
+        </script>
+    @endif
+
+    <!-- Script to fix centering issues on problematic browsers -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force repaint to stabilize layout before printing
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // Force reflow
+            document.body.style.display = '';
+
+            // Add print listener to ensure proper rendering
+            window.addEventListener('beforeprint', function() {
+                // Set explicit width one more time before printing
+                document.body.style.width = '{{ $setting->paper_size ?? '80mm' }}';
+            });
+        });
+    </script>
 </body>
 
 </html>
