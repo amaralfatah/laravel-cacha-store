@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - With date overflow fix -->
+<!-- resources/views/pos/invoice.blade.php - Optimized with no left margin when printing -->
 <!DOCTYPE html>
 <html>
 
@@ -8,11 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Slightly increased width */
+        /* Page Settings - Precisely set for thermal printers */
         @page {
             margin: 0;
+            padding: 0;
             size: 62mm auto;
-            /* Increased width for thermal printers */
         }
 
         /* Reset and base styles */
@@ -23,39 +23,43 @@
         }
 
         body {
-            /* Main font settings - this controls all text */
+            /* Main font settings - optimized for thermal printers to match example */
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
-            /* Main font size control */
             line-height: 1.2;
             width: 60mm;
-            /* Increased width */
             max-width: 60mm;
-            padding: 1mm;
+            padding: 1mm 0;
+            /* CRITICAL: No horizontal padding/margin */
             color: black;
-            margin: 0 auto;
+            margin: 0;
+            /* No margin */
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            font-weight: bold;
+            /* Set normal weight as default to match thermal printer appearance */
+            font-weight: normal;
         }
 
         /* Core container */
         .invoice-box {
-            width: 58mm;
+            width: 60mm;
+            /* Match body width */
             padding: 0;
-            margin: 0 auto;
+            margin: 0;
+            /* No margin */
         }
 
-        /* HEADER SECTION */
+        /* HEADER SECTION - Match styling from example */
         .header {
             text-align: center;
-            padding: 1px 0 2px 0;
-            margin-bottom: 4px;
+            padding: 0 0 2px 0;
+            margin-bottom: 3px;
             width: 100%;
+            font-weight: normal;
         }
 
         .company-name {
-            font-weight: bold;
+            font-weight: normal;
             margin-bottom: 1px;
             text-transform: uppercase;
             width: 100%;
@@ -69,10 +73,12 @@
             width: 100%;
         }
 
-        /* TRANSACTION INFO - More compact */
+        /* TRANSACTION INFO - Compact with no left margin */
         .info-section {
             margin-bottom: 4px;
             width: 100%;
+            padding: 0 1mm;
+            /* Only add minimal horizontal padding here */
         }
 
         .info-row {
@@ -82,7 +88,7 @@
         }
 
         .info-label {
-            width: 35px;
+            width: 40px;
             text-align: left;
         }
 
@@ -92,112 +98,124 @@
         }
 
         .info-value {
-            width: calc(100% - 103px);
+            width: calc(100% - 100px);
             text-align: left;
         }
 
         .info-date {
-            width: 65px;
-            /* Increased from 60px to 65px */
+            width: 90px;
             text-align: right;
-            font-size: 10px;
-            /* Slightly smaller font for date */
+            font-size: 11px;
+            font-weight: normal;
         }
 
-        /* ITEMS SECTION - Compact */
+        /* ITEMS SECTION - EXACT LAYOUT MATCHING RECEIPT EXAMPLE */
         .items-section {
             width: 100%;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
+            padding: 0 1mm;
         }
 
         .item-row {
-            margin-bottom: 4px;
+            margin-bottom: 1px;
             width: 100%;
         }
 
+        /* Product name styling */
         .item-name {
-            font-weight: bold;
             text-transform: uppercase;
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 0;
+            font-weight: normal;
         }
 
-        .item-detail {
+        /* Price line with quantity, unit, price and subtotal */
+        .item-price-line {
             display: flex;
+            justify-content: space-between;
             width: 100%;
+            margin-bottom: 0;
         }
 
-        .item-quantity {
-            width: 60%;
+        .item-quantity-info {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 70%;
             text-align: left;
+            font-weight: normal;
         }
 
-        .item-total {
-            width: 40%;
+        .item-subtotal-value {
+            width: 30%;
             text-align: right;
+            font-weight: normal;
         }
 
+        /* Discount display with proper right alignment under subtotal */
         .item-discount {
             display: flex;
             width: 100%;
+            justify-content: flex-end;
         }
 
         .item-discount-label {
-            width: 60%;
-            text-align: left;
-            padding-left: 20px;
+            text-align: right;
+            padding-right: 8px;
+            font-weight: normal;
         }
 
         .item-discount-value {
-            width: 40%;
+            width: 70px; /* Match with subtotal value width */
             text-align: right;
+            font-weight: normal;
         }
 
-        /* SUMMARY SECTION - Compact */
-        .summary-section {
-            margin-top: 4px;
-            margin-bottom: 4px;
+        /* SUMMARY AND PAYMENT SECTIONS - MATCH EXAMPLE */
+        .summary-section, .payment-info {
+            margin-top: 3px;
+            margin-bottom: 3px;
             width: 100%;
+            padding: 0 1mm;
         }
 
-        .summary-row {
+        .summary-row, .info-row {
             display: flex;
-            margin: 1px 0;
+            margin: 0;
             width: 100%;
+            font-weight: normal;
         }
 
-        .summary-label {
-            width: 70px;
+        .summary-label, .info-label {
+            width: 100px;
             text-align: left;
+            font-weight: normal;
         }
 
-        .summary-colon {
+        .summary-colon, .info-colon {
             width: 8px;
             text-align: left;
+            font-weight: normal;
         }
 
-        .summary-value {
+        .summary-value, .info-value {
             width: calc(100% - 78px);
             text-align: right;
-        }
-
-        /* PAYMENT INFO */
-        .payment-info {
-            margin-top: 4px;
-            margin-bottom: 4px;
-            width: 100%;
+            font-weight: normal;
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
-            margin-top: 4px;
-            padding-top: 2px;
+            margin-top: 3px;
+            padding-top: 1px;
             padding-bottom: 2px;
-            line-height: 1.2;
+            line-height: 1.3;
             width: 100%;
+            font-weight: normal;
         }
 
         .footer-divider {
@@ -217,20 +235,37 @@
 
             html,
             body {
-                width: 62mm;
-                max-width: 62mm;
-                margin: 0 auto;
-                padding: 1mm;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                width: 62mm !important;
+                max-width: 62mm !important;
+                margin: 0 !important;
+                /* No margin */
+                padding: 0 !important;
+                /* No padding */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .invoice-box {
-                width: 58mm;
+                width: 62mm !important;
+                margin: 0 !important;
+                /* No margin */
+                padding: 0 !important;
+                /* No padding */
+                position: absolute !important;
+                left: 0 !important;
+                /* Force left alignment */
+            }
+
+            .info-section,
+            .items-section,
+            .summary-section,
+            .payment-info {
+                padding: 0 1mm !important;
+                /* Minimal padding */
             }
 
             .no-print {
-                display: none;
+                display: none !important;
             }
 
             /* Space for paper cutting */
@@ -238,6 +273,11 @@
                 content: "";
                 display: block;
                 height: 10mm;
+            }
+
+            /* Force all text to be bold for better thermal printing */
+            * {
+                font-weight: bold !important;
             }
         }
 
@@ -266,44 +306,54 @@
             <div class="text-tight">Telp/WA {{ $company['phone'] }}</div>
         </div>
 
-        <!-- TRANSACTION INFO -->
+        <!-- TRANSACTION INFO - MATCH EXAMPLE -->
         <div class="info-section">
             <div class="info-row">
                 <span class="info-label">No</span>
                 <span class="info-colon">:</span>
-                <span class="info-value text-tight">{{ $transaction->invoice_number }}</span>
-                <span class="info-date">{{ $transaction->invoice_date->format('d/m/Y') }}</span>
+                <span class="info-value">{{ $transaction->invoice_number }}</span>
+                <span class="info-date">#{{ $transaction->created_at->format('d/m/Y') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Kasir</span>
                 <span class="info-colon">:</span>
-                <span class="info-value text-tight">{{ $transaction->user->name }}</span>
+                <span class="info-value">{{ $transaction->user->name }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Pel.</span>
                 <span class="info-colon">:</span>
-                <span class="info-value text-tight">{{ strtoupper($transaction->payment_type) }}</span>
+                <span class="info-value">{{ strtoupper($transaction->payment_type === 'cash' ? 'Tunai' : $transaction->payment_type) }}</span>
             </div>
         </div>
 
         <div class="divider"></div>
 
-        <!-- ITEMS -->
+        <!-- ITEMS - EXACT LAYOUT WITH RIGHT-ALIGNED DISCOUNT -->
         <div class="items-section">
             @foreach ($transaction->items as $item)
                 <div class="item-row">
-                    <div class="item-name text-tight">{{ strtoupper($item->product->name) }}</div>
-                    <div class="item-detail">
-                        <div class="item-quantity text-tight">{{ number_format($item->quantity, 2) }}
-                            {{ strtoupper($item->unit->name ?? 'PCS') }} x
-                            {{ number_format($item->unit_price, 0, ',', '.') }}</div>
-                        <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
+                    <!-- Product name on first line -->
+                    <div class="item-name">
+                        {{ strtoupper($item->product->name) }}
                     </div>
+
+                    <!-- Quantity, unit, price, and subtotal on second line -->
+                    <div class="item-price-line">
+                        <div class="item-quantity-info">
+                            {{ number_format($item->quantity, 2) }} {{ strtoupper($item->unit->code ?? 'PCS') }} x {{ number_format($item->unit_price, 0, ',', '.') }} :
+                        </div>
+                        <div class="item-subtotal-value">
+                            {{ number_format($item->subtotal, 0, ',', '.') }}
+                        </div>
+                    </div>
+
+                    <!-- Discount if applicable - right aligned under subtotal -->
                     @if ($item->discount > 0)
                         <div class="item-discount">
-                            <div class="item-discount-label">Potongan</div>
+                            <div class="item-discount-label">Potongan :</div>
                             <div class="item-discount-value">
-                                -{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}</div>
+                                -{{ number_format($item->discount * $item->quantity, 0, ',', '.') }}
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -312,7 +362,7 @@
 
         <div class="divider"></div>
 
-        <!-- SUMMARY SECTION -->
+        <!-- SUMMARY SECTION - MATCH RECEIPT EXAMPLE -->
         <div class="summary-section">
             <div class="summary-row">
                 <span class="summary-label">Total Jenis</span>
@@ -324,11 +374,16 @@
                 <span class="summary-colon">:</span>
                 <span class="summary-value">{{ number_format($transaction->items->sum('quantity'), 2) }}</span>
             </div>
+            <div class="summary-row">
+                <span class="summary-label">Total Jual</span>
+                <span class="summary-colon">:</span>
+                <span class="summary-value">{{ number_format($transaction->items->sum('subtotal'), 0, ',', '.') }}</span>
+            </div>
         </div>
 
         <div class="divider"></div>
 
-        <!-- PAYMENT INFO -->
+        <!-- PAYMENT INFO - MATCH RECEIPT EXAMPLE -->
         <div class="payment-info">
             <div class="summary-row">
                 <span class="summary-label">Total</span>
@@ -352,20 +407,40 @@
         <div class="footer-divider"></div>
         <div class="footer-divider"></div>
 
-        <!-- FOOTER -->
+        <!-- FOOTER - MATCH RECEIPT EXAMPLE -->
         <div class="footer">
-            <div class="text-tight">Terima kasih telah belanja di toko {{ $company['name'] }}</div>
-            <div class="text-tight">Jangan lupa kunjungi tokocacha.com</div>
+            <div>Terima kasih telah belanja di toko {{ $company['name'] }}</div>
+            <div>---Kami tunggu kedatangannya kembali---</div>
         </div>
 
         <div class="footer-divider"></div>
     </div>
 
-    <!-- PRINT CONTROLS -->
-    <div class="no-print">
-        <button onclick="window.print()">Cetak Struk</button>
-        <button onclick="window.close()">Tutup</button>
-    </div>
+    <!-- Print script with enhanced zero margin handling -->
+    <script>
+        function printInvoice() {
+            // Force exact positioning before printing
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
+            document.querySelector('.invoice-box').style.position = 'absolute';
+            document.querySelector('.invoice-box').style.left = '0';
+
+            setTimeout(function() {
+                window.print();
+            }, 200);
+        }
+
+        @if ($setting->auto_print ?? false)
+            window.onload = function() {
+                setTimeout(function() {
+                    printInvoice();
+                    setTimeout(function() {
+                        window.close();
+                    }, 1000);
+                }, 300);
+            };
+        @endif
+    </script>
 </body>
 
 </html>
