@@ -1,4 +1,4 @@
-<!-- resources/views/pos/invoice.blade.php - Optimized for 78mm dot matrix printer -->
+<!-- resources/views/pos/invoice.blade.php - With date overflow fix -->
 <!DOCTYPE html>
 <html>
 
@@ -8,11 +8,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        /* Page Settings - Adjusted for 78mm dot matrix printer */
+        /* Page Settings - Slightly increased width */
         @page {
             margin: 0;
-            size: 78mm auto;
-            /* Set width to 78mm for dot matrix printer */
+            size: 62mm auto;
+            /* Increased width for thermal printers */
         }
 
         /* Reset and base styles */
@@ -23,29 +23,25 @@
         }
 
         body {
-            /* Optimized font settings for dot matrix */
+            /* Main font settings - this controls all text */
             font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            /* Increased font size for better readability on dot matrix */
-            line-height: 1.4;
-            /* Increased line height for dot matrix */
-            width: 76mm;
-            /* Adjusted width for content area */
-            max-width: 76mm;
-            padding: 2mm;
-            /* Increased padding */
+            font-size: 11px;
+            /* Main font size control */
+            line-height: 1.2;
+            width: 60mm;
+            /* Increased width */
+            max-width: 60mm;
+            padding: 1mm;
             color: black;
             margin: 0 auto;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             font-weight: bold;
-            /* Kept bold for better visibility on dot matrix */
         }
 
         /* Core container */
         .invoice-box {
-            width: 72mm;
-            /* Increased width */
+            width: 58mm;
             padding: 0;
             margin: 0 auto;
         }
@@ -53,85 +49,69 @@
         /* HEADER SECTION */
         .header {
             text-align: center;
-            padding: 2px 0 3px 0;
-            /* Increased padding */
-            margin-bottom: 5px;
-            /* Increased margin */
+            padding: 1px 0 2px 0;
+            margin-bottom: 4px;
             width: 100%;
         }
 
         .company-name {
             font-weight: bold;
-            margin-bottom: 2px;
-            /* Increased spacing */
+            margin-bottom: 1px;
             text-transform: uppercase;
             width: 100%;
-            font-size: 14px;
-            /* Larger font for company name */
         }
 
-        /* CLEAR DIVIDERS - Dot matrix friendly */
+        /* CLEAR DIVIDERS */
         .divider {
-            border-bottom: none;
-            border-top: none;
-            height: 1px;
-            background-image: repeating-linear-gradient(to right, #000, #000 4px, transparent 4px, transparent 8px);
-            /* Clearer dot pattern for dot matrix */
-            margin: 6px 0;
-            /* Increased margin */
+            border-bottom: 1px dotted black;
+            margin: 4px 0;
             clear: both;
             width: 100%;
         }
 
-        /* TRANSACTION INFO - Adapted for 78mm */
+        /* TRANSACTION INFO - More compact */
         .info-section {
-            margin-bottom: 6px;
-            /* Increased margin */
+            margin-bottom: 4px;
             width: 100%;
         }
 
         .info-row {
             display: flex;
-            margin: 2px 0;
-            /* Increased margin */
+            margin: 1px 0;
             width: 100%;
         }
 
         .info-label {
-            width: 70px;
-            /* Increased width for labels */
+            width: 35px;
             text-align: left;
         }
 
         .info-colon {
-            width: 10px;
+            width: 8px;
             text-align: left;
         }
 
         .info-value {
-            width: calc(100% - 150px);
-            /* Adjusted calculation */
+            width: calc(100% - 103px);
             text-align: left;
         }
 
         .info-date {
-            width: 70px;
-            /* Increased width for date */
+            width: 65px;
+            /* Increased from 60px to 65px */
             text-align: right;
-            font-size: 11px;
-            /* Increased font size slightly */
+            font-size: 10px;
+            /* Slightly smaller font for date */
         }
 
-        /* ITEMS SECTION - Adapted for 78mm */
+        /* ITEMS SECTION - Compact */
         .items-section {
             width: 100%;
-            margin-bottom: 6px;
-            /* Increased margin */
+            margin-bottom: 4px;
         }
 
         .item-row {
-            margin-bottom: 5px;
-            /* Increased margin */
+            margin-bottom: 4px;
             width: 100%;
         }
 
@@ -147,19 +127,15 @@
         .item-detail {
             display: flex;
             width: 100%;
-            margin-top: 1px;
-            /* Added margin */
         }
 
         .item-quantity {
-            width: 65%;
-            /* Adjusted width */
+            width: 60%;
             text-align: left;
         }
 
         .item-total {
-            width: 35%;
-            /* Adjusted width */
+            width: 40%;
             text-align: right;
         }
 
@@ -169,81 +145,71 @@
         }
 
         .item-discount-label {
-            width: 65%;
-            /* Adjusted width */
+            width: 60%;
             text-align: left;
             padding-left: 20px;
         }
 
         .item-discount-value {
-            width: 35%;
-            /* Adjusted width */
+            width: 40%;
             text-align: right;
         }
 
-        /* SUMMARY SECTION - Adapted for 78mm */
+        /* SUMMARY SECTION - Compact */
         .summary-section {
-            margin-top: 6px;
-            margin-bottom: 6px;
-            /* Increased margins */
+            margin-top: 4px;
+            margin-bottom: 4px;
             width: 100%;
         }
 
         .summary-row {
             display: flex;
-            margin: 2px 0;
-            /* Increased margin */
+            margin: 1px 0;
             width: 100%;
         }
 
         .summary-label {
-            width: 90px;
-            /* Increased width */
+            width: 70px;
             text-align: left;
         }
 
         .summary-colon {
-            width: 10px;
+            width: 8px;
             text-align: left;
         }
 
         .summary-value {
-            width: calc(100% - 100px);
-            /* Adjusted calculation */
+            width: calc(100% - 78px);
             text-align: right;
         }
 
         /* PAYMENT INFO */
         .payment-info {
-            margin-top: 6px;
-            margin-bottom: 6px;
-            /* Increased margins */
+            margin-top: 4px;
+            margin-bottom: 4px;
             width: 100%;
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
-            margin-top: 6px;
-            /* Increased margin */
-            padding-top: 3px;
-            padding-bottom: 3px;
-            /* Increased padding */
-            line-height: 1.4;
-            /* Increased line height */
+            margin-top: 4px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            line-height: 1.2;
             width: 100%;
         }
 
         .footer-divider {
-            border-bottom: none;
-            border-top: none;
-            height: 1px;
-            background-image: repeating-linear-gradient(to right, #000, #000 4px, transparent 4px, transparent 8px);
-            /* Clearer dot pattern for dot matrix */
-            margin: 6px 0;
-            /* Increased margin */
+            border-bottom: 1px dotted black;
+            margin: 4px 0;
             clear: both;
             width: 100%;
+        }
+
+        /* Tighter text */
+        .text-tight {
+            letter-spacing: -0.2px;
         }
 
         /* PRINT CONTROLS */
@@ -251,17 +217,16 @@
 
             html,
             body {
-                width: 78mm;
-                max-width: 78mm;
+                width: 62mm;
+                max-width: 62mm;
                 margin: 0 auto;
-                padding: 2mm;
+                padding: 1mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
             .invoice-box {
-                width: 74mm;
-                /* Adjusted width */
+                width: 58mm;
             }
 
             .no-print {
@@ -272,27 +237,21 @@
             body::after {
                 content: "";
                 display: block;
-                height: 15mm;
-                /* Increased height */
+                height: 10mm;
             }
         }
 
         .no-print {
             text-align: center;
-            margin-top: 10px;
-            /* Increased margin */
-            padding: 5px;
-            /* Increased padding */
-            border-top: 1px dashed black;
-            /* Changed to dashed */
+            margin-top: 8px;
+            padding: 3px;
+            border-top: 1px dotted black;
             width: 100%;
         }
 
         .no-print button {
-            padding: 6px 12px;
-            /* Increased button size */
-            margin: 0 3px;
-            /* Increased margin */
+            padding: 5px;
+            margin: 0 2px;
             cursor: pointer;
         }
     </style>
@@ -303,8 +262,8 @@
         <!-- HEADER -->
         <div class="header">
             <div class="company-name">{{ $company['name'] }}</div>
-            <div>{{ $company['address'] }}</div>
-            <div>Telp/WA {{ $company['phone'] }}</div>
+            <div class="text-tight">{{ $company['address'] }}</div>
+            <div class="text-tight">Telp/WA {{ $company['phone'] }}</div>
         </div>
 
         <!-- TRANSACTION INFO -->
@@ -312,18 +271,18 @@
             <div class="info-row">
                 <span class="info-label">No</span>
                 <span class="info-colon">:</span>
-                <span class="info-value">{{ $transaction->invoice_number }}</span>
+                <span class="info-value text-tight">{{ $transaction->invoice_number }}</span>
                 <span class="info-date">{{ $transaction->invoice_date->format('d/m/Y') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Kasir</span>
                 <span class="info-colon">:</span>
-                <span class="info-value">{{ $transaction->user->name }}</span>
+                <span class="info-value text-tight">{{ $transaction->user->name }}</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Pembaya</span>
+                <span class="info-label">Pel.</span>
                 <span class="info-colon">:</span>
-                <span class="info-value">{{ strtoupper($transaction->payment_type) }}</span>
+                <span class="info-value text-tight">{{ strtoupper($transaction->payment_type) }}</span>
             </div>
         </div>
 
@@ -333,9 +292,9 @@
         <div class="items-section">
             @foreach ($transaction->items as $item)
                 <div class="item-row">
-                    <div class="item-name">{{ strtoupper($item->product->name) }}</div>
+                    <div class="item-name text-tight">{{ strtoupper($item->product->name) }}</div>
                     <div class="item-detail">
-                        <div class="item-quantity">{{ number_format($item->quantity, 2) }}
+                        <div class="item-quantity text-tight">{{ number_format($item->quantity, 2) }}
                             {{ strtoupper($item->unit->name ?? 'PCS') }} x
                             {{ number_format($item->unit_price, 0, ',', '.') }}</div>
                         <div class="item-total">{{ number_format($item->subtotal, 0, ',', '.') }}</div>
@@ -395,8 +354,8 @@
 
         <!-- FOOTER -->
         <div class="footer">
-            <div>Terima kasih telah belanja di toko {{ $company['name'] }}</div>
-            <div>Jangan lupa kunjungi tokocacha.com</div>
+            <div class="text-tight">Terima kasih telah belanja di toko {{ $company['name'] }}</div>
+            <div class="text-tight">Jangan lupa kunjungi tokocacha.com</div>
         </div>
 
         <div class="footer-divider"></div>
