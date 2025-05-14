@@ -91,9 +91,9 @@
                                                     <div id="pos_product_list"></div>
                                                 </div>
                                                 <small class="mt-1 d-block text-end">
-                                                    <span class="badge bg-label-secondary">F2</span> Hapus
-                                                    <span class="badge bg-label-secondary">F3</span> Barcode
-                                                    <span class="badge bg-label-secondary">F8</span> Bayar
+                                                    <span class="badge bg-label-secondary">F6</span> Hapus
+                                                    <span class="badge bg-label-secondary">F1</span> Barcode
+                                                    <span class="badge bg-label-secondary">F4</span> Bayar
                                                 </small>
                                             </div>
                                         </div>
