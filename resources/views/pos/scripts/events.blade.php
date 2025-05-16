@@ -91,9 +91,8 @@
         // Cash amount input for calculating change
         document.getElementById('pos_cash_amount').addEventListener('input', calculateChange);
 
-        // Camera button - Barcode scanner
         document.getElementById('btn-camera')?.addEventListener('click', function() {
-            openBarcodeScannerModal();
+            openBarcodeScanner();
         });
     }
 
