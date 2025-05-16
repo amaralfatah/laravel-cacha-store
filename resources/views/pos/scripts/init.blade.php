@@ -5,6 +5,7 @@
 <script src="{{ asset('sneat/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
 <script src="{{ asset('sneat/assets/vendor/js/menu.js') }}"></script>
 <script src="{{ asset('sneat/assets/js/main.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
 <script>
     // ===============================================================
