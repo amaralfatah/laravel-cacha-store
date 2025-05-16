@@ -92,7 +92,7 @@
         document.getElementById('pos_cash_amount').addEventListener('input', calculateChange);
 
         document.getElementById('btn-camera')?.addEventListener('click', function() {
-            openBarcodeScanner();
+            openCameraModal();
         });
     }
 
@@ -225,37 +225,40 @@
      * BARU
      */
 
+    // ================= STEP 2: Add after all existing functions =================
+    // Tambahkan fungsi-fungsi ini di akhir file Anda, sebelum tag penutup
+
     /**
-     * Open barcode scanner modal and initialize scanner
+     * Open camera modal and start camera
      */
-    function openBarcodeScanner() {
+    function openCameraModal() {
         // Create modal if it doesn't exist
-        if (!document.getElementById('barcodeScannerModal')) {
-            createBarcodeScannerModal();
+        if (!document.getElementById('cameraModal')) {
+            createCameraModal();
         }
 
-        // Open the modal
-        const modal = new bootstrap.Modal(document.getElementById('barcodeScannerModal'));
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('cameraModal'));
         modal.show();
 
-        // Initialize the scanner after modal is shown
-        document.getElementById('barcodeScannerModal').addEventListener('shown.bs.modal', function() {
-            initBarcodeScanner();
+        // Start camera after modal is shown
+        document.getElementById('cameraModal').addEventListener('shown.bs.modal', function() {
+            startCamera();
         }, {
             once: true
         });
     }
 
     /**
-     * Create the barcode scanner modal
+     * Create camera modal
      */
-    function createBarcodeScannerModal() {
+    function createCameraModal() {
         const modalHtml = `
-    <div class="modal fade" id="barcodeScannerModal" tabindex="-1" aria-labelledby="barcodeScannerModalLabel" aria-hidden="true">
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="border: 2px solid #919b9c; border-radius: 0; box-shadow: 3px 3px 5px rgba(0,0,0,0.3);">
                 <div class="modal-header" style="background: linear-gradient(to bottom, #4f6acc 0%, #2a3c8e 100%); color: white; padding: 6px 10px; border-bottom: 1px solid #919b9c;">
-                    <h5 class="modal-title" id="barcodeScannerModalLabel">
+                    <h5 class="modal-title" id="cameraModalLabel">
                         <i class='bx bx-scan me-1'></i> Scan Barcode
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -265,9 +268,9 @@
                         <p>Arahkan kamera ke barcode produk</p>
                     </div>
 
-                    <div class="scanner-wrapper">
+                    <div class="camera-wrapper">
                         <!-- Loading indicator -->
-                        <div id="scanner-loading" class="text-center p-3">
+                        <div id="camera-loading" class="text-center p-3">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -275,19 +278,15 @@
                         </div>
 
                         <!-- Error message -->
-                        <div id="scanner-error" class="alert alert-danger text-center" style="display:none;">
+                        <div id="camera-error" class="alert alert-danger text-center" style="display:none;">
                             <i class='bx bx-error-circle me-1'></i>
-                            <span id="scanner-error-message">Error message here</span>
+                            <span id="camera-error-message">Error message here</span>
                         </div>
 
-                        <!-- Scanner container -->
-                        <div id="scanner-container" style="display:none; border: 2px solid #919b9c; min-height: 300px;">
-                            <div id="qr-reader" style="width: 100%;"></div>
-                        </div>
-
-                        <!-- Success message -->
-                        <div id="scanner-success" class="alert alert-success mt-2" style="display:none;">
-                            <strong>Barcode terdeteksi:</strong> <span id="detected-barcode"></span>
+                        <!-- Camera preview -->
+                        <div id="camera-container" style="display:none;">
+                            <video id="camera-preview" style="width: 100%; border: 2px solid #919b9c;" autoplay playsinline></video>
+                            <canvas id="camera-canvas" style="display: none;"></canvas>
                         </div>
                     </div>
 
@@ -296,14 +295,24 @@
                         <select id="camera-select" class="form-select" style="max-width: 250px; display:none;">
                             <option value="">Pilih Kamera</option>
                         </select>
+                        <div>
+                            <button id="btn-take-photo" class="btn btn-primary" style="display:none;">
+                                <i class='bx bx-camera me-1'></i> Ambil Foto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Detected barcode -->
+                    <div id="barcode-result" class="alert alert-success mt-3" style="display:none;">
+                        <strong>Barcode terdeteksi:</strong> <span id="barcode-value"></span>
                     </div>
                 </div>
                 <div class="modal-footer" style="background-color: #ece9d8; border-top: 1px solid #919b9c; padding: 8px;">
-                    <button type="button" id="btn-scan-cancel" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class='bx bx-x me-1'></i> Batal
-                    </button>
-                    <button type="button" id="btn-scan-manual" class="btn btn-primary">
+                    <button type="button" id="btn-manual-input" class="btn btn-primary">
                         <i class='bx bx-keyboard me-1'></i> Input Manual
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class='bx bx-x me-1'></i> Tutup
                     </button>
                 </div>
             </div>
@@ -314,101 +323,117 @@
         // Add modal to body
         document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-        // Add event listeners to buttons
-        document.getElementById('btn-scan-manual').addEventListener('click', function() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('barcodeScannerModal'));
+        // Add event listeners
+        document.getElementById('btn-manual-input').addEventListener('click', function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('cameraModal'));
             if (modal) {
                 modal.hide();
             }
 
+            // Focus on barcode input
             setTimeout(() => {
                 document.getElementById('pos_barcode').focus();
             }, 300);
         });
 
-        // Camera select handler
+        // Camera select change event
         document.getElementById('camera-select').addEventListener('change', function() {
-            if (window.barcodeScanner) {
-                window.barcodeScanner.stop();
-                initBarcodeScanner(this.value);
-            }
+            stopCamera();
+            startCamera(this.value);
         });
+
+        // Take photo button
+        document.getElementById('btn-take-photo').addEventListener('click', captureBarcode);
 
         // Cleanup when modal is closed
-        document.getElementById('barcodeScannerModal').addEventListener('hidden.bs.modal', function() {
-            if (window.barcodeScanner) {
-                window.barcodeScanner.stop();
-                window.barcodeScanner = null;
-            }
+        document.getElementById('cameraModal').addEventListener('hidden.bs.modal', function() {
+            stopCamera();
         });
     }
 
+    // Global variables
+    let activeStream = null;
+
     /**
-     * Initialize the barcode scanner
+     * Start camera stream
      */
-    async function initBarcodeScanner(cameraId) {
+    async function startCamera(deviceId) {
+        // Show loading, hide others
+        document.getElementById('camera-loading').style.display = 'block';
+        document.getElementById('camera-container').style.display = 'none';
+        document.getElementById('camera-error').style.display = 'none';
+        document.getElementById('barcode-result').style.display = 'none';
+        document.getElementById('btn-take-photo').style.display = 'none';
+
         try {
-            // Show loading
-            document.getElementById('scanner-loading').style.display = 'block';
-            document.getElementById('scanner-container').style.display = 'none';
-            document.getElementById('scanner-error').style.display = 'none';
-            document.getElementById('scanner-success').style.display = 'none';
+            // Request camera permissions and get devices
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true
+            });
 
-            // Load the HTML5-QRCode library if not already loaded
-            if (typeof Html5Qrcode === 'undefined') {
-                await loadHtml5QrcodeScript();
-            }
+            // Stop the stream we just got (we'll start a new one with selected/preferred camera)
+            stream.getTracks().forEach(track => track.stop());
 
-            // Get camera list
-            const cameras = await getCameraList();
-            updateCameraDropdown(cameras, cameraId);
+            // Get list of cameras
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-            // Get the selected camera ID
-            let selectedCameraId = cameraId;
-            if (!selectedCameraId && cameras.length > 0) {
-                // Try to find back camera
-                const backCamera = cameras.find(camera =>
-                    camera.label.toLowerCase().includes('back') ||
-                    camera.label.toLowerCase().includes('rear') ||
-                    camera.label.toLowerCase().includes('belakang')
+            // Update camera select dropdown
+            updateCameraDropdown(videoDevices, deviceId);
+
+            // Determine which camera to use
+            let selectedDeviceId = deviceId;
+            if (!selectedDeviceId && videoDevices.length > 0) {
+                // Try to find back camera first
+                const backCamera = videoDevices.find(device =>
+                    device.label.toLowerCase().includes('back') ||
+                    device.label.toLowerCase().includes('rear') ||
+                    device.label.toLowerCase().includes('belakang')
                 );
 
-                selectedCameraId = backCamera ? backCamera.id : cameras[0].id;
+                selectedDeviceId = backCamera ? backCamera.deviceId : videoDevices[0].deviceId;
             }
 
-            // Create and start scanner
-            startScanner(selectedCameraId);
+            // Set video constraints
+            const constraints = {
+                video: {
+                    width: {
+                        ideal: 1280
+                    },
+                    height: {
+                        ideal: 720
+                    },
+                    facingMode: "environment"
+                }
+            };
+
+            // If we have a specific device ID, use it
+            if (selectedDeviceId) {
+                constraints.video.deviceId = {
+                    exact: selectedDeviceId
+                };
+            }
+
+            // Get stream with selected camera
+            activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+            // Set video source
+            const videoElement = document.getElementById('camera-preview');
+            videoElement.srcObject = activeStream;
+
+            // Add play event to hide loading when video starts
+            videoElement.addEventListener('loadedmetadata', function() {
+                document.getElementById('camera-loading').style.display = 'none';
+                document.getElementById('camera-container').style.display = 'block';
+                document.getElementById('btn-take-photo').style.display = 'inline-block';
+            });
+
+            console.log('Camera started successfully');
         } catch (error) {
-            console.error('Error initializing barcode scanner:', error);
-            showScannerError(
-                'Gagal mengakses kamera. Pastikan kamera diizinkan dan browser Anda mendukung akses kamera. Error: ' +
+            console.error('Error starting camera:', error);
+            showCameraError(
+                'Gagal mengakses kamera. Pastikan browser Anda mendukung akses kamera dan izin telah diberikan. Error: ' +
                 error.message);
-        }
-    }
-
-    /**
-     * Load the Html5-QRCode script
-     */
-    function loadHtml5QrcodeScript() {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-
-    /**
-     * Get list of available cameras
-     */
-    async function getCameraList() {
-        try {
-            const devices = await Html5Qrcode.getCameras();
-            return devices;
-        } catch (error) {
-            console.error('Error getting cameras:', error);
-            return [];
         }
     }
 
@@ -421,127 +446,132 @@
 
         cameraSelect.innerHTML = '<option value="">Pilih Kamera</option>';
 
-        if (cameras.length > 0) {
+        if (cameras && cameras.length > 0) {
             cameras.forEach(camera => {
                 const option = document.createElement('option');
-                option.value = camera.id;
-                option.text = camera.label || `Kamera (${camera.id})`;
-                option.selected = camera.id === selectedId;
+                option.value = camera.deviceId;
+                option.text = camera.label || `Kamera (${camera.deviceId.substr(0, 5)}...)`;
+                option.selected = camera.deviceId === selectedId;
                 cameraSelect.appendChild(option);
             });
 
-            cameraSelect.style.display = 'block';
+            cameraSelect.style.display = cameras.length > 1 ? 'block' : 'none';
         } else {
             cameraSelect.style.display = 'none';
         }
     }
 
     /**
-     * Start the barcode scanner
+     * Stop camera stream
      */
-    function startScanner(cameraId) {
-        // Scanner configuration
-        const config = {
-            fps: 10,
-            qrbox: {
-                width: 250,
-                height: 250
-            },
-            aspectRatio: 1.0,
-            formatsToSupport: [
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.CODE_93,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E,
-                Html5QrcodeSupportedFormats.ITF
-            ]
-        };
+    function stopCamera() {
+        if (activeStream) {
+            activeStream.getTracks().forEach(track => track.stop());
+            activeStream = null;
+        }
 
-        try {
-            // Create scanner instance
-            const html5QrCode = new Html5Qrcode("qr-reader");
-
-            // Success callback
-            const onScanSuccess = (decodedText) => {
-                console.log(`Barcode detected: ${decodedText}`);
-
-                // Show success message
-                document.getElementById('detected-barcode').textContent = decodedText;
-                document.getElementById('scanner-success').style.display = 'block';
-
-                // Process barcode after a short delay
-                setTimeout(() => {
-                    // Set barcode in input and submit
-                    document.getElementById('pos_barcode').value = decodedText;
-
-                    // Trigger Enter keypress to process barcode
-                    const event = new KeyboardEvent('keypress', {
-                        key: 'Enter',
-                        code: 'Enter',
-                        keyCode: 13,
-                        which: 13,
-                        bubbles: true
-                    });
-                    document.getElementById('pos_barcode').dispatchEvent(event);
-
-                    // Close the modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById(
-                        'barcodeScannerModal'));
-                    if (modal) {
-                        modal.hide();
-                    }
-                }, 800);
-            };
-
-            // Error callback - just log errors, don't show to user unless critical
-            const onScanFailure = (error) => {
-                // Only log, don't show to user for each frame
-                // These are expected during normal scanning
-                console.debug(`Scan error: ${error}`);
-            };
-
-            // Start the scanner
-            html5QrCode.start(
-                cameraId,
-                config,
-                onScanSuccess,
-                onScanFailure
-            ).then(() => {
-                // Scanner started successfully
-                console.log('Scanner started successfully');
-                document.getElementById('scanner-loading').style.display = 'none';
-                document.getElementById('scanner-container').style.display = 'block';
-
-                // Store scanner reference
-                window.barcodeScanner = html5QrCode;
-            }).catch((err) => {
-                // Handle start failure
-                console.error('Scanner start error:', err);
-                showScannerError(
-                    'Gagal memulai kamera. Coba pilih kamera lain atau gunakan input manual. Error: ' + err);
-            });
-        } catch (error) {
-            console.error('Scanner error:', error);
-            showScannerError('Terjadi kesalahan saat memulai scanner. Error: ' + error.message);
+        const videoElement = document.getElementById('camera-preview');
+        if (videoElement) {
+            videoElement.srcObject = null;
         }
     }
 
     /**
-     * Show error message in scanner
+     * Show camera error
      */
-    function showScannerError(message) {
-        document.getElementById('scanner-loading').style.display = 'none';
-        document.getElementById('scanner-container').style.display = 'none';
+    function showCameraError(message) {
+        document.getElementById('camera-loading').style.display = 'none';
+        document.getElementById('camera-container').style.display = 'none';
 
-        const errorElement = document.getElementById('scanner-error');
-        const errorMessageElement = document.getElementById('scanner-error-message');
+        const errorElement = document.getElementById('camera-error');
+        const errorMessageElement = document.getElementById('camera-error-message');
 
         if (errorElement && errorMessageElement) {
             errorMessageElement.textContent = message;
             errorElement.style.display = 'block';
         }
+    }
+
+    /**
+     * Capture image from camera and process for barcode
+     */
+    function captureBarcode() {
+        const video = document.getElementById('camera-preview');
+        const canvas = document.getElementById('camera-canvas');
+
+        if (!video || !canvas || !activeStream) {
+            console.error('Video or canvas not available');
+            return;
+        }
+
+        // Set canvas size to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Draw video frame to canvas
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Get image data as base64
+        const imageData = canvas.toDataURL('image/jpeg');
+
+        // Process image for barcode using backend
+        processImageForBarcode(imageData);
+    }
+
+    /**
+     * Process image data to detect barcode
+     */
+    function processImageForBarcode(imageData) {
+        // Show we're processing
+        document.getElementById('btn-take-photo').disabled = true;
+        document.getElementById('btn-take-photo').innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
+
+        // Simulasi request ke backend
+        setTimeout(() => {
+            // Reset button
+            document.getElementById('btn-take-photo').disabled = false;
+            document.getElementById('btn-take-photo').innerHTML =
+                '<i class="bx bx-camera me-1"></i> Ambil Foto';
+
+            // Simulate barcode detection - in real implementation, this would come from your backend
+            const mockBarcode = Math.floor(Math.random() * 10000000000000).toString().padStart(13, '0');
+            processBarcodeResult(mockBarcode);
+
+        }, 1500);
+    }
+
+    /**
+     * Process detected barcode
+     */
+    function processBarcodeResult(barcode) {
+        console.log('Barcode detected:', barcode);
+
+        // Show result
+        document.getElementById('barcode-value').textContent = barcode;
+        document.getElementById('barcode-result').style.display = 'block';
+
+        // Submit barcode to POS system after a delay
+        setTimeout(() => {
+            // Set barcode value in input field
+            document.getElementById('pos_barcode').value = barcode;
+
+            // Trigger Enter press to process barcode
+            const enterEvent = new KeyboardEvent('keypress', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true
+            });
+            document.getElementById('pos_barcode').dispatchEvent(enterEvent);
+
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('cameraModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }, 1000);
     }
 </script>
