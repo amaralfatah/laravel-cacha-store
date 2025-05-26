@@ -13,17 +13,18 @@
                         <div class="mb-3">
                             <label for="date" class="form-label">Date</label>
                             <input type="date" class="form-control" id="date" name="date"
-                                   value="{{ old('date', date('Y-m-d')) }}" required>
+                                value="{{ old('date', date('Y-m-d')) }}" required>
                         </div>
                     </div>
-                    @if(auth()->user()->role === 'admin')
+                    @if (auth()->user()->role === 'admin')
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="store_id" class="form-label">Store</label>
                                 <select class="form-select" id="store_id" name="store_id" required>
                                     <option value="">Select Store</option>
-                                    @foreach($stores as $store)
-                                        <option value="{{ $store->id }}" {{ old('store_id') == $store->id ? 'selected' : '' }}>
+                                    @foreach ($stores as $store)
+                                        <option value="{{ $store->id }}"
+                                            {{ old('store_id') == $store->id ? 'selected' : '' }}>
                                             {{ $store->name }}
                                         </option>
                                     @endforeach
@@ -50,7 +51,7 @@
                         <label for="categoryFilter" class="form-label">Category</label>
                         <select id="categoryFilter" class="form-select">
                             <option value="">All Categories</option>
-                            @foreach($categories as $category)
+                            @foreach ($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
@@ -74,14 +75,15 @@
                 <div class="table-responsive">
                     <table class="table table-striped" id="products-table" width="100%">
                         <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Category</th>
-                            <th>Unit</th>
-                            <th>Current Stock</th>
-                            <th>Actual Stock</th>
-                            <th>Difference</th>
-                        </tr>
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>Barcode</th>
+                                <th>Kategori</th>
+                                <th>Unit</th>
+                                <th>Stok Saat Ini</th>
+                                <th>Stok Aktual</th>
+                                <th>Selisih</th>
+                            </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -104,7 +106,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="barcodeInput" class="form-control" placeholder="Scan or type barcode" autofocus>
+                    <input type="text" id="barcodeInput" class="form-control" placeholder="Scan or type barcode"
+                        autofocus>
                 </div>
             </div>
         </div>
@@ -116,15 +119,19 @@
         .actual-stock-input {
             width: 100px;
         }
+
         .difference-cell {
             width: 100px;
         }
+
         .difference-positive {
             color: green;
         }
+
         .difference-negative {
             color: red;
         }
+
         .dataTables_filter {
             margin-bottom: 1rem;
         }
@@ -138,27 +145,34 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ route("stock-takes.products") }}',
+                    url: '{{ route('stock-takes.products') }}',
                     data: function(d) {
                         d.category_id = $('#categoryFilter').val();
                         d.zero_stock = $('#showZeroStock').is(':checked');
-                        @if(auth()->user()->role === 'admin')
+                        @if (auth()->user()->role === 'admin')
                             d.store_id = $('#store_id').val();
                         @endif
                     }
                 },
-                columns: [
-                    {
+                language: {
+                    search: "Cari:",
+                    searchPlaceholder: "Ketik nama produk atau barcode..."
+                },
+                columns: [{
                         data: 'name',
-                        render: function(data, type, row) {
-                            let html = data;
-                            if (row.barcode) {
-                                html += '<br><small class="text-muted">' + row.barcode + '</small>';
-                            }
-                            return html;
+                        name: 'name'
+                    },
+                    {
+                        data: 'barcode',
+                        name: 'barcode',
+                        render: function(data) {
+                            return data || '-';
                         }
                     },
-                    { data: 'category.name' },
+                    {
+                        data: 'category.name',
+                        name: 'category.name'
+                    },
                     {
                         data: 'units',
                         orderable: false,
@@ -224,25 +238,29 @@
                     }
                 ],
                 pageLength: 25,
-                order: [[0, 'asc']],
+                order: [
+                    [0, 'asc']
+                ],
                 createdRow: function(row, data, dataIndex) {
                     $(row).find('.actual-stock-input').on('input', function() {
                         let currentStock = parseFloat($(this).data('current-stock')) || 0;
                         let actualStock = parseFloat($(this).val()) || 0;
                         let difference = actualStock - currentStock;
 
-                        let differenceCell = $(this).closest('.d-flex').find('.difference-cell');
+                        let differenceCell = $(this).closest('.d-flex').find(
+                            '.difference-cell');
                         differenceCell.text(difference.toFixed(2))
                             .removeClass('difference-positive difference-negative')
-                            .addClass(difference >= 0 ? 'difference-positive' : 'difference-negative');
+                            .addClass(difference >= 0 ? 'difference-positive' :
+                                'difference-negative');
                     });
                 }
             });
 
-            @if(auth()->user()->role === 'admin')
-            $('#store_id').on('change', function() {
-                table.ajax.reload();
-            });
+            @if (auth()->user()->role === 'admin')
+                $('#store_id').on('change', function() {
+                    table.ajax.reload();
+                });
             @endif
 
             // Filter handlers

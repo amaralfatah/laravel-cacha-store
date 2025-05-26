@@ -73,8 +73,10 @@ class TaxController extends Controller
 
     public function edit(Tax $tax)
     {
-        if (auth()->user()->role !== 'admin' &&
-            $tax->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $tax->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
@@ -84,8 +86,10 @@ class TaxController extends Controller
 
     public function update(Request $request, Tax $tax)
     {
-        if (auth()->user()->role !== 'admin' &&
-            $tax->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $tax->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 
@@ -118,8 +122,10 @@ class TaxController extends Controller
 
     public function destroy(Tax $tax)
     {
-        if (auth()->user()->role !== 'admin' &&
-            $tax->store_id !== auth()->user()->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            $tax->store_id !== auth()->user()->store_id
+        ) {
             abort(403);
         }
 

@@ -60,7 +60,7 @@ class POSController extends Controller
             }
 
             // Check for default unit - handle both boolean true and integer 1
-            $defaultUnit = $product->productUnits->first(function($unit) {
+            $defaultUnit = $product->productUnits->first(function ($unit) {
                 // This handles both cases: is_default is true OR is_default is 1
                 return $unit->is_default == true;
             });
@@ -250,7 +250,7 @@ class POSController extends Controller
             $validated = $request->validate($validationRules, $validationMessages);
 
             // Verify store access
-            if (Auth::user()->role !== 'admin' && Auth::user()->store_id !== (int)$request->store_id) {
+            if (Auth::user()->role !== 'admin' && Auth::user()->store_id !== (int) $request->store_id) {
                 throw new \Exception('Unauthorized store access');
             }
 
@@ -384,7 +384,7 @@ class POSController extends Controller
         }
 
         $lastNumber = substr($latestInvoice->invoice_number, -4);
-        $nextNumber = str_pad((int)$lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        $nextNumber = str_pad((int) $lastNumber + 1, 4, '0', STR_PAD_LEFT);
 
         return $prefix . $nextNumber;
     }
@@ -392,8 +392,10 @@ class POSController extends Controller
     public function printInvoice(Transaction $transaction)
     {
         // Cek akses
-        if (auth()->user()->role !== 'admin' &&
-            auth()->user()->store_id !== $transaction->store_id) {
+        if (
+            auth()->user()->role !== 'admin' &&
+            auth()->user()->store_id !== $transaction->store_id
+        ) {
             abort(403);
         }
 
@@ -435,8 +437,10 @@ class POSController extends Controller
 
                 if ($transaction) {
                     // Check user authorization
-                    if (auth()->user()->role !== 'admin' &&
-                        $transaction->store_id !== auth()->user()->store_id) {
+                    if (
+                        auth()->user()->role !== 'admin' &&
+                        $transaction->store_id !== auth()->user()->store_id
+                    ) {
                         return response()->json([
                             'success' => false,
                             'message' => 'Unauthorized to clear this transaction'
@@ -500,7 +504,7 @@ class POSController extends Controller
                     ->selectRaw('HOUR(created_at) as hour, COUNT(*) as count, SUM(final_amount) as amount')
                     ->groupBy('hour')
                     ->get()
-                    ->map(function($item) {
+                    ->map(function ($item) {
                         return [
                             'hour' => $item->hour,
                             'count' => $item->count,

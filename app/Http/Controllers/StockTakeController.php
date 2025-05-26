@@ -58,9 +58,43 @@ class StockTakeController extends Controller
 
         // Filter zero stock
         if ($request->boolean('zero_stock')) {
-            $query->whereHas('productUnits', function($q) {
+            $query->whereHas('productUnits', function ($q) {
                 $q->where('stock', 0);
             });
+        }
+
+        // Search functionality
+        if ($request->has('search') && !empty($request->input('search.value'))) {
+            $searchValue = $request->input('search.value');
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('name', 'LIKE', "%{$searchValue}%")
+                    ->orWhere('barcode', 'LIKE', "%{$searchValue}%");
+            });
+        }
+
+        // Column specific search
+        if ($request->has('columns')) {
+            foreach ($request->input('columns') as $column) {
+                if (
+                    isset($column['searchable']) && $column['searchable'] === 'true' &&
+                    isset($column['search']) && !empty($column['search']['value'])
+                ) {
+                    $searchValue = $column['search']['value'];
+                    switch ($column['name']) {
+                        case 'name':
+                            $query->where('name', 'LIKE', "%{$searchValue}%");
+                            break;
+                        case 'barcode':
+                            $query->where('barcode', 'LIKE', "%{$searchValue}%");
+                            break;
+                        case 'category.name':
+                            $query->whereHas('category', function ($q) use ($searchValue) {
+                                $q->where('name', 'LIKE', "%{$searchValue}%");
+                            });
+                            break;
+                    }
+                }
+            }
         }
 
         return DataTables::of($query)
@@ -68,7 +102,6 @@ class StockTakeController extends Controller
                 return $product->barcode ?? '-';
             })
             ->addColumn('units', function ($product) {
-                // Langsung return array, tidak perlu di-JSON encode
                 return $product->productUnits->map(function ($productUnit) {
                     return [
                         'product_id' => $productUnit->product_id,
@@ -224,24 +257,24 @@ class StockTakeController extends Controller
         }
 
         return DataTables::of($query)
-            ->editColumn('date', function($stockTake) {
+            ->editColumn('date', function ($stockTake) {
                 return $stockTake->date->format('Y-m-d');
             })
-            ->editColumn('items_count', function($stockTake) {
+            ->editColumn('items_count', function ($stockTake) {
                 return $stockTake->items->count();
             })
-            ->editColumn('status', function($stockTake) {
+            ->editColumn('status', function ($stockTake) {
                 $badgeClass = $stockTake->status === 'completed' ? 'success' : 'warning';
                 return "<span class='badge bg-{$badgeClass}'>" . ucfirst($stockTake->status) . "</span>";
             })
-            ->editColumn('creator_name', function($stockTake) {
+            ->editColumn('creator_name', function ($stockTake) {
                 return $stockTake->creator->name ?? '-';
             })
-            ->addColumn('store_name', function($stockTake) {
+            ->addColumn('store_name', function ($stockTake) {
                 return $stockTake->store->name ?? '-';
             })
-            ->addColumn('action', function($stockTake) {
-                return '<a href="'. route('stock-takes.show', $stockTake) .'" class="btn btn-sm btn-info">
+            ->addColumn('action', function ($stockTake) {
+                return '<a href="' . route('stock-takes.show', $stockTake) . '" class="btn btn-sm btn-info">
                 <i class="bi bi-eye"></i> View
             </a>';
             })

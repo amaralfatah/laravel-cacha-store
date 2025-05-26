@@ -12,7 +12,7 @@
 <!-- Core CSS -->
 <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
 <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/theme-default.css') }}"
-      class="template-customizer-theme-css" />
+    class="template-customizer-theme-css" />
 <link rel="stylesheet" href="{{ asset('sneat/assets/css/demo.css') }}" />
 
 <!-- Helpers -->
@@ -428,6 +428,7 @@
 
     /* Responsive Adjustments */
     @media (max-width: 991.98px) {
+
         .pos-main-column,
         .pos-bill-column {
             height: auto;
@@ -504,7 +505,8 @@
         box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
     }
 
-    .btn i, .btn .bx {
+    .btn i,
+    .btn .bx {
         font-size: 16px !important;
         margin-right: 5px !important;
     }
@@ -605,7 +607,8 @@
     }
 
     /* Window Title - Main Header */
-    .bill-title, h4.fw-bold {
+    .bill-title,
+    h4.fw-bold {
         font-family: Tahoma, Arial, sans-serif !important;
         font-size: 13px !important;
         color: #15428b !important;
@@ -646,13 +649,15 @@
     .select2-dropdown {
         border: 1px solid #7b9ebd !important;
         border-radius: 0 !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
     }
 
     /* Scanning area - focused field style */
     #pos_barcode {
-        background-color: #fffce8 !important; /* Light yellow background */
-        font-family: 'Courier New', monospace !important; /* Monospace font for barcode */
+        background-color: #fffce8 !important;
+        /* Light yellow background */
+        font-family: 'Courier New', monospace !important;
+        /* Monospace font for barcode */
         font-weight: bold !important;
     }
 
@@ -750,5 +755,4 @@
         background-color: #f2f2f2 !important;
         cursor: default !important;
     }
-
 </style>

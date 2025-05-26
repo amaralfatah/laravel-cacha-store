@@ -22,7 +22,7 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $purchases = PurchaseOrder::with('supplier')
-            ->when(auth()->user()->role !== 'admin', function($query) {
+            ->when(auth()->user()->role !== 'admin', function ($query) {
                 return $query->where('store_id', auth()->user()->store_id);
             })
             ->latest()
@@ -37,16 +37,20 @@ class PurchaseOrderController extends Controller
         if (auth()->user()->role === 'admin') {
             // Admin bisa lihat semua data
             $suppliers = Supplier::all();
-            $products = Product::with(['units' => function($q) {
-                $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
-            }])->get();
+            $products = Product::with([
+                'units' => function ($q) {
+                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
+                }
+            ])->get();
         } else {
             // User biasa hanya bisa lihat data store-nya
             $suppliers = Supplier::where('store_id', auth()->user()->store_id)->get();
             $products = Product::where('store_id', auth()->user()->store_id)
-                ->with(['units' => function($q) {
-                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
-                }])
+                ->with([
+                    'units' => function ($q) {
+                        $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
+                    }
+                ])
                 ->get();
         }
 
@@ -129,16 +133,20 @@ class PurchaseOrderController extends Controller
         // Get data berdasarkan role
         if (auth()->user()->role === 'admin') {
             $suppliers = Supplier::all();
-            $products = Product::with(['units' => function($q) {
-                $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
-            }])->get();
+            $products = Product::with([
+                'units' => function ($q) {
+                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
+                }
+            ])->get();
             $stores = Store::all();
         } else {
             $suppliers = Supplier::where('store_id', auth()->user()->store_id)->get();
             $products = Product::where('store_id', auth()->user()->store_id)
-                ->with(['units' => function($q) {
-                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
-                }])
+                ->with([
+                    'units' => function ($q) {
+                        $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
+                    }
+                ])
                 ->get();
             $stores = null;
         }
@@ -217,9 +225,11 @@ class PurchaseOrderController extends Controller
     public function searchProducts(Request $request)
     {
         $query = Product::query()
-            ->with(['units' => function($q) {
-                $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
-            }]);
+            ->with([
+                'units' => function ($q) {
+                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
+                }
+            ]);
 
         // Filter by store for non-admin users
         if (auth()->user()->role !== 'admin') {
@@ -229,19 +239,20 @@ class PurchaseOrderController extends Controller
         // Search by name or code
         if ($request->has('term')) {
             $term = $request->term;
-            $query->where(function($q) use ($term) {
+            $query->where(function ($q) use ($term) {
                 $q->where('name', 'LIKE', "%{$term}%")
-                    ->orWhere('code', 'LIKE', "%{$term}%");
+                    ->orWhere('code', 'LIKE', "%{$term}%")
+                    ->orWhere('barcode', 'LIKE', "%{$term}%");
             });
         }
 
         $products = $query->take(10)->get();
 
         return response()->json([
-            'results' => $products->map(function($product) {
+            'results' => $products->map(function ($product) {
                 return [
                     'id' => $product->id,
-                    'text' => $product->code . ' - ' . $product->name,
+                    'text' => $product->name . ' - ' . ($product->barcode ? $product->barcode : $product->code),
                     'units' => $product->units
                 ];
             })

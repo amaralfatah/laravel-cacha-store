@@ -13,13 +13,13 @@
                 @csrf
 
                 <div class="row">
-                    @if(auth()->user()->role === 'admin')
+                    @if (auth()->user()->role === 'admin')
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="store_id" class="form-label">Store</label>
                                 <select name="store_id" id="store_id" class="form-control" required>
                                     <option value="">Select Store</option>
-                                    @foreach($stores as $store)
+                                    @foreach ($stores as $store)
                                         <option value="{{ $store->id }}">{{ $store->name }}</option>
                                     @endforeach
                                 </select>
@@ -27,13 +27,13 @@
                         </div>
                     @endif
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="product_unit_id" class="form-label">Product & Unit</label>
-                                <select name="product_unit_id" id="product_unit_id" class="form-control" required>
-                                </select>
-                            </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="product_unit_id" class="form-label">Product & Unit</label>
+                            <select name="product_unit_id" id="product_unit_id" class="form-control" required>
+                            </select>
                         </div>
+                    </div>
 
                     <div class="col-md-3">
                         <div class="mb-3">
@@ -48,23 +48,15 @@
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label for="quantity" class="form-label">Quantity</label>
-                            <input type="number"
-                                   name="quantity"
-                                   id="quantity"
-                                   class="form-control"
-                                   step="0.01"
-                                   min="0.01"
-                                   required>
+                            <input type="number" name="quantity" id="quantity" class="form-control" step="0.01"
+                                min="0.01" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="notes" class="form-label">Notes</label>
-                    <textarea name="notes"
-                              id="notes"
-                              class="form-control"
-                              rows="3"></textarea>
+                    <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
                 </div>
 
                 <div class="mt-4">
@@ -80,10 +72,10 @@
     <script>
         $(document).ready(function() {
             $('#product_unit_id').select2({
-                placeholder: 'Search for a product',
+                placeholder: 'Cari produk berdasarkan nama atau barcode...',
                 allowClear: true,
                 ajax: {
-                    url: '{{ route("stock.adjustments.getProducts") }}',
+                    url: '{{ route('stock.adjustments.getProducts') }}',
                     dataType: 'json',
                     delay: 250,
                     data: function(params) {
@@ -117,13 +109,18 @@
                     $('#quantity').addClass('is-invalid');
                     $('.quantity-feedback').remove();
                     $('#quantity').after(`<div class="invalid-feedback quantity-feedback">
-                Quantity cannot exceed current stock (${currentStock})
-            </div>`);
-                } else {
-                    $('#quantity').removeClass('is-invalid');
-                    $('.quantity-feedback').remove();
+                        Quantity tidak boleh melebihi stok saat ini (${currentStock})
+                    </div>`);
+                    return false;
                 }
+
+                $('#quantity').removeClass('is-invalid');
+                $('.quantity-feedback').remove();
+                return true;
             }
+
+            // Add event listeners
+            $('#type, #quantity').on('change input', validateQuantity);
         });
     </script>
 @endpush

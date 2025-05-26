@@ -145,7 +145,10 @@ class StockAdjustmentController extends Controller
             ->where('is_active', true);
 
         if ($search) {
-            $query->where('name', 'LIKE', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('barcode', 'LIKE', "%{$search}%");
+            });
         }
 
         if (auth()->user()->role !== 'admin') {
@@ -159,7 +162,7 @@ class StockAdjustmentController extends Controller
             foreach ($product->productUnits as $productUnit) {
                 $formattedProducts[] = [
                     'id' => $productUnit->id,
-                    'text' => $product->name . ' - ' . $productUnit->unit->name . ' (Current Stock: ' . $productUnit->stock . ')',
+                    'text' => $product->name . ' - ' . ($product->barcode ? $product->barcode : '') . ' - ' . $productUnit->unit->name . ' (Current Stock: ' . $productUnit->stock . ')',
                     'stock' => $productUnit->stock
                 ];
             }

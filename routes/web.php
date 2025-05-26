@@ -151,7 +151,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/stock/adjustments/get-products', [StockAdjustmentController::class, 'getProducts'])
         ->name('stock.adjustments.getProducts');
     Route::prefix('stock')->name('stock.')->group(function () {
-        Route::resource('adjustments', StockAdjustmentController::class)->except(['show','edit', 'update', 'delete']);
+        Route::resource('adjustments', StockAdjustmentController::class)->except(['show', 'edit', 'update', 'delete']);
         Route::get('adjustments/data', [StockAdjustmentController::class, 'data'])->name('adjustments.data');
         Route::resource('histories', StockHistoryController::class)->only(['index', 'show']);
     });
