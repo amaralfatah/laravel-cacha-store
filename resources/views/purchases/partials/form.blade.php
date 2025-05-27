@@ -342,7 +342,16 @@
                                 <select name="items[${itemIndex}][product_id]" class="form-select product-select" required>
                                     <option value="">Pilih Produk</option>
                                     @foreach ($products as $product)
-                                        <option value="{{ $product->id }}" data-units='{{ json_encode($product->units) }}'>
+                                        <option value="{{ $product->id }}" data-units='{{ json_encode(
+                                            $product->units->map(function ($unit) {
+                                                return [
+                                                    'id' => $unit->id,
+                                                    'name' => $unit->name,
+                                                    'purchase_price' => $unit->purchase_price,
+                                                    'stock' => $unit->stock,
+                                                ];
+                                            }),
+                                        ) }}'>
                                             {{ $product->name }}
                                             @if ($product->barcode) ({{ $product->barcode }}) @endif
                                         </option>
