@@ -343,101 +343,206 @@
                 ]
             });
 
-            // Add new item button click handler
-            $(document).on('click', '#add-item', function(e) {
-                e.preventDefault();
-                console.log('Add item button clicked');
-                addNewItem();
-            });
-
             // Add new item function
             function addNewItem(productData = null) {
-                console.log('Adding new item, index:', itemIndex);
-                const html = `
-                    <div class="row g-2 mb-3 p-3 border rounded item-row">
-                        <div class="col-lg-4">
-                            <label class="form-label">Produk</label>
-                            <div class="input-group">
-                                <select name="items[${itemIndex}][product_id]" class="form-select product-select" required>
-                                    <option value="">Pilih Produk</option>
-                                    @foreach ($products as $product)
-                                        <option value="{{ $product->id }}" data-units='{{ json_encode(
-                                            $product->units->map(function ($unit) {
-                                                return [
-                                                    'id' => $unit->id,
-                                                    'name' => $unit->name,
-                                                    'purchase_price' => $unit->purchase_price,
-                                                    'stock' => $unit->stock,
-                                                ];
-                                            }),
-                                        ) }}'>
-                                            {{ $product->name }}
-                                            @if ($product->barcode) ({{ $product->barcode }}) @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">
-                                    <i class='bx bx-search'></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <label class="form-label">Unit</label>
-                            <select name="items[${itemIndex}][unit_id]" class="form-select unit-select" required>
-                                <option value="">Pilih Unit</option>
-                            </select>
-                        </div>
-                        <div class="col-lg-1">
-                            <label class="form-label">QTY</label>
-                            <input type="number" name="items[${itemIndex}][quantity]" class="form-control quantity" required min="1" step="0.01">
-                        </div>
-                        <div class="col-lg-2">
-                            <label class="form-label">Harga</label>
-                            <input type="number" name="items[${itemIndex}][unit_price]" class="form-control unit-price" required min="0" step="0.01">
-                        </div>
-                        <div class="col-lg-2">
-                            <label class="form-label">Subtotal</label>
-                            <input type="number" name="items[${itemIndex}][subtotal]" class="form-control subtotal" readonly>
-                        </div>
-                        <div class="col-lg-1 d-flex align-items-end">
-                            <button type="button" class="btn btn-outline-danger remove-item">
-                                <i class='bx bx-trash'></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
+                return new Promise((resolve, reject) => {
+                    try {
+                        console.log('Adding new item, index:', itemIndex);
 
-                $('#items-container').append(html);
-                itemIndex++;
+                        // Gunakan setTimeout untuk memastikan DOM sudah siap
+                        setTimeout(() => {
+                            try {
+                                const html =
+                                    '<div class="row g-2 mb-3 p-3 border rounded item-row">' +
+                                    '<div class="col-lg-4">' +
+                                    '<label class="form-label">Produk</label>' +
+                                    '<div class="input-group">' +
+                                    '<select name="items[' + itemIndex +
+                                    '][product_id]" class="form-select product-select" required>' +
+                                    '<option value="">Pilih Produk</option>' +
+                                    '@foreach ($products as $product)' +
+                                    '<option value="{{ $product->id }}" data-units=\'{{ json_encode($product->units->map(function ($unit) {return ['id' => $unit->id, 'name' => $unit->name, 'purchase_price' => $unit->purchase_price, 'stock' => $unit->stock];})) }}\'>' +
+                                    '{{ $product->name }}' +
+                                    '@if ($product->barcode) ({{ $product->barcode }}) @endif' +
+                                    '</option>' +
+                                    '@endforeach' +
+                                    '</select>' +
+                                    '<button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">' +
+                                    '<i class="bx bx-search"></i>' +
+                                    '</button>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<div class="col-lg-2">' +
+                                    '<label class="form-label">Unit</label>' +
+                                    '<select name="items[' + itemIndex +
+                                    '][unit_id]" class="form-select unit-select" required>' +
+                                    '<option value="">Pilih Unit</option>' +
+                                    '</select>' +
+                                    '</div>' +
+                                    '<div class="col-lg-1">' +
+                                    '<label class="form-label">QTY</label>' +
+                                    '<input type="number" name="items[' + itemIndex +
+                                    '][quantity]" class="form-control quantity" required min="1" step="0.01">' +
+                                    '</div>' +
+                                    '<div class="col-lg-2">' +
+                                    '<label class="form-label">Harga</label>' +
+                                    '<input type="number" name="items[' + itemIndex +
+                                    '][unit_price]" class="form-control unit-price" required min="0" step="0.01">' +
+                                    '</div>' +
+                                    '<div class="col-lg-2">' +
+                                    '<label class="form-label">Subtotal</label>' +
+                                    '<input type="number" name="items[' + itemIndex +
+                                    '][subtotal]" class="form-control subtotal" readonly>' +
+                                    '</div>' +
+                                    '<div class="col-lg-1 d-flex align-items-end">' +
+                                    '<button type="button" class="btn btn-outline-danger remove-item">' +
+                                    '<i class="bx bx-trash"></i>' +
+                                    '</button>' +
+                                    '</div>' +
+                                    '</div>';
 
-                if (productData) {
-                    const newRow = $('.item-row').last();
-                    newRow.find('.product-select').val(productData.id).trigger('change');
-                }
+                                // Gunakan Promise untuk append
+                                const appendPromise = new Promise((resolveAppend, rejectAppend) => {
+                                    try {
+                                        $('#items-container').append(html);
+                                        resolveAppend();
+                                    } catch (e) {
+                                        console.error('Error appending HTML:', e);
+                                        // Fallback menggunakan vanilla JS
+                                        document.getElementById('items-container')
+                                            .innerHTML += html;
+                                        resolveAppend();
+                                    }
+                                });
 
-                toggleEmptyState();
-                console.log('New item added successfully');
+                                appendPromise.then(() => {
+                                    itemIndex++;
+
+                                    if (productData) {
+                                        const newRow = $('.item-row').last();
+                                        if (newRow.length) {
+                                            // Gunakan Promise untuk trigger change
+                                            const changePromise = new Promise((
+                                                resolveChange) => {
+                                                newRow.find('.product-select').val(
+                                                    productData.id);
+                                                setTimeout(() => {
+                                                    newRow.find(
+                                                        '.product-select'
+                                                    ).trigger(
+                                                        'change');
+                                                    resolveChange();
+                                                }, 0);
+                                            });
+
+                                            changePromise.then(() => {
+                                                toggleEmptyState();
+                                                console.log(
+                                                    'New item added successfully'
+                                                );
+                                                resolve();
+                                            }).catch(error => {
+                                                console.error(
+                                                    'Error in change promise:',
+                                                    error);
+                                                reject(error);
+                                            });
+                                        } else {
+                                            toggleEmptyState();
+                                            console.log('New item added successfully');
+                                            resolve();
+                                        }
+                                    } else {
+                                        toggleEmptyState();
+                                        console.log('New item added successfully');
+                                        resolve();
+                                    }
+                                }).catch(error => {
+                                    console.error('Error in append promise:', error);
+                                    reject(error);
+                                });
+
+                            } catch (error) {
+                                console.error('Error in setTimeout:', error);
+                                reject(error);
+                            }
+                        }, 0);
+
+                    } catch (error) {
+                        console.error('Error in addNewItem:', error);
+                        reject(error);
+                    }
+                });
             }
 
-            // Product selection change
-            $(document).on('change', '.product-select', function(e) {
-                const $this = $(this);
-                const selectedOption = $this.find(':selected');
-                const units = selectedOption.data('units') || [];
-                const unitSelect = $this.closest('.item-row').find('.unit-select');
+            // Perbaiki event handler untuk add item
+            $(document).on('click', '#add-item', async function(e) {
+                e.preventDefault();
+                console.log('Add item button clicked');
 
-                // Clear and populate unit select
-                unitSelect.empty().append('<option value="">Pilih Unit</option>');
+                try {
+                    // Disable tombol selama proses
+                    const $button = $(this);
+                    $button.prop('disabled', true);
 
-                if (Array.isArray(units) && units.length > 0) {
-                    units.forEach(unit => {
-                        unitSelect.append(
-                            `<option value="${unit.id}" data-price="${unit.purchase_price}">${unit.name} (${unit.stock})</option>`
-                        );
-                    });
+                    // Tunggu proses selesai
+                    await addNewItem();
+
+                    // Enable tombol kembali
+                    $button.prop('disabled', false);
+                } catch (error) {
+                    console.error('Error handling add item click:', error);
+                    alert('Terjadi kesalahan saat menambah item. Silakan coba lagi.');
+
+                    // Enable tombol jika terjadi error
+                    $(this).prop('disabled', false);
                 }
+            });
 
-                console.log('Product changed, units loaded:', units.length);
+            // Perbaiki fungsi toggleEmptyState
+            function toggleEmptyState() {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        try {
+                            $('#empty-state').toggle($('.item-row').length === 0);
+                            resolve();
+                        } catch (error) {
+                            console.error('Error in toggleEmptyState:', error);
+                            resolve(); // Tetap resolve untuk menghindari blocking
+                        }
+                    }, 0);
+                });
+            }
+
+            // Perbaiki event handler untuk product selection
+            $(document).on('change', '.product-select', async function(e) {
+                try {
+                    const $this = $(this);
+                    const selectedOption = $this.find(':selected');
+                    const units = selectedOption.data('units') || [];
+                    const unitSelect = $this.closest('.item-row').find('.unit-select');
+
+                    // Clear dan populate unit select dengan Promise
+                    await new Promise((resolve) => {
+                        setTimeout(() => {
+                            unitSelect.empty().append(
+                                '<option value="">Pilih Unit</option>');
+
+                            if (Array.isArray(units) && units.length > 0) {
+                                units.forEach(unit => {
+                                    unitSelect.append(
+                                        `<option value="${unit.id}" data-price="${unit.purchase_price}">${unit.name} (${unit.stock})</option>`
+                                    );
+                                });
+                            }
+                            resolve();
+                        }, 0);
+                    });
+
+                    console.log('Product changed, units loaded:', units.length);
+                } catch (error) {
+                    console.error('Error in product selection change:', error);
+                }
             });
 
             // Unit selection change - auto fill price
@@ -482,11 +587,6 @@
                 calculateTotal();
                 toggleEmptyState();
             });
-
-            // Toggle empty state
-            function toggleEmptyState() {
-                $('#empty-state').toggle($('.item-row').length === 0);
-            }
 
             // Select product from modal
             $(document).on('click', '.select-product', function(e) {
