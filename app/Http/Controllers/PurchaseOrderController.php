@@ -225,35 +225,67 @@ class PurchaseOrderController extends Controller
     public function searchProducts(Request $request)
     {
         $query = Product::query()
-            ->with([
-                'units' => function ($q) {
-                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
-                }
+            ->with(['productUnits.unit'])
+            ->select([
+                'products.id',
+                'products.name',
+                'products.barcode',
+                'products.store_id'
             ]);
 
-        // Filter by store for non-admin users
+        // Filter berdasarkan store untuk non-admin
         if (auth()->user()->role !== 'admin') {
-            $query->where('store_id', auth()->user()->store_id);
+            $query->where('products.store_id', auth()->user()->store_id);
         }
 
-        // Search by name or code
-        if ($request->has('term')) {
-            $term = $request->term;
-            $query->where(function ($q) use ($term) {
-                $q->where('name', 'LIKE', "%{$term}%")
-                    ->orWhere('code', 'LIKE', "%{$term}%")
-                    ->orWhere('barcode', 'LIKE', "%{$term}%");
+        // Pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.barcode', 'like', "%{$search}%");
             });
         }
 
-        $products = $query->take(10)->get();
+        // Sorting
+        if ($request->filled('order')) {
+            foreach ($request->order as $order) {
+                $columnIndex = $order['column'];
+                $columnName = $request->input("columns.{$columnIndex}.data");
+                $direction = $order['dir'];
+
+                if ($columnName && in_array($columnName, ['name', 'barcode', 'stock'])) {
+                    $query->orderBy("products.{$columnName}", $direction);
+                }
+            }
+        } else {
+            $query->orderBy('products.name', 'asc');
+        }
+
+        $length = $request->input('length', 10);
+        $start = $request->input('start', 0);
+
+        $total = $query->count();
+        $products = $query->skip($start)->take($length)->get();
 
         return response()->json([
-            'results' => $products->map(function ($product) {
+            'draw' => $request->draw,
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $products->map(function ($product) {
                 return [
                     'id' => $product->id,
-                    'text' => $product->name . ' - ' . ($product->barcode ? $product->barcode : $product->code),
-                    'units' => $product->units
+                    'name' => $product->name,
+                    'barcode' => $product->barcode,
+                    'stock' => $product->productUnits->sum('stock'),
+                    'units' => $product->productUnits->map(function ($unit) {
+                        return [
+                            'id' => $unit->id,
+                            'name' => $unit->unit->name,
+                            'purchase_price' => $unit->purchase_price,
+                            'stock' => $unit->stock
+                        ];
+                    })
                 ];
             })
         ]);

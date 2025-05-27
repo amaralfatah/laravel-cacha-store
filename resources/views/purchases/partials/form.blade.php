@@ -222,13 +222,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <input type="text" class="form-control" id="productSearch"
-                        placeholder="Cari produk atau scan barcode...">
-                </div>
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-hover">
-                        <thead class="table-light sticky-top">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="productTable">
+                        <thead class="table-light">
                             <tr>
                                 <th>Nama Produk</th>
                                 <th>Barcode</th>
@@ -236,24 +232,6 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="productTableBody">
-                            @foreach ($products as $product)
-                                <tr class="product-row" data-name="{{ strtolower($product->name ?? '') }}"
-                                    data-barcode="{{ strtolower($product->barcode ?? '') }}">
-                                    <td>{{ $product->name }}</td>
-                                    <td>{{ $product->barcode ?? '-' }}</td>
-                                    <td>{{ $product->units->sum('stock') }}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary select-product"
-                                            data-id="{{ $product->id }}" data-name="{{ $product->name }}"
-                                            data-barcode="{{ $product->barcode ?? '' }}"
-                                            data-units="{{ json_encode($product->units) }}">
-                                            Pilih
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
                     </table>
                 </div>
             </div>
@@ -266,6 +244,79 @@
         $(document).ready(function() {
             let itemIndex = {{ isset($purchase) ? $purchase->items->count() : 0 }};
             let currentRow = null;
+
+            // Initialize DataTable
+            const productTable = $('#productTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('purchases.search-products') }}',
+                    type: 'GET',
+                    data: function(d) {
+                        return {
+                            draw: d.draw,
+                            start: d.start,
+                            length: d.length,
+                            search: d.search.value,
+                            order: d.order,
+                            columns: d.columns
+                        };
+                    }
+                },
+                columns: [{
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'barcode',
+                        name: 'barcode',
+                        render: function(data) {
+                            return data || '-';
+                        }
+                    },
+                    {
+                        data: 'stock',
+                        name: 'stock',
+                        render: function(data) {
+                            return data || 0;
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data) {
+                            return `
+                                <button class="btn btn-sm btn-primary select-product"
+                                    data-id="${data.id}"
+                                    data-name="${data.name}"
+                                    data-barcode="${data.barcode || ''}"
+                                    data-units='${JSON.stringify(data.units)}'>
+                                    Pilih
+                                </button>
+                            `;
+                        }
+                    }
+                ],
+                language: {
+                    search: "Cari:",
+                    searchPlaceholder: "Ketik nama produk atau barcode...",
+                    processing: "Memuat data...",
+                    lengthMenu: "Tampilkan _MENU_ data per halaman",
+                    zeroRecords: "Tidak ada data yang ditemukan",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Selanjutnya",
+                        previous: "Sebelumnya"
+                    }
+                },
+                pageLength: 10,
+                order: [
+                    [0, 'asc']
+                ]
+            });
 
             // Add new item
             $('#add-item').on('click', function() {
@@ -344,7 +395,7 @@
                     units.forEach(unit => {
                         unitSelect.append(
                             `<option value="${unit.id}" data-price="${unit.purchase_price}">${unit.name} (${unit.stock})</option>`
-                            );
+                        );
                     });
                 }
 
@@ -395,22 +446,6 @@
             function toggleEmptyState() {
                 $('#empty-state').toggle($('.item-row').length === 0);
             }
-
-            // Modal product search
-            $('#productSearch').on('input', function() {
-                const term = $(this).val().toLowerCase().trim();
-                $('.product-row').each(function() {
-                    const $row = $(this);
-                    const name = $row.attr('data-name') || '';
-                    const barcode = $row.attr('data-barcode') || '';
-
-                    const nameMatch = name.indexOf(term) !== -1;
-                    const barcodeMatch = barcode.indexOf(term) !== -1;
-                    const shouldShow = term === '' || nameMatch || barcodeMatch;
-
-                    $row.toggle(shouldShow);
-                });
-            });
 
             // Select product from modal
             $(document).on('click', '.select-product', function(e) {

@@ -174,6 +174,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/purchases/search', [PurchaseOrderController::class, 'searchProducts'])->name('purchases.search');
+    Route::get('/purchases/search-products', [PurchaseOrderController::class, 'searchProducts'])->name('purchases.search-products');
     Route::resource('purchases', PurchaseOrderController::class);
 
     Route::get('settings/printer', [PrinterSettingController::class, 'index'])
