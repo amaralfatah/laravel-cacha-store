@@ -345,86 +345,78 @@
 
             // Add new item function
             function addNewItem(productData = null) {
-                return new Promise((resolve, reject) => {
-                    try {
-                        const html = '<div class="row g-2 mb-3 p-3 border rounded item-row">' +
-                            '<div class="col-lg-4">' +
-                            '<label class="form-label">Produk</label>' +
-                            '<div class="input-group">' +
-                            '<select name="items[' + itemIndex +
-                            '][product_id]" class="form-select product-select" required>' +
-                            '<option value="">Pilih Produk</option>' +
-                            '@foreach ($products as $product)' +
-                            '<option value="{{ $product->id }}" data-units=\'{{ json_encode($product->units->map(function ($unit) {return ['id' => $unit->id, 'name' => $unit->name, 'purchase_price' => $unit->purchase_price, 'stock' => $unit->stock];})) }}\'>' +
-                            '{{ $product->name }}' +
-                            '@if ($product->barcode) ({{ $product->barcode }}) @endif' +
-                            '</option>' +
-                            '@endforeach' +
-                            '</select>' +
-                            '<button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">' +
-                            '<i class="bx bx-search"></i>' +
-                            '</button>' +
-                            '</div>' +
-                            '</div>' +
-                            '<div class="col-lg-2">' +
-                            '<label class="form-label">Unit</label>' +
-                            '<select name="items[' + itemIndex +
-                            '][unit_id]" class="form-select unit-select" required>' +
-                            '<option value="">Pilih Unit</option>' +
-                            '</select>' +
-                            '</div>' +
-                            '<div class="col-lg-1">' +
-                            '<label class="form-label">QTY</label>' +
-                            '<input type="number" name="items[' + itemIndex +
-                            '][quantity]" class="form-control quantity" required min="1" step="0.01">' +
-                            '</div>' +
-                            '<div class="col-lg-2">' +
-                            '<label class="form-label">Harga</label>' +
-                            '<input type="number" name="items[' + itemIndex +
-                            '][unit_price]" class="form-control unit-price" required min="0" step="0.01">' +
-                            '</div>' +
-                            '<div class="col-lg-2">' +
-                            '<label class="form-label">Subtotal</label>' +
-                            '<input type="number" name="items[' + itemIndex +
-                            '][subtotal]" class="form-control subtotal" readonly>' +
-                            '</div>' +
-                            '<div class="col-lg-1 d-flex align-items-end">' +
-                            '<button type="button" class="btn btn-outline-danger remove-item">' +
-                            '<i class="bx bx-trash"></i>' +
-                            '</button>' +
-                            '</div>' +
-                            '</div>';
+                var html = '<div class="row g-2 mb-3 p-3 border rounded item-row">' +
+                    '<div class="col-lg-4">' +
+                    '<label class="form-label">Produk</label>' +
+                    '<div class="input-group">' +
+                    '<select name="items[' + itemIndex +
+                    '][product_id]" class="form-select product-select" required>' +
+                    '<option value="">Pilih Produk</option>' +
+                    '@foreach ($products as $product)' +
+                    '<option value="{{ $product->id }}" data-units=\'{{ json_encode($product->units->map(function ($unit) {return ['id' => $unit->id, 'name' => $unit->name, 'purchase_price' => $unit->purchase_price, 'stock' => $unit->stock];})) }}\'>' +
+                    '{{ $product->name }}' +
+                    '@if ($product->barcode) ({{ $product->barcode }}) @endif' +
+                    '</option>' +
+                    '@endforeach' +
+                    '</select>' +
+                    '<button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">' +
+                    '<i class="bx bx-search"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-lg-2">' +
+                    '<label class="form-label">Unit</label>' +
+                    '<select name="items[' + itemIndex + '][unit_id]" class="form-select unit-select" required>' +
+                    '<option value="">Pilih Unit</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="col-lg-1">' +
+                    '<label class="form-label">QTY</label>' +
+                    '<input type="number" name="items[' + itemIndex +
+                    '][quantity]" class="form-control quantity" required min="1" step="0.01">' +
+                    '</div>' +
+                    '<div class="col-lg-2">' +
+                    '<label class="form-label">Harga</label>' +
+                    '<input type="number" name="items[' + itemIndex +
+                    '][unit_price]" class="form-control unit-price" required min="0" step="0.01">' +
+                    '</div>' +
+                    '<div class="col-lg-2">' +
+                    '<label class="form-label">Subtotal</label>' +
+                    '<input type="number" name="items[' + itemIndex +
+                    '][subtotal]" class="form-control subtotal" readonly>' +
+                    '</div>' +
+                    '<div class="col-lg-1 d-flex align-items-end">' +
+                    '<button type="button" class="btn btn-outline-danger remove-item">' +
+                    '<i class="bx bx-trash"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>';
 
-                        $('#items-container').append(html);
-                        itemIndex++;
+                $('#items-container').append(html);
+                itemIndex++;
 
-                        if (productData) {
-                            const newRow = $('.item-row').last();
-                            if (newRow.length) {
-                                newRow.find('.product-select').val(productData.id).trigger('change');
-                            }
-                        }
-
-                        toggleEmptyState();
-                        resolve();
-                    } catch (error) {
-                        reject(error);
+                if (productData) {
+                    var newRow = $('.item-row').last();
+                    if (newRow.length) {
+                        newRow.find('.product-select').val(productData.id).trigger('change');
                     }
-                });
+                }
+
+                toggleEmptyState();
             }
 
             // Event handler untuk add item
-            $(document).on('click', '#add-item', async function(e) {
+            $('#add-item').on('click', function(e) {
                 e.preventDefault();
+                var $button = $(this);
+                $button.prop('disabled', true);
 
                 try {
-                    const $button = $(this);
-                    $button.prop('disabled', true);
-                    await addNewItem();
-                    $button.prop('disabled', false);
+                    addNewItem();
                 } catch (error) {
                     alert('Terjadi kesalahan saat menambah item. Silakan coba lagi.');
-                    $(this).prop('disabled', false);
+                } finally {
+                    $button.prop('disabled', false);
                 }
             });
 
@@ -434,48 +426,49 @@
             }
 
             // Event handler untuk product selection
-            $(document).on('change', '.product-select', function(e) {
-                const $this = $(this);
-                const selectedOption = $this.find(':selected');
-                const units = selectedOption.data('units') || [];
-                const unitSelect = $this.closest('.item-row').find('.unit-select');
+            $(document).on('change', '.product-select', function() {
+                var $this = $(this);
+                var selectedOption = $this.find(':selected');
+                var units = selectedOption.data('units') || [];
+                var unitSelect = $this.closest('.item-row').find('.unit-select');
 
                 unitSelect.empty().append('<option value="">Pilih Unit</option>');
 
                 if (Array.isArray(units) && units.length > 0) {
-                    units.forEach(unit => {
+                    units.forEach(function(unit) {
                         unitSelect.append(
-                            `<option value="${unit.id}" data-price="${unit.purchase_price}">${unit.name} (${unit.stock})</option>`
+                            '<option value="' + unit.id + '" data-price="' + unit
+                            .purchase_price + '">' +
+                            unit.name + ' (' + unit.stock + ')</option>'
                         );
                     });
                 }
             });
 
-            // Unit selection change - auto fill price
-            $(document).on('change', '.unit-select', function() {
-                const price = $(this).find(':selected').data('price');
-                if (price) {
-                    $(this).closest('.item-row').find('.unit-price').val(price);
-                    calculateSubtotal($(this).closest('.item-row'));
-                }
+            // Event handler untuk remove item
+            $(document).on('click', '.remove-item', function() {
+                $(this).closest('.item-row').remove();
+                calculateTotal();
+                toggleEmptyState();
             });
 
-            // Calculate subtotal
+            // Event handler untuk quantity dan price
             $(document).on('input', '.quantity, .unit-price', function() {
                 calculateSubtotal($(this).closest('.item-row'));
             });
 
+            // Fungsi calculate subtotal
             function calculateSubtotal(row) {
-                const qty = parseFloat(row.find('.quantity').val()) || 0;
-                const price = parseFloat(row.find('.unit-price').val()) || 0;
-                const subtotal = qty * price;
+                var qty = parseFloat(row.find('.quantity').val()) || 0;
+                var price = parseFloat(row.find('.unit-price').val()) || 0;
+                var subtotal = qty * price;
                 row.find('.subtotal').val(subtotal);
                 calculateTotal();
             }
 
-            // Calculate total
+            // Fungsi calculate total
             function calculateTotal() {
-                let total = 0;
+                var total = 0;
                 $('.subtotal').each(function() {
                     total += parseFloat($(this).val()) || 0;
                 });
@@ -486,13 +479,6 @@
                 $('input[name="total_amount"]').val(total);
                 $('input[name="final_amount"]').val(total);
             }
-
-            // Remove item
-            $(document).on('click', '.remove-item', function() {
-                $(this).closest('.item-row').remove();
-                calculateTotal();
-                toggleEmptyState();
-            });
 
             // Select product from modal
             $(document).on('click', '.select-product', function(e) {
