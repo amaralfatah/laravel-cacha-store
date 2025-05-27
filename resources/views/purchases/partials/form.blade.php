@@ -248,26 +248,17 @@
             }
         });
 
-        console.log('Script mulai dimuat');
-
-        // Cek ketersediaan jQuery dan DataTables
-        console.log('jQuery tersedia:', typeof $ !== 'undefined');
-        console.log('DataTables tersedia:', typeof $.fn.DataTable !== 'undefined');
-
         $(document).ready(function() {
-            console.log('Document ready');
-
             // Pastikan jQuery dan DataTables sudah dimuat
             if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
-                console.error('jQuery atau DataTables tidak dimuat dengan benar');
                 return;
             }
 
-            let itemIndex = {{ isset($purchase) ? $purchase->items->count() : 0 }};
-            let currentRow = null;
+            var itemIndex = {{ isset($purchase) ? $purchase->items->count() : 0 }};
+            var currentRow = null;
 
             // Initialize DataTable
-            const productTable = $('#productTable').DataTable({
+            var productTable = $('#productTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
@@ -282,10 +273,6 @@
                             order: d.order,
                             columns: d.columns
                         };
-                    },
-                    error: function(xhr, error, thrown) {
-                        console.error('Error loading data:', error);
-                        console.error('Response:', xhr.responseText);
                     }
                 },
                 columns: [{
@@ -309,15 +296,12 @@
                     {
                         data: null,
                         render: function(data) {
-                            return `
-                                <button type="button" class="btn btn-sm btn-primary select-product"
-                                    data-id="${data.id}"
-                                    data-name="${data.name}"
-                                    data-barcode="${data.barcode || ''}"
-                                    data-units='${JSON.stringify(data.units)}'>
-                                    Pilih
-                                </button>
-                            `;
+                            return '<button type="button" class="btn btn-sm btn-primary select-product" ' +
+                                'data-id="' + data.id + '" ' +
+                                'data-name="' + data.name + '" ' +
+                                'data-barcode="' + (data.barcode || '') + '" ' +
+                                'data-units=\'' + JSON.stringify(data.units) + '\'>' +
+                                'Pilih</button>';
                         }
                     }
                 ],
@@ -483,9 +467,7 @@
             // Select product from modal
             $(document).on('click', '.select-product', function(e) {
                 e.preventDefault();
-                console.log('Product selected from modal');
-
-                const productData = {
+                var productData = {
                     id: $(this).data('id'),
                     name: $(this).data('name'),
                     barcode: $(this).data('barcode'),
@@ -493,13 +475,11 @@
                 };
 
                 if (currentRow && currentRow.length > 0) {
-                    // Update existing row
-                    const productSelect = currentRow.find('.product-select');
+                    var productSelect = currentRow.find('.product-select');
                     productSelect.val(productData.id);
                     productSelect.trigger('change');
                     currentRow = null;
                 } else {
-                    // Add new row
                     addNewItem(productData);
                 }
 
@@ -510,13 +490,11 @@
             $(document).on('click', '.select-product-btn', function(e) {
                 e.preventDefault();
                 currentRow = $(this).closest('.item-row');
-                console.log('Current row set for modal selection');
             });
 
             // Initialize
             calculateTotal();
             toggleEmptyState();
-            console.log('Purchase form initialized');
         });
     </script>
 @endpush
