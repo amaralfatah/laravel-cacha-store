@@ -242,6 +242,12 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
+            // Pastikan jQuery dan DataTables sudah dimuat
+            if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+                console.error('jQuery atau DataTables tidak dimuat dengan benar');
+                return;
+            }
+
             let itemIndex = {{ isset($purchase) ? $purchase->items->count() : 0 }};
             let currentRow = null;
 
@@ -285,7 +291,7 @@
                         data: null,
                         render: function(data) {
                             return `
-                                <button class="btn btn-sm btn-primary select-product"
+                                <button type="button" class="btn btn-sm btn-primary select-product"
                                     data-id="${data.id}"
                                     data-name="${data.name}"
                                     data-barcode="${data.barcode || ''}"
@@ -318,57 +324,60 @@
                 ]
             });
 
-            // Add new item
-            $('#add-item').on('click', function() {
+            // Add new item button click handler
+            $(document).on('click', '#add-item', function(e) {
+                e.preventDefault();
+                console.log('Add item button clicked');
                 addNewItem();
             });
 
             // Add new item function
             function addNewItem(productData = null) {
+                console.log('Adding new item, index:', itemIndex);
                 const html = `
-            <div class="row g-2 mb-3 p-3 border rounded item-row">
-                <div class="col-lg-4">
-                    <label class="form-label">Produk</label>
-                    <div class="input-group">
-                        <select name="items[${itemIndex}][product_id]" class="form-select product-select" required>
-                            <option value="">Pilih Produk</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}" data-units="{{ json_encode($product->units) }}">
-                                    {{ $product->name }}
-                                    @if ($product->barcode) ({{ $product->barcode }}) @endif
-                                </option>
-                            @endforeach
-                        </select>
-                        <button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">
-                            <i class='bx bx-search'></i>
-                        </button>
+                    <div class="row g-2 mb-3 p-3 border rounded item-row">
+                        <div class="col-lg-4">
+                            <label class="form-label">Produk</label>
+                            <div class="input-group">
+                                <select name="items[${itemIndex}][product_id]" class="form-select product-select" required>
+                                    <option value="">Pilih Produk</option>
+                                    @foreach ($products as $product)
+                                        <option value="{{ $product->id }}" data-units='{{ json_encode($product->units) }}'>
+                                            {{ $product->name }}
+                                            @if ($product->barcode) ({{ $product->barcode }}) @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">
+                                    <i class='bx bx-search'></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-2">
+                            <label class="form-label">Unit</label>
+                            <select name="items[${itemIndex}][unit_id]" class="form-select unit-select" required>
+                                <option value="">Pilih Unit</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-1">
+                            <label class="form-label">QTY</label>
+                            <input type="number" name="items[${itemIndex}][quantity]" class="form-control quantity" required min="1" step="0.01">
+                        </div>
+                        <div class="col-lg-2">
+                            <label class="form-label">Harga</label>
+                            <input type="number" name="items[${itemIndex}][unit_price]" class="form-control unit-price" required min="0" step="0.01">
+                        </div>
+                        <div class="col-lg-2">
+                            <label class="form-label">Subtotal</label>
+                            <input type="number" name="items[${itemIndex}][subtotal]" class="form-control subtotal" readonly>
+                        </div>
+                        <div class="col-lg-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-danger remove-item">
+                                <i class='bx bx-trash'></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="col-lg-2">
-                    <label class="form-label">Unit</label>
-                    <select name="items[${itemIndex}][unit_id]" class="form-select unit-select" required>
-                        <option value="">Pilih Unit</option>
-                    </select>
-                </div>
-                <div class="col-lg-1">
-                    <label class="form-label">QTY</label>
-                    <input type="number" name="items[${itemIndex}][quantity]" class="form-control quantity" required min="1" step="0.01">
-                </div>
-                <div class="col-lg-2">
-                    <label class="form-label">Harga</label>
-                    <input type="number" name="items[${itemIndex}][unit_price]" class="form-control unit-price" required min="0" step="0.01">
-                </div>
-                <div class="col-lg-2">
-                    <label class="form-label">Subtotal</label>
-                    <input type="number" name="items[${itemIndex}][subtotal]" class="form-control subtotal" readonly>
-                </div>
-                <div class="col-lg-1 d-flex align-items-end">
-                    <button type="button" class="btn btn-outline-danger remove-item">
-                        <i class='bx bx-trash'></i>
-                    </button>
-                </div>
-            </div>
-        `;
+                `;
 
                 $('#items-container').append(html);
                 itemIndex++;
@@ -379,6 +388,7 @@
                 }
 
                 toggleEmptyState();
+                console.log('New item added successfully');
             }
 
             // Product selection change
@@ -453,6 +463,7 @@
             // Select product from modal
             $(document).on('click', '.select-product', function(e) {
                 e.preventDefault();
+                console.log('Product selected from modal');
 
                 const productData = {
                     id: $(this).data('id'),
@@ -465,11 +476,7 @@
                     // Update existing row
                     const productSelect = currentRow.find('.product-select');
                     productSelect.val(productData.id);
-
-                    // Trigger change event to load units
                     productSelect.trigger('change');
-
-                    // Reset currentRow
                     currentRow = null;
                 } else {
                     // Add new row
@@ -477,9 +484,6 @@
                 }
 
                 $('#productModal').modal('hide');
-
-                // Show feedback
-                console.log('Produk dipilih:', productData.name);
             });
 
             // Set current row for modal
@@ -489,39 +493,10 @@
                 console.log('Current row set for modal selection');
             });
 
-            // Barcode scanner (simplified)
-            let barcodeBuffer = '';
-            let lastKeyTime = 0;
-
-            $(document).on('keypress', function(e) {
-                if ($(e.target).is('input, textarea, select')) return;
-
-                const now = Date.now();
-                if (now - lastKeyTime > 100) barcodeBuffer = '';
-                lastKeyTime = now;
-
-                if (e.which === 13 && barcodeBuffer.length > 5) {
-                    e.preventDefault();
-                    const barcode = barcodeBuffer.trim().toLowerCase();
-                    const product = $('.product-row').filter(function() {
-                        const productBarcode = $(this).attr('data-barcode') || '';
-                        return productBarcode === barcode;
-                    });
-
-                    if (product.length) {
-                        product.find('.select-product').click();
-                    } else {
-                        alert('Produk dengan barcode "' + barcode + '" tidak ditemukan');
-                    }
-                    barcodeBuffer = '';
-                } else {
-                    barcodeBuffer += String.fromCharCode(e.which);
-                }
-            });
-
             // Initialize
             calculateTotal();
             toggleEmptyState();
+            console.log('Purchase form initialized');
         });
     </script>
 @endpush
