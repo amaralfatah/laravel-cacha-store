@@ -241,7 +241,22 @@
 
 @push('scripts')
     <script>
+        // Setup CSRF token untuk semua AJAX request
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+
+        console.log('Script mulai dimuat');
+
+        // Cek ketersediaan jQuery dan DataTables
+        console.log('jQuery tersedia:', typeof $ !== 'undefined');
+        console.log('DataTables tersedia:', typeof $.fn.DataTable !== 'undefined');
+
         $(document).ready(function() {
+            console.log('Document ready');
+
             // Pastikan jQuery dan DataTables sudah dimuat
             if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
                 console.error('jQuery atau DataTables tidak dimuat dengan benar');
@@ -267,6 +282,10 @@
                             order: d.order,
                             columns: d.columns
                         };
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('Error loading data:', error);
+                        console.error('Response:', xhr.responseText);
                     }
                 },
                 columns: [{
