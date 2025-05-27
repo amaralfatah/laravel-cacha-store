@@ -238,23 +238,37 @@ class PurchaseOrderController extends Controller
             $query->where('products.store_id', auth()->user()->store_id);
         }
 
-        // Pencarian
-        if ($request->filled('search')) {
-            $search = $request->search;
+        // Pencarian global
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
             $query->where(function ($q) use ($search) {
                 $q->where('products.name', 'like', "%{$search}%")
                     ->orWhere('products.barcode', 'like', "%{$search}%");
             });
         }
 
+        // Pencarian per kolom
+        if ($request->filled('columns')) {
+            foreach ($request->input('columns') as $column) {
+                if ($column['searchable'] && !empty($column['search']['value'])) {
+                    $searchValue = $column['search']['value'];
+                    $columnName = $column['data'];
+
+                    if (in_array($columnName, ['name', 'barcode'])) {
+                        $query->where("products.{$columnName}", 'like', "%{$searchValue}%");
+                    }
+                }
+            }
+        }
+
         // Sorting
         if ($request->filled('order')) {
-            foreach ($request->order as $order) {
+            foreach ($request->input('order') as $order) {
                 $columnIndex = $order['column'];
                 $columnName = $request->input("columns.{$columnIndex}.data");
                 $direction = $order['dir'];
 
-                if ($columnName && in_array($columnName, ['name', 'barcode', 'stock'])) {
+                if ($columnName && in_array($columnName, ['name', 'barcode'])) {
                     $query->orderBy("products.{$columnName}", $direction);
                 }
             }
@@ -269,7 +283,7 @@ class PurchaseOrderController extends Controller
         $products = $query->skip($start)->take($length)->get();
 
         return response()->json([
-            'draw' => $request->draw,
+            'draw' => $request->input('draw'),
             'recordsTotal' => $total,
             'recordsFiltered' => $total,
             'data' => $products->map(function ($product) {
@@ -289,5 +303,44 @@ class PurchaseOrderController extends Controller
                 ];
             })
         ]);
+    }
+
+    public function getProducts()
+    {
+        $query = Product::query()
+            ->with([
+                'units' => function ($q) {
+                    $q->select('units.id', 'units.name', 'product_units.purchase_price', 'product_units.stock');
+                }
+            ])
+            ->select([
+                'products.id',
+                'products.name',
+                'products.barcode',
+                'products.store_id'
+            ]);
+
+        // Filter berdasarkan store untuk non-admin
+        if (auth()->user()->role !== 'admin') {
+            $query->where('products.store_id', auth()->user()->store_id);
+        }
+
+        $products = $query->get()->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'barcode' => $product->barcode,
+                'units' => $product->units->map(function ($unit) {
+                    return [
+                        'id' => $unit->id,
+                        'name' => $unit->name,
+                        'purchase_price' => $unit->purchase_price,
+                        'stock' => $unit->stock,
+                    ];
+                })
+            ];
+        });
+
+        return response()->json($products);
     }
 }

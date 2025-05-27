@@ -143,6 +143,7 @@ class PurchaseOrderService
     private function createPurchaseItems(PurchaseOrder $purchase, array $items)
     {
         foreach ($items as $item) {
+            // Create purchase item
             $purchase->items()->create([
                 'product_id' => $item['product_id'],
                 'unit_id' => $item['unit_id'],
@@ -157,7 +158,20 @@ class PurchaseOrderService
                 ->where('unit_id', $item['unit_id'])
                 ->first();
 
-            $productUnit->increment('stock', $item['quantity']);
+            if (!$productUnit) {
+                // Jika product unit belum ada, buat baru
+                $productUnit = ProductUnit::create([
+                    'product_id' => $item['product_id'],
+                    'unit_id' => $item['unit_id'],
+                    'stock' => $item['quantity'],
+                    'purchase_price' => $item['unit_price'],
+                    'selling_price' => $item['unit_price'] * 1.1, // Set selling price 10% lebih tinggi dari purchase price
+                    'conversion_factor' => 1 // Set default conversion factor ke 1
+                ]);
+            } else {
+                // Jika sudah ada, increment stock
+                $productUnit->increment('stock', $item['quantity']);
+            }
 
             // Create stock history
             StockHistory::create([

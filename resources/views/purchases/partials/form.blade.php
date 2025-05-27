@@ -61,15 +61,9 @@
 <div class="card mb-3">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Daftar Barang</h5>
-        <div>
-            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal"
-                data-bs-target="#productModal">
-                <i class='bx bx-search'></i> Cari Produk
-            </button>
-            <button type="button" id="add-item" class="btn btn-success btn-sm">
-                <i class='bx bx-plus'></i> Tambah
-            </button>
-        </div>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#productModal">
+            <i class='bx bx-plus'></i> Tambah Produk
+        </button>
     </div>
     <div class="card-body">
         <div id="items-container">
@@ -79,29 +73,10 @@
                         <div class="col-lg-4">
                             <label class="form-label">Produk</label>
                             <div class="input-group">
-                                <select name="items[{{ $index }}][product_id]"
-                                    class="form-select product-select" required>
-                                    <option value="">Pilih Produk</option>
-                                    @foreach ($products as $product)
-                                        <option value="{{ $product->id }}"
-                                            data-units='{{ json_encode(
-                                                $product->units->map(function ($unit) {
-                                                    return [
-                                                        'id' => $unit->id,
-                                                        'name' => $unit->name,
-                                                        'purchase_price' => $unit->purchase_price,
-                                                        'stock' => $unit->stock,
-                                                    ];
-                                                }),
-                                            ) }}'
-                                            {{ $item->product_id == $product->id ? 'selected' : '' }}>
-                                            {{ $product->name }}
-                                            @if ($product->barcode)
-                                                ({{ $product->barcode }})
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" class="form-control product-name" readonly
+                                    placeholder="Pilih Produk" value="{{ $item->product->name }}">
+                                <input type="hidden" name="items[{{ $index }}][product_id]" class="product-id"
+                                    value="{{ $item->product_id }}">
                                 <button type="button" class="btn btn-outline-primary select-product-btn"
                                     data-bs-toggle="modal" data-bs-target="#productModal">
                                     <i class='bx bx-search'></i>
@@ -151,7 +126,7 @@
         <div id="empty-state" class="text-center py-4 text-muted"
             style="{{ isset($purchase) && $purchase->items->count() > 0 ? 'display: none;' : '' }}">
             <i class='bx bx-package fs-1'></i>
-            <p>Belum ada produk. Scan barcode atau klik "Tambah" untuk memulai.</p>
+            <p>Belum ada produk. Klik "Tambah Produk" untuk memulai.</p>
         </div>
     </div>
 </div>
@@ -249,32 +224,179 @@
         });
 
         $(document).ready(function() {
-            // Pastikan jQuery dan DataTables sudah dimuat
-            if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
-                return;
-            }
-
+            // Inisialisasi variabel
             var itemIndex = {{ isset($purchase) ? $purchase->items->count() : 0 }};
             var currentRow = null;
+            var $itemsContainer = $('#items-container');
+            var $emptyState = $('#empty-state');
+            var $totalAmount = $('#total-amount');
+
+            // Template untuk item row
+            function getItemRowTemplate(index) {
+                return '<div class="row g-2 mb-3 p-3 border rounded item-row">' +
+                    '<div class="col-lg-4">' +
+                    '<label class="form-label">Produk</label>' +
+                    '<div class="input-group">' +
+                    '<input type="text" class="form-control product-name" readonly placeholder="Pilih Produk">' +
+                    '<input type="hidden" name="items[' + index + '][product_id]" class="product-id">' +
+                    '<button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">' +
+                    '<i class="bx bx-search"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-lg-2">' +
+                    '<label class="form-label">Unit</label>' +
+                    '<select name="items[' + index + '][unit_id]" class="form-select unit-select" required>' +
+                    '<option value="">Pilih Unit</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="col-lg-1">' +
+                    '<label class="form-label">QTY</label>' +
+                    '<input type="number" name="items[' + index +
+                    '][quantity]" class="form-control quantity" required min="1" step="0.01">' +
+                    '</div>' +
+                    '<div class="col-lg-2">' +
+                    '<label class="form-label">Harga</label>' +
+                    '<input type="number" name="items[' + index +
+                    '][unit_price]" class="form-control unit-price" required min="0" step="0.01">' +
+                    '</div>' +
+                    '<div class="col-lg-2">' +
+                    '<label class="form-label">Subtotal</label>' +
+                    '<input type="number" name="items[' + index +
+                    '][subtotal]" class="form-control subtotal" readonly>' +
+                    '</div>' +
+                    '<div class="col-lg-1 d-flex align-items-end">' +
+                    '<button type="button" class="btn btn-outline-danger remove-item">' +
+                    '<i class="bx bx-trash"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>';
+            }
+
+            // Fungsi untuk menambah item baru
+            function addNewItem(productData = null) {
+                var $newRow = $(getItemRowTemplate(itemIndex));
+                $itemsContainer.append($newRow);
+
+                if (productData) {
+                    var $row = $newRow;
+                    $row.find('.product-id').val(productData.id);
+                    $row.find('.product-name').val(productData.name);
+
+                    // Populate units
+                    var $unitSelect = $row.find('.unit-select');
+                    $unitSelect.empty().append('<option value="">Pilih Unit</option>');
+
+                    if (Array.isArray(productData.units) && productData.units.length > 0) {
+                        productData.units.forEach(function(unit) {
+                            $unitSelect.append(
+                                '<option value="' + unit.id + '" data-price="' + unit.purchase_price +
+                                '">' +
+                                unit.name + ' (' + unit.stock + ')</option>'
+                            );
+                        });
+                    }
+                }
+
+                itemIndex++;
+                toggleEmptyState();
+            }
+
+            // Fungsi untuk toggle empty state
+            function toggleEmptyState() {
+                $emptyState.toggle($('.item-row').length === 0);
+            }
+
+            // Fungsi untuk menghitung subtotal
+            function calculateSubtotal($row) {
+                var qty = parseFloat($row.find('.quantity').val()) || 0;
+                var price = parseFloat($row.find('.unit-price').val()) || 0;
+                var subtotal = qty * price;
+                $row.find('.subtotal').val(subtotal);
+                calculateTotal();
+            }
+
+            // Fungsi untuk menghitung total
+            function calculateTotal() {
+                var total = 0;
+                $('.subtotal').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+                $totalAmount.text('Rp ' + total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }));
+                $('input[name="total_amount"]').val(total);
+                $('input[name="final_amount"]').val(total);
+            }
+
+            // Event Handlers
+            $(document).on('change', '.unit-select', function() {
+                var $this = $(this);
+                var $row = $this.closest('.item-row');
+                var price = $this.find(':selected').data('price');
+
+                if (price) {
+                    $row.find('.unit-price').val(price);
+                    calculateSubtotal($row);
+                }
+            });
+
+            $(document).on('input', '.quantity, .unit-price', function() {
+                calculateSubtotal($(this).closest('.item-row'));
+            });
+
+            $(document).on('click', '.remove-item', function() {
+                $(this).closest('.item-row').remove();
+                calculateTotal();
+                toggleEmptyState();
+            });
+
+            $(document).on('click', '.select-product', function(e) {
+                e.preventDefault();
+                var productData = {
+                    id: $(this).data('id'),
+                    name: $(this).data('name'),
+                    barcode: $(this).data('barcode'),
+                    units: $(this).data('units')
+                };
+
+                if (currentRow && currentRow.length > 0) {
+                    currentRow.find('.product-id').val(productData.id);
+                    currentRow.find('.product-name').val(productData.name);
+
+                    // Populate units
+                    var $unitSelect = currentRow.find('.unit-select');
+                    $unitSelect.empty().append('<option value="">Pilih Unit</option>');
+
+                    if (Array.isArray(productData.units) && productData.units.length > 0) {
+                        productData.units.forEach(function(unit) {
+                            $unitSelect.append(
+                                '<option value="' + unit.id + '" data-price="' + unit
+                                .purchase_price + '">' +
+                                unit.name + ' (' + unit.stock + ')</option>'
+                            );
+                        });
+                    }
+
+                    currentRow = null;
+                } else {
+                    addNewItem(productData);
+                }
+
+                $('#productModal').modal('hide');
+            });
+
+            $(document).on('click', '.select-product-btn', function(e) {
+                e.preventDefault();
+                currentRow = $(this).closest('.item-row');
+            });
 
             // Initialize DataTable
-            var productTable = $('#productTable').DataTable({
+            $('#productTable').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: {
-                    url: '{{ route('purchases.search-products') }}',
-                    type: 'GET',
-                    data: function(d) {
-                        return {
-                            draw: d.draw,
-                            start: d.start,
-                            length: d.length,
-                            search: d.search.value,
-                            order: d.order,
-                            columns: d.columns
-                        };
-                    }
-                },
+                ajax: '{{ route('purchases.search-products') }}',
                 columns: [{
                         data: 'name',
                         name: 'name'
@@ -325,171 +447,6 @@
                 order: [
                     [0, 'asc']
                 ]
-            });
-
-            // Add new item function
-            function addNewItem(productData = null) {
-                var html = '<div class="row g-2 mb-3 p-3 border rounded item-row">' +
-                    '<div class="col-lg-4">' +
-                    '<label class="form-label">Produk</label>' +
-                    '<div class="input-group">' +
-                    '<select name="items[' + itemIndex +
-                    '][product_id]" class="form-select product-select" required>' +
-                    '<option value="">Pilih Produk</option>' +
-                    '@foreach ($products as $product)' +
-                    '<option value="{{ $product->id }}" data-units=\'{{ json_encode($product->units->map(function ($unit) {return ['id' => $unit->id, 'name' => $unit->name, 'purchase_price' => $unit->purchase_price, 'stock' => $unit->stock];})) }}\'>' +
-                    '{{ $product->name }}' +
-                    '@if ($product->barcode) ({{ $product->barcode }}) @endif' +
-                    '</option>' +
-                    '@endforeach' +
-                    '</select>' +
-                    '<button type="button" class="btn btn-outline-primary select-product-btn" data-bs-toggle="modal" data-bs-target="#productModal">' +
-                    '<i class="bx bx-search"></i>' +
-                    '</button>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-lg-2">' +
-                    '<label class="form-label">Unit</label>' +
-                    '<select name="items[' + itemIndex + '][unit_id]" class="form-select unit-select" required>' +
-                    '<option value="">Pilih Unit</option>' +
-                    '</select>' +
-                    '</div>' +
-                    '<div class="col-lg-1">' +
-                    '<label class="form-label">QTY</label>' +
-                    '<input type="number" name="items[' + itemIndex +
-                    '][quantity]" class="form-control quantity" required min="1" step="0.01">' +
-                    '</div>' +
-                    '<div class="col-lg-2">' +
-                    '<label class="form-label">Harga</label>' +
-                    '<input type="number" name="items[' + itemIndex +
-                    '][unit_price]" class="form-control unit-price" required min="0" step="0.01">' +
-                    '</div>' +
-                    '<div class="col-lg-2">' +
-                    '<label class="form-label">Subtotal</label>' +
-                    '<input type="number" name="items[' + itemIndex +
-                    '][subtotal]" class="form-control subtotal" readonly>' +
-                    '</div>' +
-                    '<div class="col-lg-1 d-flex align-items-end">' +
-                    '<button type="button" class="btn btn-outline-danger remove-item">' +
-                    '<i class="bx bx-trash"></i>' +
-                    '</button>' +
-                    '</div>' +
-                    '</div>';
-
-                $('#items-container').append(html);
-                itemIndex++;
-
-                if (productData) {
-                    var newRow = $('.item-row').last();
-                    if (newRow.length) {
-                        newRow.find('.product-select').val(productData.id).trigger('change');
-                    }
-                }
-
-                toggleEmptyState();
-            }
-
-            // Event handler untuk add item
-            $('#add-item').on('click', function(e) {
-                e.preventDefault();
-                var $button = $(this);
-                $button.prop('disabled', true);
-
-                try {
-                    addNewItem();
-                } catch (error) {
-                    alert('Terjadi kesalahan saat menambah item. Silakan coba lagi.');
-                } finally {
-                    $button.prop('disabled', false);
-                }
-            });
-
-            // Fungsi toggleEmptyState
-            function toggleEmptyState() {
-                $('#empty-state').toggle($('.item-row').length === 0);
-            }
-
-            // Event handler untuk product selection
-            $(document).on('change', '.product-select', function() {
-                var $this = $(this);
-                var selectedOption = $this.find(':selected');
-                var units = selectedOption.data('units') || [];
-                var unitSelect = $this.closest('.item-row').find('.unit-select');
-
-                unitSelect.empty().append('<option value="">Pilih Unit</option>');
-
-                if (Array.isArray(units) && units.length > 0) {
-                    units.forEach(function(unit) {
-                        unitSelect.append(
-                            '<option value="' + unit.id + '" data-price="' + unit
-                            .purchase_price + '">' +
-                            unit.name + ' (' + unit.stock + ')</option>'
-                        );
-                    });
-                }
-            });
-
-            // Event handler untuk remove item
-            $(document).on('click', '.remove-item', function() {
-                $(this).closest('.item-row').remove();
-                calculateTotal();
-                toggleEmptyState();
-            });
-
-            // Event handler untuk quantity dan price
-            $(document).on('input', '.quantity, .unit-price', function() {
-                calculateSubtotal($(this).closest('.item-row'));
-            });
-
-            // Fungsi calculate subtotal
-            function calculateSubtotal(row) {
-                var qty = parseFloat(row.find('.quantity').val()) || 0;
-                var price = parseFloat(row.find('.unit-price').val()) || 0;
-                var subtotal = qty * price;
-                row.find('.subtotal').val(subtotal);
-                calculateTotal();
-            }
-
-            // Fungsi calculate total
-            function calculateTotal() {
-                var total = 0;
-                $('.subtotal').each(function() {
-                    total += parseFloat($(this).val()) || 0;
-                });
-                $('#total-amount').text('Rp ' + total.toLocaleString('id-ID', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                }));
-                $('input[name="total_amount"]').val(total);
-                $('input[name="final_amount"]').val(total);
-            }
-
-            // Select product from modal
-            $(document).on('click', '.select-product', function(e) {
-                e.preventDefault();
-                var productData = {
-                    id: $(this).data('id'),
-                    name: $(this).data('name'),
-                    barcode: $(this).data('barcode'),
-                    units: $(this).data('units')
-                };
-
-                if (currentRow && currentRow.length > 0) {
-                    var productSelect = currentRow.find('.product-select');
-                    productSelect.val(productData.id);
-                    productSelect.trigger('change');
-                    currentRow = null;
-                } else {
-                    addNewItem(productData);
-                }
-
-                $('#productModal').modal('hide');
-            });
-
-            // Set current row for modal
-            $(document).on('click', '.select-product-btn', function(e) {
-                e.preventDefault();
-                currentRow = $(this).closest('.item-row');
             });
 
             // Initialize
