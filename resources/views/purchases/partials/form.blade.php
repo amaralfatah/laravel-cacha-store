@@ -430,7 +430,10 @@
                 $('.subtotal').each(function() {
                     total += parseFloat($(this).val()) || 0;
                 });
-                $('#total-amount').text(`Rp ${total.toLocaleString('id-ID')}`);
+                $('#total-amount').text('Rp ' + total.toLocaleString('id-ID', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }));
                 $('input[name="total_amount"]').val(total);
                 $('input[name="final_amount"]').val(total);
             }
