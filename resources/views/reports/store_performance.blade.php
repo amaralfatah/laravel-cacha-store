@@ -9,12 +9,12 @@
                 <div class="input-group">
                     <span class="input-group-text">Dari</span>
                     <input type="date" id="start_date" name="start_date" class="form-control"
-                           value="{{ request('start_date', \Carbon\Carbon::now()->startOfMonth()->format('Y-m-d')) }}">
+                        value="{{ request('start_date', \Carbon\Carbon::now()->startOfMonth()->format('Y-m-d')) }}">
                 </div>
                 <div class="input-group">
                     <span class="input-group-text">Sampai</span>
                     <input type="date" id="end_date" name="end_date" class="form-control"
-                           value="{{ request('end_date', \Carbon\Carbon::now()->format('Y-m-d')) }}">
+                        value="{{ request('end_date', \Carbon\Carbon::now()->format('Y-m-d')) }}">
                 </div>
                 <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
                     <i class='bx bx-filter-alt'></i>
@@ -50,7 +50,9 @@
                                     <h6 class="mb-0">Rp {{ number_format($store->revenue ?? 0, 0, ',', '.') }}</h6>
                                 </div>
                                 <div class="progress mt-2" style="height: 5px;">
-                                    <div class="progress-bar bg-primary" style="width: {{ $index === 0 ? '100' : ($store->revenue / $topStores->first()->revenue * 100) }}%" role="progressbar"></div>
+                                    <div class="progress-bar bg-primary"
+                                        style="width: {{ $index === 0 ? '100' : (($topStores->first()->revenue ?? 0) > 0 ? (($store->revenue ?? 0) / ($topStores->first()->revenue ?? 1)) * 100 : 0) }}%"
+                                        role="progressbar"></div>
                                 </div>
                             </div>
                         </div>
@@ -76,73 +78,76 @@
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
-                    <tr>
-                        <th>Kode</th>
-                        <th>Nama Toko</th>
-                        <th>Total Transaksi</th>
-                        <th>Pendapatan</th>
-                        <th>Rata-rata per Transaksi</th>
-                        <th>Jumlah Pelanggan</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Toko</th>
+                            <th>Total Transaksi</th>
+                            <th>Pendapatan</th>
+                            <th>Rata-rata per Transaksi</th>
+                            <th>Jumlah Pelanggan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    @forelse($stores as $store)
-                        <tr>
-                            <td><span class="fw-medium">{{ $store->code }}</span></td>
-                            <td>{{ $store->name }}</td>
-                            <td>{{ $store->sales_count ?? 0 }}</td>
-                            <td>Rp {{ number_format($store->revenue ?? 0, 0, ',', '.') }}</td>
-                            <td>
-                                @if(($store->sales_count ?? 0) > 0)
-                                    Rp {{ number_format(($store->revenue ?? 0) / $store->sales_count, 0, ',', '.') }}
-                                @else
-                                    Rp 0
-                                @endif
-                            </td>
-                            <td>{{ $store->customers_count ?? 0 }}</td>
-                            <td>
-                                @if($store->is_active)
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Nonaktif</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-sm dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="{{ route('reports.store.detail', $store->id) }}">
-                                            <i class="bx bx-detail me-1"></i> Detail
-                                        </a>
-                                        <form action="{{ route('stores.toggle-status', $store->id) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="dropdown-item">
-                                                @if($store->is_active)
-                                                    <i class="bx bx-power-off me-1 text-danger"></i> Nonaktifkan
-                                                @else
-                                                    <i class="bx bx-power-off me-1 text-success"></i> Aktifkan
-                                                @endif
-                                            </button>
-                                        </form>
+                        @forelse($stores as $store)
+                            <tr>
+                                <td><span class="fw-medium">{{ $store->code }}</span></td>
+                                <td>{{ $store->name }}</td>
+                                <td>{{ $store->sales_count ?? 0 }}</td>
+                                <td>Rp {{ number_format($store->revenue ?? 0, 0, ',', '.') }}</td>
+                                <td>
+                                    @if (($store->sales_count ?? 0) > 0)
+                                        Rp
+                                        {{ number_format(($store->revenue ?? 0) / ($store->sales_count ?? 1), 0, ',', '.') }}
+                                    @else
+                                        Rp 0
+                                    @endif
+                                </td>
+                                <td>{{ $store->customers_count ?? 0 }}</td>
+                                <td>
+                                    @if ($store->is_active)
+                                        <span class="badge bg-success">Aktif</span>
+                                    @else
+                                        <span class="badge bg-danger">Nonaktif</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm dropdown-toggle hide-arrow p-0"
+                                            data-bs-toggle="dropdown">
+                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item"
+                                                href="{{ route('reports.store.detail', $store->id) }}">
+                                                <i class="bx bx-detail me-1"></i> Detail
+                                            </a>
+                                            <form action="{{ route('stores.toggle-status', $store->id) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="dropdown-item">
+                                                    @if ($store->is_active)
+                                                        <i class="bx bx-power-off me-1 text-danger"></i> Nonaktifkan
+                                                    @else
+                                                        <i class="bx bx-power-off me-1 text-success"></i> Aktifkan
+                                                    @endif
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-4">
-                                <div class="text-center text-muted">
-                                    <i class='bx bx-store-alt fs-1'></i>
-                                    <p>Belum ada toko yang terdaftar</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="text-center text-muted">
+                                        <i class='bx bx-store-alt fs-1'></i>
+                                        <p>Belum ada toko yang terdaftar</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -165,13 +170,21 @@
 
 @push('scripts')
     <script>
-        $(function () {
+        $(function() {
             // Store revenue chart
             const storeRevenueChart = document.querySelector('#storeRevenueChart');
 
             if (storeRevenueChart) {
-                const storeNames = [@foreach($stores as $store) '{{ $store->name }}', @endforeach];
-                const storeRevenues = [@foreach($stores as $store) {{ $store->revenue ?? 0 }}, @endforeach];
+                const storeNames = [
+                    @foreach ($stores as $store)
+                        '{{ $store->name }}',
+                    @endforeach
+                ];
+                const storeRevenues = [
+                    @foreach ($stores as $store)
+                        {{ $store->revenue ?? 0 }},
+                    @endforeach
+                ];
 
                 const options = {
                     series: [{
@@ -202,14 +215,14 @@
                             text: 'Pendapatan (Rp)'
                         },
                         labels: {
-                            formatter: function (val) {
+                            formatter: function(val) {
                                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
                             }
                         }
                     },
                     tooltip: {
                         y: {
-                            formatter: function (val) {
+                            formatter: function(val) {
                                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
                             }
                         }
@@ -225,7 +238,8 @@
                 const startDate = $('#start_date').val();
                 const endDate = $('#end_date').val();
 
-                window.location.href = `{{ route('reports.store-performance') }}?start_date=${startDate}&end_date=${endDate}`;
+                window.location.href =
+                    `{{ route('reports.store-performance') }}?start_date=${startDate}&end_date=${endDate}`;
             });
         });
     </script>
